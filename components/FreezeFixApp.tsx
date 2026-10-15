@@ -7,6 +7,7 @@ import ScreenshotPicker from "@/components/ScreenshotPicker";
 import SiteFooter from "@/components/SiteFooter";
 import Paywall from "@/components/Paywall";
 import TrustedMessage from "@/components/TrustedMessage";
+import WinCard from "@/components/WinCard";
 import { factForToday, type Fact } from "@/lib/facts";
 import { SAFETY_BUTTONS, keywordCheck, type HelpScreen as HelpScreenId, type RiskLevel, type RiskResult } from "@/lib/risk";
 import { MOMENTS, type MomentId } from "@/lib/prompt";
@@ -34,7 +35,8 @@ type Step =
   | "delete-confirm"
   | "deleted"
   | "paywall"
-  | "trusted";
+  | "trusted"
+  | "wincard";
 
 // Browser storage keys. Nothing here leaves the phone.
 const K_ADULT = "ff_adult"; // "yes" once the 18+ gate is passed
@@ -647,6 +649,7 @@ export default function FreezeFixApp() {
               {helped ? "That's your 0.5% today. Small moves count." : "Not every move lands. Want to try a different one?"}
             </p>
             <div className="mt-6 flex flex-col gap-3">
+              {helped && <BigButton onClick={() => setStep("wincard")}>Make a card for it</BigButton>}
               {!helped && moves.length > 1 && <BigButton onClick={() => setStep("moves")}>Try another move</BigButton>}
               <GhostButton
                 onClick={() => {
@@ -658,6 +661,10 @@ export default function FreezeFixApp() {
               </GhostButton>
             </div>
           </Screen>
+        )}
+
+        {step === "wincard" && (
+          <WinCard moment={moment} wins={wins} onClose={() => setStep("thanks")} />
         )}
 
         {step === "trusted" && (
