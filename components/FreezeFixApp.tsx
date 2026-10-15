@@ -6,6 +6,8 @@ import VoiceRecorder from "@/components/VoiceRecorder";
 import ScreenshotPicker from "@/components/ScreenshotPicker";
 import SiteFooter from "@/components/SiteFooter";
 import Paywall from "@/components/Paywall";
+import TrustedMessage from "@/components/TrustedMessage";
+import { factForToday, type Fact } from "@/lib/facts";
 import { SAFETY_BUTTONS, keywordCheck, type HelpScreen as HelpScreenId, type RiskLevel, type RiskResult } from "@/lib/risk";
 import { MOMENTS, type MomentId } from "@/lib/prompt";
 import { detectRegion } from "@/lib/country";
@@ -31,7 +33,8 @@ type Step =
   | "settings"
   | "delete-confirm"
   | "deleted"
-  | "paywall";
+  | "paywall"
+  | "trusted";
 
 // Browser storage keys. Nothing here leaves the phone.
 const K_ADULT = "ff_adult"; // "yes" once the 18+ gate is passed
@@ -46,6 +49,7 @@ const K_ACK = "ff_session_ack"; // urgent help screens the user has seen and tap
 const DAY_MS = 24 * 60 * 60 * 1000;
 
 const K_WINS = "ff_wins"; // how many times a move helped (stays on the phone)
+const K_VISITS = "ff_visits"; // used only to rotate the fact on the home screen
 
 const MOMENT_EMOJI: Record<MomentId, string> = { people: "👀", alone: "🌀", task: "🧱", reply: "💬" };
 
@@ -117,6 +121,7 @@ export default function FreezeFixApp() {
   const [settingsNote, setSettingsNote] = useState<string | null>(null);
   const [wins, setWins] = useState(0);
   const [thawing, setThawing] = useState(false);
+  const [fact, setFact] = useState<Fact | null>(null);
   const [features, setFeatures] = useState({ ai: false, voice: false, screenshot: false });
 
   // Which optional inputs are switched on (voice needs a transcription key, screenshots need the AI).
@@ -135,6 +140,9 @@ export default function FreezeFixApp() {
     setSessionLevel((Number(get("session", K_LEVEL)) || 0) as RiskLevel);
     setMixed(get("session", K_MIXED) === "1");
     setWins(Number(get("local", K_WINS)) || 0);
+    const visits = (Number(get("local", K_VISITS)) || 0) + 1;
+    set("local", K_VISITS, String(visits));
+    setFact(factForToday(visits));
     try {
       setAcked(JSON.parse(get("session", K_ACK) || "[]"));
     } catch {
@@ -331,7 +339,7 @@ export default function FreezeFixApp() {
   }
 
   const res = resourcesFor(region);
-  const showHelpCard = sessionLevel >= 1 && step !== "help" && step !== "blocked" && step !== "gate";
+  const showHelpCard = sessionLevel >= 3 && step !== "help" && step !== "blocked" && step !== "gate";
 
   return (
     <div className="mx-auto flex min-h-dvh w-full max-w-md flex-col px-5 pb-8 pt-4">
@@ -393,6 +401,12 @@ export default function FreezeFixApp() {
                   ✦ You&apos;ve unfrozen {wins} {wins === 1 ? "time" : "times"}
                 </p>
               )}
+              {fact && (
+                <div className="mt-5 rounded-2xl border border-line bg-card p-4">
+                  <p className="text-base leading-relaxed text-ink">{fact.text}</p>
+                  {fact.note && <p className="mt-1.5 text-xs text-ink-faint">{fact.note}</p>}
+                </div>
+              )}
             </div>
             <div className="flex flex-col gap-4">
               <button
@@ -432,7 +446,7 @@ export default function FreezeFixApp() {
                   onClick={() => {
                     buzz();
                     setMoment(m);
-                    setStep("check");
+                    setStep("words");
                   }}
                   className="flex aspect-square flex-col justify-between rounded-[1.75rem] border border-line bg-card p-4 text-left transition active:scale-[0.97]"
                 >
@@ -445,7 +459,7 @@ export default function FreezeFixApp() {
         )}
 
         {step === "check" && (
-          <Screen title="Quick check first" subtitle="Tap anything that's true right now.">
+          <Screen title="Which one?" subtitle="So we get you the right help, fast.">
             <div className="flex flex-col gap-2">
               {SAFETY_BUTTONS.map((b) => (
                 <button
@@ -459,16 +473,16 @@ export default function FreezeFixApp() {
               {/* "None of these" is the largest button, never pre-selected. */}
               <button
                 onClick={() => setStep("words")}
-                className="mt-2 rounded-3xl bg-accent px-5 py-5 text-xl font-bold text-accent-ink transition active:scale-[0.98]"
+                className="mt-2 rounded-[1.75rem] bg-accent px-5 py-5 text-xl font-bold text-accent-ink transition active:scale-[0.98]"
               >
-                None of these, keep going
+                None of these
               </button>
             </div>
           </Screen>
         )}
 
         {step === "words" && (
-          <Screen title="Say it in a few words" subtitle="Tap one, type, or both.">
+          <Screen title="What's going on?" subtitle="Tap one, type it, however. Any language.">
             <div className="mb-3 flex flex-wrap gap-2">
               {QUICK_PICKS[moment].map((q) => (
                 <button
@@ -490,8 +504,7 @@ export default function FreezeFixApp() {
               placeholder={PLACEHOLDERS[moment]}
               className="w-full resize-none rounded-2xl border border-line bg-card p-4 text-lg text-ink placeholder:text-ink-faint focus:border-accent focus:outline-none"
             />
-            <div className="mt-1 flex justify-between text-xs text-ink-faint">
-              <span>Any language is fine, Hinglish too.</span>
+            <div className="mt-1 flex justify-end text-xs text-ink-faint">
               <span>{text.length}/400</span>
             </div>
 
@@ -518,6 +531,12 @@ export default function FreezeFixApp() {
 
             <div className="mt-5 flex flex-col gap-3">
               <BigButton onClick={() => getMoves()}>Get my moves</BigButton>
+              <button
+                onClick={() => setStep("check")}
+                className="self-center py-1 text-sm text-ink-faint underline underline-offset-4"
+              >
+                Something feels wrong with my body
+              </button>
               {!text.trim() && !voiceText && !image && (
                 <GhostButton onClick={() => getMoves()}>Skip, just give me moves</GhostButton>
               )}
@@ -576,6 +595,12 @@ export default function FreezeFixApp() {
                     <span className="text-base text-ink-soft">{m.detail}</span>
                   </button>
                 ))}
+                <button
+                  onClick={() => setStep("trusted")}
+                  className="mt-1 rounded-2xl border border-line px-5 py-4 text-left text-lg font-semibold text-ink transition active:scale-[0.98]"
+                >
+                  Text someone, but I can&apos;t find the words
+                </button>
                 <p className="mt-2 text-sm leading-relaxed text-ink-faint">
                   FreezeFix gives ideas, not medical advice. If you feel unsafe, have chest pain or can&apos;t breathe, call
                   your local emergency number.
@@ -635,6 +660,19 @@ export default function FreezeFixApp() {
           </Screen>
         )}
 
+        {step === "trusted" && (
+          <TrustedMessage
+            onRoute={(screen, underage) => {
+              if (underage) blockDevice();
+              else {
+                raiseLevel(screen === "emergency" ? 4 : 3);
+                showHelp(screen, "home");
+              }
+            }}
+            onClose={() => setStep(moves.length ? "moves" : "home")}
+          />
+        )}
+
         {step === "paywall" && (
           <Paywall
             onActive={() => {
@@ -646,28 +684,32 @@ export default function FreezeFixApp() {
         )}
 
         {step === "consent" && (
-          <Screen title="Before we start">
+          <Screen title="Real quick">
             <div className="flex flex-col gap-4 text-lg text-ink-soft">
               <p>
-                To suggest your next steps, FreezeFix needs to use what you share in a session, like how you&apos;re feeling and
-                whether you&apos;ve used cannabis. That&apos;s health information, so we need your OK.
+                No judgment here. We&apos;re not going to tell you to stop, that&apos;s your call. We just can&apos;t help
+                properly without knowing what&apos;s going on.
+              </p>
+              <p>
+                So whatever you tell us, how you&apos;re feeling, what you&apos;ve had, goes to our AI to work out your
+                moves. That counts as health info, so the law says we have to ask.
               </p>
               <ul className="list-disc space-y-1 pl-5 text-base">
-                <li>We use it only to suggest your moves and show help when you need it.</li>
-                <li>It&apos;s processed by our AI provider for us, never sold, never used for ads.</li>
-                <li>Session text isn&apos;t stored after your moves are shown.</li>
+                <li>Only used to find your moves and get you help if you need it</li>
+                <li>Never sold, never ads, never handed to anyone else</li>
+                <li>We don&apos;t keep what you type</li>
               </ul>
-              <label className="mt-2 flex cursor-pointer items-start gap-3 rounded-2xl border border-line bg-card p-4 text-base text-ink">
+              <label className="mt-1 flex cursor-pointer items-start gap-3 rounded-2xl border border-line bg-card p-4 text-base text-ink">
                 <input
                   type="checkbox"
                   checked={consentTicked}
                   onChange={(e) => setConsentTicked(e.target.checked)}
                   className="mt-1 h-5 w-5 shrink-0 accent-[var(--color-accent)]"
                 />
-                <span>I agree FreezeFix can use the health information I share to give me suggestions, as explained in the Privacy Policy.</span>
+                <span>Yeah, use what I share to help me out.</span>
               </label>
               <a href="/privacy" target="_blank" className="text-base text-accent underline underline-offset-4">
-                Read the Privacy Policy
+                The long legal version
               </a>
             </div>
             <div className="mt-6 flex flex-col gap-3">
@@ -677,9 +719,9 @@ export default function FreezeFixApp() {
                   set("local", K_CONSENT, new Date().toISOString().slice(0, 10));
                   setStep("moment");
                 }}
-                className="w-full rounded-3xl bg-accent px-5 py-5 text-xl font-bold text-accent-ink transition disabled:opacity-40"
+                className="w-full rounded-[1.75rem] bg-accent px-5 py-5 text-xl font-bold text-accent-ink transition disabled:opacity-40"
               >
-                Continue
+                Let&apos;s go
               </button>
               <GhostButton onClick={() => setStep("consent-declined")}>Not now</GhostButton>
             </div>
@@ -689,7 +731,8 @@ export default function FreezeFixApp() {
         {step === "consent-declined" && (
           <Screen title="No problem">
             <p className="text-lg text-ink-soft">
-              Without your OK, FreezeFix can&apos;t suggest moves. Help is always here though, free, with the Emergency button up top.
+              All good. Without that we can&apos;t work out your moves, but nothing else changes and you can switch it on
+              any time.
             </p>
             <div className="mt-6 flex flex-col gap-3">
               <BigButton onClick={() => setStep("consent")}>I&apos;ve changed my mind</BigButton>
@@ -801,15 +844,9 @@ export default function FreezeFixApp() {
         )}
 
         {/* Level 1+ this session: a help card stays one tap away (Safety Pack section 5). */}
-        {showHelpCard && step !== "home" && res.crisis[0] && (
+        {showHelpCard && res.crisis[0] && (
           <div className="mt-8 flex flex-col gap-2 rounded-2xl border border-line p-4">
-            <p className="text-sm text-ink-soft">If it gets heavier, talk to someone now, free:</p>
-            <ContactButton contact={res.crisis[0]} />
-          </div>
-        )}
-        {showHelpCard && step === "home" && sessionLevel >= 3 && res.crisis[0] && (
-          <div className="mt-6 flex flex-col gap-2 rounded-2xl border border-line p-4">
-            <p className="text-sm text-ink-soft">You don&apos;t have to carry this alone. Free, right now:</p>
+            <p className="text-sm text-ink-soft">Still one tap away, free, whenever:</p>
             <ContactButton contact={res.crisis[0]} />
           </div>
         )}
