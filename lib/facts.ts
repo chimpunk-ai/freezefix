@@ -9,7 +9,7 @@ export const FACTS: Fact[] = [
   {
     // Gollwitzer & Sheeran 2006 meta-analysis, d = 0.65 across 94 studies / 8,461 people.
     // https://doi.org/10.1016/S0065-2601(06)38002-1
-    text: "Deciding exactly when and where you'll do a thing roughly doubles the odds you actually do it. Vague plans lose.",
+    text: "Deciding exactly when and where you'll do a thing makes you far more likely to actually do it. Vague plans lose.",
     note: "94 studies, 8,461 people",
   },
   {
