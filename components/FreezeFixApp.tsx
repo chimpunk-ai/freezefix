@@ -343,7 +343,7 @@ export default function FreezeFixApp() {
             resetFlow();
             setStep("home");
           }}
-          className="font-[family-name:var(--font-display)] text-xl font-extrabold tracking-tight text-frost"
+          className="text-lg font-semibold text-ink"
           aria-label="FreezeFix home"
         >
           freezefix

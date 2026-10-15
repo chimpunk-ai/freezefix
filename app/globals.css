@@ -1,21 +1,22 @@
 @import "tailwindcss";
 
-/* FreezeFix "Thaw" theme: frozen night blues warming to apricot.
-   Calm enough for 2am, warm enough to feel like a mate. No alarm reds anywhere. */
+/* FreezeFix "Aurora" theme (founder pick, 16 Oct): deep violet night with soft northern-lights
+   glows; glass cards; one warm pink for every main button. Calm for 2am. No alarm reds. */
 @theme {
-  --color-bg: #10142a; /* night */
-  --color-card: #1a2040;
-  --color-chip: #232a52;
-  --color-line: #2c3566;
-  --color-ink: #f5f7ff; /* snow */
-  --color-ink-soft: #c9d6ff; /* frost */
-  --color-ink-faint: #8d98c7;
-  --color-accent: #ff9f6e; /* thaw */
-  --color-accent-ink: #2a1206;
+  --color-bg: #1a1033;
+  --color-card: rgba(255, 255, 255, 0.08);
+  --color-chip: rgba(255, 255, 255, 0.12);
+  --color-line: rgba(255, 255, 255, 0.18);
+  --color-ink: #f7f2ff;
+  --color-ink-soft: #d6c9f2;
+  --color-ink-faint: #a898cc;
+  --color-accent: #ff8ad8; /* aurora pink */
+  --color-accent-ink: #3a0d2e;
   --color-glow: #ffd36e;
-  --color-frost: #c9d6ff;
+  --color-frost: #c8bcff;
+  --color-teal: #39e0c8;
   --font-sans: var(--font-body), ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
-  --font-display: var(--font-display-face), var(--font-body), ui-sans-serif, system-ui, sans-serif;
+  --font-display: var(--font-body), ui-sans-serif, system-ui, sans-serif;
 }
 
 html,
@@ -27,16 +28,19 @@ body {
 body {
   -webkit-font-smoothing: antialiased;
   -webkit-tap-highlight-color: transparent;
-  /* A faint frosty glow at the top of the night sky. */
-  background-image: radial-gradient(120% 60% at 50% -10%, rgba(201, 214, 255, 0.12), transparent 60%);
+  /* Northern lights over the night sky. */
+  background-image:
+    radial-gradient(60% 40% at 20% 10%, rgba(123, 92, 255, 0.5), transparent 70%),
+    radial-gradient(50% 35% at 90% 25%, rgba(255, 138, 216, 0.38), transparent 70%),
+    radial-gradient(70% 40% at 50% 105%, rgba(57, 224, 200, 0.22), transparent 70%);
   background-attachment: fixed;
 }
 
 h1,
 h2 {
   font-family: var(--font-display);
-  font-variation-settings: "wdth" 90;
-  letter-spacing: -0.02em;
+  font-weight: 800;
+  letter-spacing: -0.04em;
 }
 
 button,
@@ -53,12 +57,12 @@ a {
 .ice {
   position: relative;
   isolation: isolate;
-  background: linear-gradient(160deg, #e9efff 0%, #c9d6ff 45%, #9fb1f5 100%);
-  color: #10142a;
+  background: linear-gradient(160deg, #f3efff 0%, #d9ceff 50%, #b9a6ff 100%);
+  color: #1a1033;
   box-shadow:
-    inset 0 2px 0 rgba(255, 255, 255, 0.7),
-    inset 0 -10px 24px rgba(16, 20, 42, 0.18),
-    0 18px 40px -12px rgba(159, 177, 245, 0.55);
+    inset 0 2px 0 rgba(255, 255, 255, 0.75),
+    inset 0 -10px 24px rgba(26, 16, 51, 0.2),
+    0 18px 44px -12px rgba(123, 92, 255, 0.6);
   transition: transform 160ms ease;
 }
 .ice::after {
@@ -66,7 +70,7 @@ a {
   position: absolute;
   inset: 0;
   border-radius: inherit;
-  background: linear-gradient(160deg, #ffd36e 0%, #ff9f6e 60%, #ff7f6e 100%);
+  background: linear-gradient(160deg, #ffc1ea 0%, #ff8ad8 55%, #e76bc4 100%);
   opacity: 0;
   z-index: -1;
   transition: opacity 420ms ease;
@@ -76,8 +80,8 @@ a {
 }
 .ice.thawing {
   background: transparent;
-  color: #2a1206;
-  box-shadow: 0 18px 50px -10px rgba(255, 159, 110, 0.7);
+  color: #3a0d2e;
+  box-shadow: 0 18px 50px -10px rgba(255, 138, 216, 0.7);
 }
 .ice.thawing::after {
   opacity: 1;

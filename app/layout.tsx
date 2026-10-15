@@ -1,11 +1,10 @@
 import type { Metadata, Viewport } from "next";
-import { Bricolage_Grotesque, Figtree } from "next/font/google";
+import { Sora } from "next/font/google";
 import "./globals.css";
 
 // Fonts are downloaded at build time and served from our own domain, so no visitor data goes
 // to Google (keeps us GDPR-friendly for UK/EU users).
-const display = Bricolage_Grotesque({ subsets: ["latin"], variable: "--font-display-face", display: "swap", axes: ["wdth"] });
-const bodyFont = Figtree({ subsets: ["latin"], variable: "--font-body", display: "swap" });
+const bodyFont = Sora({ subsets: ["latin"], variable: "--font-body", display: "swap", weight: ["300", "400", "600", "800"] });
 
 export const metadata: Metadata = {
   title: "FreezeFix: one tiny move, under a minute",
@@ -15,13 +14,13 @@ export const metadata: Metadata = {
 export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
-  themeColor: "#10142a",
+  themeColor: "#1a1033",
   viewportFit: "cover",
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" className={`${display.variable} ${bodyFont.variable}`}>
+    <html lang="en" className={bodyFont.variable}>
       <body className="font-sans">{children}</body>
     </html>
   );
