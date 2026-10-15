@@ -175,5 +175,12 @@ export function resourcesFor(region: string): ResolvedResources {
   };
 }
 
+// Urgent "see a doctor today" lines for the R9 doctor screen (Safety Pack section 2, 16 Oct).
+// Only the UK and Germany have one; elsewhere the screen shows the emergency button only.
+export const DOCTOR_LINES: Partial<Record<CountryCode, Contact>> = {
+  GB: { label: "NHS 111", display: "111", tel: "111", note: "24/7, free" },
+  DE: { label: "Doctor on call (not life-threatening)", display: "116117", tel: "116117", note: "Out of hours, free" },
+};
+
 // Ready text for "Message someone I trust" (Safety Pack section 2). Opens the phone's own messages app.
 export const TRUSTED_MESSAGE = "Hey, I'm not feeling great. Can you call me or come over?";

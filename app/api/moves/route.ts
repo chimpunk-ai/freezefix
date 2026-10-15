@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { keywordCheck, highest, type RiskLevel, type RiskResult, type HelpScreen } from "@/lib/risk";
+import { keywordCheck, othersCheck, highest, type RiskLevel, type RiskResult, type HelpScreen } from "@/lib/risk";
 import { buildSystemPrompt, buildUserMessage, SCREENSHOT_READER_PROMPT, MOMENTS, type MomentId } from "@/lib/prompt";
 import { BUILT_IN_MOVES, GROUNDING_MOVES, cleanMoves, type Move } from "@/lib/moves";
 import { logEvent } from "@/lib/log";
@@ -29,7 +29,7 @@ type Reply = {
 const MAX_CHARS = 400;
 const MAX_VOICE_CHARS = 1200;
 const MAX_IMAGE_CHARS = 2_800_000; // ~2 MB image as base64
-const VALID_FLAGS: HelpScreen[] = ["emergency", "crisis", "psychosis", "mixed", "doctor", "under18"];
+const VALID_FLAGS: HelpScreen[] = ["emergency", "crisis", "psychosis", "mixed", "doctor", "under18", "worried"];
 const IMAGE_TYPES = ["image/jpeg", "image/png", "image/webp"];
 
 export async function POST(req: Request) {
@@ -66,7 +66,8 @@ export async function POST(req: Request) {
     r.underage || r.level >= 3 || (r.level === 2 && !!r.screen && !acked.includes(r.screen));
 
   // 0) Screenshot: read it as text FIRST, so the safety check can run on it.
-  let screenshotText = "";
+  let shotMe = "";
+  let shotThem = "";
   if (body.image) {
     const img = parseImage(body.image);
     if (!img) return respond({ error: "bad_image" }, 400);
@@ -80,12 +81,15 @@ export async function POST(req: Request) {
         { type: "image", source: { type: "base64", media_type: img.type, data: img.data } },
         { type: "text", text: "Read this screenshot." },
       ], 900);
-      const parsed = parseJson(raw) as { has_people?: boolean; text?: string } | null;
-      if (parsed?.has_people) {
+      const parsed = parseJson(raw) as { kind?: string; me?: string; them?: string } | null;
+      if (!parsed || parsed.kind !== "chat") {
+        // Rejected kindly, never described, never stored (Safety Pack section 9).
+        if (parsed?.kind === "sexual_minor") await logEvent({ kind: "risk", value: 4, moment, country });
         await refundQuota(req, deviceId, "screenshot");
-        return respond({ error: "people_photo" }, 422);
+        return respond({ error: "not_chat" }, 422);
       }
-      screenshotText = String(parsed?.text ?? "").slice(0, 1500);
+      shotMe = String(parsed.me ?? "").slice(0, 1500);
+      shotThem = String(parsed.them ?? "").slice(0, 1500);
     } catch {
       await refundQuota(req, deviceId, "screenshot");
       return respond({ error: "ai_unavailable" }, 503);
@@ -94,8 +98,9 @@ export async function POST(req: Request) {
 
   // 1) Keyword check in code, BEFORE the model (Safety Pack section 5),
   //    on everything the user sent: typed words, voice transcript and screenshot text.
-  const allText = [text, voice, screenshotText].filter(Boolean).join("\n");
-  const keyword = keywordCheck(allText);
+  //    Other people's words in a screenshot are checked too (a friend in crisis, a threat).
+  const userText = [text, voice, shotMe].filter(Boolean).join("\n");
+  const keyword = highest([keywordCheck(userText), othersCheck(shotThem)]);
   if (mustRoute(keyword)) {
     await logEvent({ kind: "risk", value: keyword.level, moment, country });
     return respond(routeOnly(keyword));
@@ -123,7 +128,7 @@ export async function POST(req: Request) {
     const raw = await callClaude(
       apiKey,
       buildSystemPrompt({ groundingOnly: grounding }),
-      buildUserMessage(moment, text, { voice, screenshot: screenshotText }),
+      buildUserMessage(moment, text, { voice, screenshotMe: shotMe, screenshotThem: shotThem }),
       700
     );
     const parsed = parseJson(raw) as { risk_level?: number; flag?: string; moves?: unknown } | null;
@@ -132,7 +137,7 @@ export async function POST(req: Request) {
     const flag = VALID_FLAGS.includes(parsed?.flag as HelpScreen) ? (parsed!.flag as HelpScreen) : null;
     // A flag always lifts the level to at least the level that flag belongs to.
     const flagLevel: RiskLevel =
-      flag === "emergency" || flag === "under18" ? 4 : flag === "crisis" ? 3 : flag ? 2 : 0;
+      flag === "emergency" || flag === "under18" ? 4 : flag === "crisis" || flag === "worried" ? 3 : flag ? 2 : 0;
     const level = Math.max(modelLevel, flagLevel) as RiskLevel;
     const modelResult: RiskResult = {
       level,

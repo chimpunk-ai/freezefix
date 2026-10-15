@@ -5,7 +5,8 @@ import { useRef, useState } from "react";
 // Lets the user add ONE screenshot (e.g. a chat they can't reply to).
 // The image is shrunk on the phone and re-drawn, which also strips location and other hidden
 // data. It is sent to the AI once to read the text, then thrown away. Never stored.
-// No camera button in the beta: screenshots only (founder decision 16 Oct; camera comes later).
+// No camera button in the beta: chat screenshots only (founder decision 16 Oct; camera comes later).
+// Wording from Safety Pack section 9.
 
 const MAX_SIDE = 1600;
 
@@ -71,6 +72,10 @@ export default function ScreenshotPicker({ image, onChange }: Props) {
 
   return (
     <div className="flex flex-col gap-2">
+      <p className="text-center text-xs leading-relaxed text-ink-faint">
+        Chat screenshots only. Crop or cover other people&apos;s names and photos first. Our AI reads the text to get your
+        moves, then it&apos;s gone from FreezeFix.
+      </p>
       <input ref={input} type="file" accept="image/png,image/jpeg,image/webp" className="hidden" onChange={pick} />
       <button
         onClick={() => input.current?.click()}
@@ -80,7 +85,7 @@ export default function ScreenshotPicker({ image, onChange }: Props) {
         <ImageIcon />
         {busy ? "Getting it ready…" : "Add a screenshot"}
       </button>
-      <p className="text-center text-xs text-ink-faint">Screenshots only, no photos of people. Crop out names if you can.</p>
+
       {note && <p className="text-center text-sm text-ink-faint">{note}</p>}
     </div>
   );

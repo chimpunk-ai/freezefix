@@ -1,6 +1,6 @@
 "use client";
 
-import { resourcesFor, TRUSTED_MESSAGE, VERIFIED_COUNTRIES, RESOURCES, type Contact } from "@/lib/resources";
+import { resourcesFor, TRUSTED_MESSAGE, VERIFIED_COUNTRIES, RESOURCES, DOCTOR_LINES, type Contact } from "@/lib/resources";
 import type { HelpScreen as HelpScreenId } from "@/lib/risk";
 
 // Help screens. Wording is copied exactly from Safety Pack v1.0 sections 2 and 6.
@@ -23,6 +23,7 @@ export default function HelpScreen({ screen, region, onRegionChange, onBack }: P
   let primary: Contact | undefined;
   let extra: Contact[] = [];
   let showTrusted = true;
+  let worried = false;
 
   switch (screen) {
     case "emergency":
@@ -68,16 +69,30 @@ export default function HelpScreen({ screen, region, onRegionChange, onBack }: P
       break;
     }
     case "doctor": {
-      // R9 (repeated vomiting). The Safety Pack gives the routing but no exact wording yet:
-      // DRAFT text, sent to Safety & Trust for approval before public launch.
-      const line = r.urgentMentalHealth[0];
+      // R9 repeated vomiting. Wording approved by Safety & Trust on 16 Oct (Safety Pack section 2).
+      // Urgent line: 111 in the UK, 116117 in Germany. Elsewhere, only the emergency button.
+      const urgent = DOCTOR_LINES[r.code];
       lines = [
-        "Being sick for hours needs a doctor's eyes today.",
+        "Being sick for hours needs a doctor to check you today.",
         "Sip water slowly and stay with someone if you can.",
         `If you can't keep water down, feel faint or very unwell, call ${emNumber}.`,
       ];
+      primary = urgent ?? em;
+      extra = urgent ? [em] : [];
+      break;
+    }
+    case "worried": {
+      // Someone else in a screenshot is in crisis (Safety Pack section 9).
+      // Emergency number first; the country crisis line also helps people worried about someone.
+      lines = [
+        "You did the right thing showing this.",
+        "Message them now: \u201cI'm here. Can I call you?\u201d",
+        `If they might be in danger right now, call ${emNumber}.`,
+      ];
       primary = em;
-      extra = line ? [line] : [];
+      extra = r.crisis.slice(0, 2);
+      showTrusted = false;
+      worried = true;
       break;
     }
     case "under18": {
@@ -112,6 +127,15 @@ export default function HelpScreen({ screen, region, onRegionChange, onBack }: P
             <ContactButton key={i} contact={c} />
           ))}
         </div>
+      )}
+
+      {worried && (
+        <a
+          href={smsHref(undefined, "I'm here. Can I call you?")}
+          className="rounded-2xl border border-line bg-card px-5 py-4 text-center text-lg font-medium text-ink"
+        >
+          Message them now
+        </a>
       )}
 
       {showTrusted && (

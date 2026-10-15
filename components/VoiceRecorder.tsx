@@ -78,7 +78,7 @@ export default function VoiceRecorder({ onText, onLimit }: Props) {
     const secs = Math.min(MAX_SECONDS, Math.round((Date.now() - started.current) / 1000));
     if (secs < 1 || blob.size < 1000) {
       setState("idle");
-      setNote("That was too short. Hold on a sec and try again.");
+      setNote("Couldn't catch that. Type it in a few words?");
       return;
     }
     const form = new FormData();
@@ -96,9 +96,9 @@ export default function VoiceRecorder({ onText, onLimit }: Props) {
       } else if (data.error === "voice_off") {
         setNote("Voice notes aren't switched on yet. You can type instead.");
       } else if (data.error === "empty") {
-        setNote("Couldn't catch any words. Try again a bit closer to the mic.");
+        setNote("Couldn't catch that. Type it in a few words?");
       } else {
-        setNote("That didn't go through. Try again, or type instead.");
+        setNote("Couldn't catch that. Type it in a few words?");
       }
     } catch {
       setNote("That didn't go through. Try again, or type instead.");

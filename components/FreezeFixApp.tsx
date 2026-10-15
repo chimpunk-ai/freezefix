@@ -220,7 +220,7 @@ export default function FreezeFixApp() {
       if (!res.ok) {
         const err = ((await res.json().catch(() => ({}))) as { error?: string }).error;
         const notes: Record<string, string> = {
-          people_photo: "That looks like a photo of people. For now FreezeFix only takes screenshots, like a chat or an email.",
+          not_chat: "This one's not a chat screenshot, so we can't use it. Type it in a few words instead.",
           screenshot_limit: "That's today's screenshots. You can still type or say it, and help is always here.",
           screenshot_off: "Screenshots aren't switched on yet. You can type instead.",
           bad_image: "Couldn't read that image. Try another screenshot.",

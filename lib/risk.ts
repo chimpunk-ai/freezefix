@@ -12,13 +12,17 @@ export type HelpScreen =
   | "psychosis" // R5
   | "mixed" // R3
   | "doctor" // R9 repeated vomiting
-  | "under18"; // R8
+  | "under18" // R8
+  | "worried"; // someone ELSE in a screenshot is in crisis (Safety Pack section 9)
 
 export type RiskResult = {
   level: RiskLevel;
   screen: HelpScreen | null;
   underage: boolean;
+  cause?: Cause; // which red flag fired (used for other people's words in screenshots)
 };
+
+export type Cause = "r1" | "r2" | "r3" | "r4" | "r4plan" | "r5" | "r6" | "r7" | "r8" | "r9" | "watch";
 
 export const NO_RISK: RiskResult = { level: 0, screen: null, underage: false };
 
@@ -31,6 +35,7 @@ const PATTERNS = {
     [
       "chest (?:pain|hurts?|is hurting|feels? (?:tight|heavy|weird)|pressure|tight)",
       "(?:tight|crushing|heavy) chest",
+      "chest.{0,20}(?:hurts?|hurting|pain|tight|pressure)",
       "heart attack",
       `heart(?:'s| is)? (?:\\w+ )?(?:${WONT} (?:slow|settle|stop|calm))`,
       "heart(?:'s| is)? going (?:crazy|mental|mad|1\\d\\d|2\\d\\d)",
@@ -75,6 +80,10 @@ const PATTERNS = {
     [
       "(?:want|going|gonna|about) to (?:hurt|kill|stab|attack|beat up) (?:him|her|them|someone|somebody|my|that)",
       "threaten(?:ing|ed) (?:me|to)",
+      "i know where you live",
+      "watch your back",
+      "you'?re (?:dead|gonna die|going to die)",
+      "(?:i'?ll|i will|gonna|going to) (?:find|get|hurt|kill) you",
       "(?:telling|told|tell) me to (?:hurt|kill|stab|attack)",
       "smash (?:his|her|their|someone'?s|somebody'?s|your) (?:face|head)",
       "(?:want|going|gonna) to (?:smash|batter|punch|deck|glass|knock out) (?:him|her|them|someone|somebody)",
@@ -104,6 +113,9 @@ const PATTERNS = {
       "(?:don'?t|do not) want to (?:be here|live|exist|wake up|be alive)",
       "no (?:reason|point) (?:to|in) liv",
       "(?:wish|want) (?:i was|i were|to be) dead",
+      "bye everyone",
+      "goodbye (?:everyone|all|forever|world)",
+      "this is (?:my )?goodbye",
     ].join("|")
   ),
   // R4 escalators: a plan, means, or it's happening now
@@ -282,9 +294,15 @@ const PATTERNS = {
 const HI = {
   r1: new RegExp(
     [
-      "(?:seene|chhati|chhaati|chest) (?:me|mein|main) (?:dard|pain|bhaari|jakdan|pressure)",
+      "(?:seene|chhati|chhaati|chest) (?:me|mein|main) .{0,20}(?:dard|pain|bhaari|jakdan|pressure)",
       "dil (?:bahut )?(?:zor se |tez )?(?:dhadak|dhak dhak).{0,20}(?:ruk nahi|band nahi|kam nahi)",
       "dil ka daura",
+      "dil (?:bahut |bohot |boht |itna |kaafi )?(?:tez|tej|zor se) (?:hai|chal|dhadak|ho)",
+      "dil ruk (?:jayega|jaega|raha)",
+      "heart attack aa",
+      "दिल बहुत तेज़",
+      "दिल बहुत तेज",
+      "बेहोश होने",
       "behosh (?:ho(?:ne)? wala|hone laga|ho raha|ho rahi)",
       "सीने में दर्द",
       "छाती में दर्द",
@@ -317,6 +335,8 @@ const HI = {
       "jaan se (?:maar|mar)",
       "(?:dhamki|dhamka) (?:de|di|rahe|raha)",
       "(?:main|mai|me) (?:safe|surakshit) (?:nahi|nahin) (?:hoon|hu|hun)",
+      "ghar (?:pe|par|me|mein) safe (?:nahi|nahin)",
+      "dhamki de (?:raha|rahi|rahe)",
       "जान से मार",
       "मार दूंगा",
       "धमकी",
@@ -325,6 +345,12 @@ const HI = {
   r4: new RegExp(
     [
       "marna chaht?(?:a|i) (?:hoon|hu|hun)",
+      "\\bmarna hai\\b",
+      "mar (?:jana|jaana) hai",
+      "suicide kar (?:lunga|lungi|loon|lu)",
+      "mere bina sab khush",
+      "khud ko hurt (?:kiya|kar)",
+      "haath kaat",
       "mar ?(?:jana|jaana|jaun|jaaun|jaunga|jaungi|jaaunga) chaht?",
       "mar jaunga|mar jaungi|mar jaaun",
       "khud ?kushi",
@@ -353,6 +379,10 @@ const HI = {
       "\\bpeg\\b",
       "(?:goli|goliyan|tablet|pills) (?:li|le li|khayi|kha li|khaayi)",
       "nasha (?:aur|bhi)",
+      "peg (?:laga|maar)",
+      "kuch aur bhi (?:liya|le liya|khaya)",
+      "(?:coke|md|mdma|molly) ke saath",
+      "daaru ke saath|daru ke saath",
       "शराब",
       "दारू",
       "गोली",
@@ -365,16 +395,31 @@ const HI = {
       "(?:phone|tv|camera) (?:se )?(?:control|dekh) (?:kar rahe|kar raha|rahe hain)",
       "sab (?:mere|mujhe) (?:khilaf|against) (?:saazish|plan|plot)",
       "saazish",
+      "koi (?:mujhe )?control kar (?:raha|rahi|rahe)",
+      "(?:cheezein|cheeze|log) dikh (?:rahi|rahe) (?:hai |hain )?jo (?:hai hi nahi|hain hi nahi)",
+      "(?:tv|phone) (?:mujhe )?message bhej (?:raha|rahi)",
+      "कोई कंट्रोल कर",
+      "आवाज़ें सुनाई",
       "आवाज़ें सुन",
       "आवाजें सुन",
       "साज़िश",
     ].join("|")
   ),
-  r9: new RegExp(["(?:ulti|ultee|ultiyan|ultiyaan) (?:ruk nahi|band nahi|subah se|ghanton se|baar baar)", "उल्टी"].join("|")),
+  r9: new RegExp(
+    [
+      "(?:ulti|ultee|ultiyan|ultiyaan) (?:ruk nahi|band nahi|subah se|ghanton se|baar baar)",
+      "(?:subah|kal raat|raat) se ulti",
+      "ulti.{0,30}(?:ruk|band) (?:hi )?(?:nahi|nhi)",
+      "उल्टी",
+    ].join("|")
+  ),
   r8: new RegExp(
     [
       "(?:main|mai|meri umar|meri age|age) 1[0-7] (?:saal|sal|ka|ki|hai|hoon|hu)",
-      "\\bclass (?:8|9|10|11)(?:th)?\\b",
+      "\\bclass (?:8|9|10|11|12)(?:th)?\\b",
+      "school (?:mein|me) (?:hoon|hu|hun|padhta|padhti)",
+      "१[०-७] साल",
+      "स्कूल में",
       "\\b(?:8|9|10|11)(?:th|vi|vin|veen) (?:class|kaksha|me|mein)",
       "board (?:exam|pariksha)",
       "(?:mummy|papa|mumma|ammi|abbu) ko pata chal.{0,40}(?:school|tuition|coaching|class)",
@@ -382,7 +427,10 @@ const HI = {
     ].join("|")
   ),
   hopeless: new RegExp(["kya fayda|koi fayda nahi|kya matlab hai (?:jeene|zindagi)", "thak gaya (?:hoon|hu) (?:zindagi|sab)", "kisi ko (?:fark|farak) nahi"].join("|")),
-  watch: new RegExp(["kya fayda", "bahut (?:zyada )?high", "edible", "pagal ho (?:raha|jaunga)", "dil tez", "kuch samajh nahi aa raha"].join("|")),
+  // Idioms like "mar gaya yaar" (dying of embarrassment) are Watch, never crisis (Safety Pack 9).
+  watch: new RegExp(
+    ["kya fayda", "bahut (?:zyada )?high", "edible", "pagal ho (?:raha|gaya|jaunga)", "mar gaya yaar", "dimaa?g kharab", "kuch samajh nahi aa raha"].join("|")
+  ),
 } as const;
 
 type PatternKey = keyof typeof HI;
@@ -405,25 +453,45 @@ export function keywordCheck(text: string): RiskResult {
 
   const hits: RiskResult[] = [];
 
-  if (hit("r8", t)) hits.push({ level: 4, screen: "under18", underage: true });
-  if (hit("r1", t) || hit("r2", t) || hit("r6", t) || hit("r7", t)) {
-    hits.push({ level: 4, screen: "emergency", underage: false });
+  if (hit("r8", t)) hits.push({ level: 4, screen: "under18", underage: true, cause: "r8" });
+  for (const c of ["r1", "r2", "r6", "r7"] as const) {
+    if (hit(c, t)) hits.push({ level: 4, screen: "emergency", underage: false, cause: c });
   }
   if (hit("r4", t)) {
     hits.push(
       hit("r4Plan", t)
-        ? { level: 4, screen: "emergency", underage: false }
-        : { level: 3, screen: "crisis", underage: false }
+        ? { level: 4, screen: "emergency", underage: false, cause: "r4plan" }
+        : { level: 3, screen: "crisis", underage: false, cause: "r4" }
     );
   }
   if (hit("hopeless", t) && (PATTERNS.means.test(t) || HI.r4Plan.test(t))) {
-    hits.push({ level: 4, screen: "emergency", underage: false });
+    hits.push({ level: 4, screen: "emergency", underage: false, cause: "r4plan" });
   }
-  if (hit("r5", t)) hits.push({ level: 2, screen: "psychosis", underage: false });
-  if (hit("r3", t)) hits.push({ level: 2, screen: "mixed", underage: false });
-  if (hit("r9", t)) hits.push({ level: 2, screen: "doctor", underage: false });
-  if (hit("watch", t)) hits.push({ level: 1, screen: null, underage: false });
+  if (hit("r5", t)) hits.push({ level: 2, screen: "psychosis", underage: false, cause: "r5" });
+  if (hit("r3", t)) hits.push({ level: 2, screen: "mixed", underage: false, cause: "r3" });
+  if (hit("r9", t)) hits.push({ level: 2, screen: "doctor", underage: false, cause: "r9" });
+  if (hit("watch", t)) hits.push({ level: 1, screen: null, underage: false, cause: "watch" });
 
+  return highest(hits);
+}
+
+// Risk in OTHER people's words (from a screenshot). Safety Pack section 9:
+// a friend in crisis -> "Worried about someone" screen (emergency number first at level 4);
+// a friend collapsed / can't breathe / took something -> Emergency; a threat -> Emergency.
+// Another person's age never triggers the under-18 stop.
+export function othersCheck(text: string): RiskResult {
+  const t = normalise(text);
+  if (!t) return NO_RISK;
+  const hits: RiskResult[] = [];
+  for (const c of ["r1", "r2", "r6", "r7"] as const) {
+    if (hit(c, t)) hits.push({ level: 4, screen: "emergency", underage: false, cause: c });
+  }
+  if (hit("r3", t)) hits.push({ level: 4, screen: "emergency", underage: false, cause: "r3" });
+  if (hit("r4", t) || (hit("hopeless", t) && (PATTERNS.means.test(t) || HI.r4Plan.test(t)))) {
+    const plan = hit("r4Plan", t) || PATTERNS.means.test(t);
+    hits.push({ level: plan ? 4 : 3, screen: "worried", underage: false, cause: plan ? "r4plan" : "r4" });
+  }
+  if (hit("r5", t) || hit("r9", t)) hits.push({ level: 2, screen: "worried", underage: false, cause: hit("r5", t) ? "r5" : "r9" });
   return highest(hits);
 }
 
@@ -445,6 +513,8 @@ function rank(s: HelpScreen | null): number {
       return 6;
     case "emergency":
       return 5;
+    case "worried":
+      return 4;
     case "crisis":
       return 4;
     case "psychosis":
