@@ -8,3 +8,19 @@ AI_MODEL=claude-haiku-5-5
 # Anonymous counts only (risk level, "Did it help?"). Leave empty to turn logging off.
 SUPABASE_URL=
 SUPABASE_ANON_KEY=
+
+# Voice notes (Budget & Ops picks the provider, HQ T33). Any OpenAI-style transcription API.
+# Leave empty and the voice button stays hidden.
+TRANSCRIBE_API_KEY=
+TRANSCRIBE_URL=https://api.openai.com/v1/audio/transcriptions
+TRANSCRIBE_MODEL=gpt-4o-mini-transcribe
+
+# Random secret used to hash device IDs and IPs for the daily limits. Any long random text.
+QUOTA_SALT=
+# Optional: screenshot cost guard per day (free / paid).
+SCREENSHOT_DAILY_LIMIT=10
+SCREENSHOT_DAILY_LIMIT_PAID=20
+
+# Switches for optional inputs. Keep "false" until HQ T31, T32 and T33 are Done.
+ENABLE_SCREENSHOTS=false
+ENABLE_VOICE=false

@@ -1,13 +1,17 @@
 import { NextResponse } from "next/server";
 import { keywordCheck, highest, type RiskLevel, type RiskResult, type HelpScreen } from "@/lib/risk";
-import { buildSystemPrompt, buildUserMessage, MOMENTS, type MomentId } from "@/lib/prompt";
+import { buildSystemPrompt, buildUserMessage, SCREENSHOT_READER_PROMPT, MOMENTS, type MomentId } from "@/lib/prompt";
 import { BUILT_IN_MOVES, GROUNDING_MOVES, cleanMoves, type Move } from "@/lib/moves";
 import { logEvent } from "@/lib/log";
+import { consumeQuota, refundQuota, readDeviceId, newDeviceId, deviceCookie } from "@/lib/quota";
+import { screenshotsOn } from "@/lib/features";
 
-// What the browser sends. We never store `text`.
+// What the browser sends. We never store any of it.
 type Body = {
   moment?: string;
-  text?: string;
+  text?: string; // typed words
+  voice?: string; // voice-note transcript (from /api/transcribe, shown to the user first)
+  image?: string; // screenshot as a data URL (resized on the phone, metadata stripped)
   groundingOnly?: boolean;
   country?: string;
   acknowledged?: string[]; // urgent help screens the user already saw and tapped "Back" on
@@ -23,7 +27,10 @@ type Reply = {
 };
 
 const MAX_CHARS = 400;
+const MAX_VOICE_CHARS = 1200;
+const MAX_IMAGE_CHARS = 2_800_000; // ~2 MB image as base64
 const VALID_FLAGS: HelpScreen[] = ["emergency", "crisis", "psychosis", "mixed", "doctor", "under18"];
+const IMAGE_TYPES = ["image/jpeg", "image/png", "image/webp"];
 
 export async function POST(req: Request) {
   let body: Body;
@@ -35,28 +42,69 @@ export async function POST(req: Request) {
 
   const moment = (body.moment && body.moment in MOMENTS ? body.moment : "alone") as MomentId;
   const text = String(body.text ?? "").slice(0, MAX_CHARS);
+  const voice = String(body.voice ?? "").slice(0, MAX_VOICE_CHARS);
   const groundingOnly = Boolean(body.groundingOnly);
   const country = String(body.country ?? "").slice(0, 8);
   const acked = Array.isArray(body.acknowledged)
     ? body.acknowledged.filter((s): s is HelpScreen => VALID_FLAGS.includes(s as HelpScreen))
     : [];
+  const apiKey = process.env.ANTHROPIC_API_KEY;
+
+  // Device cookie (only needed for the screenshot daily limit).
+  let deviceId = readDeviceId(req);
+  const isNewDevice = !deviceId;
+  if (!deviceId) deviceId = newDeviceId();
+  const respond = (payload: unknown, status = 200) => {
+    const res = NextResponse.json(payload, { status });
+    if (isNewDevice) res.headers.append("Set-Cookie", deviceCookie(deviceId!));
+    return res;
+  };
+
   // Help first: under-18 and crisis/emergency always stop the flow; an urgent (level 2)
   // screen stops it until the user has seen that screen and tapped "Back to FreezeFix".
   const mustRoute = (r: RiskResult) =>
     r.underage || r.level >= 3 || (r.level === 2 && !!r.screen && !acked.includes(r.screen));
 
-  // 1) Keyword check in code, BEFORE the model (Safety Pack section 5).
-  const keyword = keywordCheck(text);
+  // 0) Screenshot: read it as text FIRST, so the safety check can run on it.
+  let screenshotText = "";
+  if (body.image) {
+    const img = parseImage(body.image);
+    if (!img) return respond({ error: "bad_image" }, 400);
+    if (!apiKey || !screenshotsOn()) return respond({ error: "screenshot_off" }, 503);
+    const quota = await consumeQuota(req, deviceId, "screenshot");
+    if (!quota.allowed) {
+      return respond({ error: quota.reason === "limit" ? "screenshot_limit" : "screenshot_off", limit: quota.limit }, 429);
+    }
+    try {
+      const raw = await callClaude(apiKey, SCREENSHOT_READER_PROMPT, [
+        { type: "image", source: { type: "base64", media_type: img.type, data: img.data } },
+        { type: "text", text: "Read this screenshot." },
+      ], 900);
+      const parsed = parseJson(raw) as { has_people?: boolean; text?: string } | null;
+      if (parsed?.has_people) {
+        await refundQuota(req, deviceId, "screenshot");
+        return respond({ error: "people_photo" }, 422);
+      }
+      screenshotText = String(parsed?.text ?? "").slice(0, 1500);
+    } catch {
+      await refundQuota(req, deviceId, "screenshot");
+      return respond({ error: "ai_unavailable" }, 503);
+    }
+  }
+
+  // 1) Keyword check in code, BEFORE the model (Safety Pack section 5),
+  //    on everything the user sent: typed words, voice transcript and screenshot text.
+  const allText = [text, voice, screenshotText].filter(Boolean).join("\n");
+  const keyword = keywordCheck(allText);
   if (mustRoute(keyword)) {
     await logEvent({ kind: "risk", value: keyword.level, moment, country });
-    return NextResponse.json(routeOnly(keyword));
+    return respond(routeOnly(keyword));
   }
 
   const grounding = groundingOnly || acked.includes("mixed") || keyword.screen === "mixed";
   const fallback = grounding ? GROUNDING_MOVES : BUILT_IN_MOVES[moment];
 
   // 2) No AI key yet (local testing): use safe built-in moves.
-  const apiKey = process.env.ANTHROPIC_API_KEY;
   if (!apiKey) {
     const reply: Reply = {
       level: keyword.level,
@@ -67,32 +115,18 @@ export async function POST(req: Request) {
       source: "built-in",
     };
     if (keyword.level > 0) await logEvent({ kind: "risk", value: keyword.level, moment, country });
-    return NextResponse.json(reply);
+    return respond(reply);
   }
 
   // 3) Ask the AI. The model also checks risk; we use the HIGHER of the two.
   try {
-    const res = await fetch("https://api.anthropic.com/v1/messages", {
-      method: "POST",
-      headers: {
-        "x-api-key": apiKey,
-        "anthropic-version": "2023-06-01",
-        "content-type": "application/json",
-      },
-      body: JSON.stringify({
-        model: process.env.AI_MODEL || "claude-haiku-5-5",
-        max_tokens: 600,
-        temperature: 0.4,
-        system: buildSystemPrompt({ groundingOnly: grounding }),
-        messages: [{ role: "user", content: buildUserMessage(moment, text) }],
-      }),
-      signal: AbortSignal.timeout(20000),
-    });
-    if (!res.ok) throw new Error(`ai_status_${res.status}`);
-
-    const data = (await res.json()) as { content?: { type: string; text?: string }[] };
-    const raw = (data.content ?? []).filter((c) => c.type === "text").map((c) => c.text ?? "").join("");
-    const parsed = parseJson(raw);
+    const raw = await callClaude(
+      apiKey,
+      buildSystemPrompt({ groundingOnly: grounding }),
+      buildUserMessage(moment, text, { voice, screenshot: screenshotText }),
+      700
+    );
+    const parsed = parseJson(raw) as { risk_level?: number; flag?: string; moves?: unknown } | null;
 
     const modelLevel = clampLevel(parsed?.risk_level);
     const flag = VALID_FLAGS.includes(parsed?.flag as HelpScreen) ? (parsed!.flag as HelpScreen) : null;
@@ -112,7 +146,7 @@ export async function POST(req: Request) {
     const final = highest([keyword, modelResult]);
     if (final.level > 0) await logEvent({ kind: "risk", value: final.level, moment, country });
 
-    if (mustRoute(final)) return NextResponse.json(routeOnly(final));
+    if (mustRoute(final)) return respond(routeOnly(final));
 
     const reply: Reply = {
       level: final.level,
@@ -122,11 +156,44 @@ export async function POST(req: Request) {
       moves: cleanMoves(parsed?.moves, fallback),
       source: "ai",
     };
-    return NextResponse.json(reply);
+    return respond(reply);
   } catch {
     // Safety Pack: if the AI call fails, show the emergency link and "Try again", never a blank screen.
-    return NextResponse.json({ error: "ai_unavailable" }, { status: 503 });
+    return respond({ error: "ai_unavailable" }, 503);
   }
+}
+
+type ContentBlock =
+  | { type: "text"; text: string }
+  | { type: "image"; source: { type: "base64"; media_type: string; data: string } };
+
+async function callClaude(apiKey: string, system: string, content: string | ContentBlock[], maxTokens: number) {
+  const res = await fetch("https://api.anthropic.com/v1/messages", {
+    method: "POST",
+    headers: {
+      "x-api-key": apiKey,
+      "anthropic-version": "2023-06-01",
+      "content-type": "application/json",
+    },
+    body: JSON.stringify({
+      model: process.env.AI_MODEL || "claude-haiku-5-5",
+      max_tokens: maxTokens,
+      temperature: 0.4,
+      system,
+      messages: [{ role: "user", content }],
+    }),
+    signal: AbortSignal.timeout(25000),
+  });
+  if (!res.ok) throw new Error(`ai_status_${res.status}`);
+  const data = (await res.json()) as { content?: { type: string; text?: string }[] };
+  return (data.content ?? []).filter((c) => c.type === "text").map((c) => c.text ?? "").join("");
+}
+
+function parseImage(dataUrl: string): { type: string; data: string } | null {
+  if (typeof dataUrl !== "string" || dataUrl.length > MAX_IMAGE_CHARS) return null;
+  const m = /^data:(image\/(?:jpeg|png|webp));base64,([A-Za-z0-9+/=]+)$/.exec(dataUrl);
+  if (!m || !IMAGE_TYPES.includes(m[1])) return null;
+  return { type: m[1], data: m[2] };
 }
 
 function routeOnly(r: RiskResult): Reply {
@@ -146,7 +213,7 @@ function clampLevel(v: unknown): RiskLevel {
   return Math.max(0, Math.min(4, Math.round(n))) as RiskLevel;
 }
 
-function parseJson(raw: string): { risk_level?: number; flag?: string; moves?: unknown } | null {
+function parseJson(raw: string): Record<string, unknown> | null {
   const start = raw.indexOf("{");
   const end = raw.lastIndexOf("}");
   if (start === -1 || end <= start) return null;

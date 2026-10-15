@@ -54,6 +54,9 @@ const BANNED = [
   /psychosis|anxiety disorder|\bgad\b|\bchs\b|diagnos/i,
   /therap(?:y|ist)|\btreat(?:s|ment)?\b|\bcures?\b|\bheal(?:s|ed|ing)?\b/i,
   /https?:|www\.|\.com\b|\.org\b/i,
+  // Hindi / Hinglish versions of the false-reassurance and diagnosis rules
+  /theek ho jaoge|theek ho jaega|kuch nahi hoga|bas anxiety|sirf anxiety|sirf panic|tum theek ho|tu theek hai/i,
+  /ठीक हो जाओगे|कुछ नहीं होगा|सिर्फ एंग्जायटी/,
   /\d{3,}/, // never a phone number
 ];
 

@@ -275,6 +275,121 @@ const PATTERNS = {
   ),
 } as const;
 
+
+// Hindi (Devanagari) and Hinglish (Hindi in English letters) red flags.
+// DRAFT starter list by PB, 16 Oct 2026. Safety & Trust must review and extend it (HQ T31)
+// before Hinglish is promoted. Same levels as the English list above.
+const HI = {
+  r1: new RegExp(
+    [
+      "(?:seene|chhati|chhaati|chest) (?:me|mein|main) (?:dard|pain|bhaari|jakdan|pressure)",
+      "dil (?:bahut )?(?:zor se |tez )?(?:dhadak|dhak dhak).{0,20}(?:ruk nahi|band nahi|kam nahi)",
+      "dil ka daura",
+      "behosh (?:ho(?:ne)? wala|hone laga|ho raha|ho rahi)",
+      "सीने में दर्द",
+      "छाती में दर्द",
+      "दिल का दौरा",
+    ].join("|")
+  ),
+  r2: new RegExp(
+    [
+      "saa?ns? (?:nahi|nahin|nai) (?:aa|le|ho) (?:rahi|raha|pa)",
+      "saa?ns? (?:lene me|lene mein) (?:dikkat|problem|takleef)",
+      "dam ghut",
+      "साँस नहीं",
+      "सांस नहीं",
+      "दम घुट",
+    ].join("|")
+  ),
+  r6: new RegExp(
+    [
+      "\\bbehosh\\b",
+      "hosh (?:nahi|nahin|me nahi)",
+      "(?:uth|jaag) (?:nahi|nahin) (?:raha|rahi)",
+      "daure? pad",
+      "बेहोश",
+      "होश नहीं",
+    ].join("|")
+  ),
+  r7: new RegExp(
+    [
+      "(?:maar|mar) (?:dunga|dungi|daalunga|daalungi|dalunga)",
+      "jaan se (?:maar|mar)",
+      "(?:dhamki|dhamka) (?:de|di|rahe|raha)",
+      "(?:main|mai|me) (?:safe|surakshit) (?:nahi|nahin) (?:hoon|hu|hun)",
+      "जान से मार",
+      "मार दूंगा",
+      "धमकी",
+    ].join("|")
+  ),
+  r4: new RegExp(
+    [
+      "marna chaht?(?:a|i) (?:hoon|hu|hun)",
+      "mar ?(?:jana|jaana|jaun|jaaun|jaunga|jaungi|jaaunga) chaht?",
+      "mar jaunga|mar jaungi|mar jaaun",
+      "khud ?kushi",
+      "aatm ?hatya|atm ?hatya",
+      "suicide kar",
+      "jeen?e? ka (?:mann|man|mood) nahi",
+      "jeena nahi (?:chaht|hai)",
+      "zindagi (?:khatam|khtm) kar",
+      "(?:khud|apne aap) ko (?:khatam|khtm|maar|hurt|nuksaan|nuksan|kaat)",
+      "sab (?:khatam|khtm) kar (?:du|doon|dunga)",
+      "मरना चाहता",
+      "मरना चाहती",
+      "आत्महत्या",
+      "खुदकुशी",
+      "जीना नहीं",
+      "खुद को (?:खत्म|मार|नुकसान)",
+      "ज़िंदगी खत्म",
+      "जिंदगी खत्म",
+    ].join("|")
+  ),
+  r4Plan: new RegExp(["aaj raat", "abhi", "goliyan|goliyaan|goli", "rassi", "pul se", "kood", "chaku|chaaku", "आज रात", "अभी", "गोली", "रस्सी"].join("|")),
+  r3: new RegExp(
+    [
+      "daaru|\\bdaru\\b",
+      "sharaab|sharab",
+      "\\bpeg\\b",
+      "(?:goli|goliyan|tablet|pills) (?:li|le li|khayi|kha li|khaayi)",
+      "nasha (?:aur|bhi)",
+      "शराब",
+      "दारू",
+      "गोली",
+    ].join("|")
+  ),
+  r5: new RegExp(
+    [
+      "aa?wa?a?z(?:ein|en|e)? (?:sun|aa rahi|aa rahe|keh rahi|bol rahi)",
+      "(?:kuch|log) dikh (?:raha|rahe|rahi) jo (?:hai hi nahi|nahi hai|koi nahi)",
+      "(?:phone|tv|camera) (?:se )?(?:control|dekh) (?:kar rahe|kar raha|rahe hain)",
+      "sab (?:mere|mujhe) (?:khilaf|against) (?:saazish|plan|plot)",
+      "saazish",
+      "आवाज़ें सुन",
+      "आवाजें सुन",
+      "साज़िश",
+    ].join("|")
+  ),
+  r9: new RegExp(["(?:ulti|ultee|ultiyan|ultiyaan) (?:ruk nahi|band nahi|subah se|ghanton se|baar baar)", "उल्टी"].join("|")),
+  r8: new RegExp(
+    [
+      "(?:main|mai|meri umar|meri age|age) 1[0-7] (?:saal|sal|ka|ki|hai|hoon|hu)",
+      "\\bclass (?:8|9|10|11)(?:th)?\\b",
+      "\\b(?:8|9|10|11)(?:th|vi|vin|veen) (?:class|kaksha|me|mein)",
+      "board (?:exam|pariksha)",
+      "(?:mummy|papa|mumma|ammi|abbu) ko pata chal.{0,40}(?:school|tuition|coaching|class)",
+      "(?:school|tuition|coaching).{0,40}(?:mummy|papa|mumma|ammi|abbu) ko pata",
+    ].join("|")
+  ),
+  hopeless: new RegExp(["kya fayda|koi fayda nahi|kya matlab hai (?:jeene|zindagi)", "thak gaya (?:hoon|hu) (?:zindagi|sab)", "kisi ko (?:fark|farak) nahi"].join("|")),
+  watch: new RegExp(["kya fayda", "bahut (?:zyada )?high", "edible", "pagal ho (?:raha|jaunga)", "dil tez", "kuch samajh nahi aa raha"].join("|")),
+} as const;
+
+type PatternKey = keyof typeof HI;
+function hit(key: PatternKey, t: string): boolean {
+  return (PATTERNS as Record<string, RegExp>)[key].test(t) || HI[key].test(t);
+}
+
 function normalise(text: string): string {
   return (text || "")
     .toLowerCase()
@@ -290,24 +405,24 @@ export function keywordCheck(text: string): RiskResult {
 
   const hits: RiskResult[] = [];
 
-  if (PATTERNS.r8.test(t)) hits.push({ level: 4, screen: "under18", underage: true });
-  if (PATTERNS.r1.test(t) || PATTERNS.r2.test(t) || PATTERNS.r6.test(t) || PATTERNS.r7.test(t)) {
+  if (hit("r8", t)) hits.push({ level: 4, screen: "under18", underage: true });
+  if (hit("r1", t) || hit("r2", t) || hit("r6", t) || hit("r7", t)) {
     hits.push({ level: 4, screen: "emergency", underage: false });
   }
-  if (PATTERNS.r4.test(t)) {
+  if (hit("r4", t)) {
     hits.push(
-      PATTERNS.r4Plan.test(t)
+      hit("r4Plan", t)
         ? { level: 4, screen: "emergency", underage: false }
         : { level: 3, screen: "crisis", underage: false }
     );
   }
-  if (PATTERNS.hopeless.test(t) && PATTERNS.means.test(t)) {
+  if (hit("hopeless", t) && (PATTERNS.means.test(t) || HI.r4Plan.test(t))) {
     hits.push({ level: 4, screen: "emergency", underage: false });
   }
-  if (PATTERNS.r5.test(t)) hits.push({ level: 2, screen: "psychosis", underage: false });
-  if (PATTERNS.r3.test(t)) hits.push({ level: 2, screen: "mixed", underage: false });
-  if (PATTERNS.r9.test(t)) hits.push({ level: 2, screen: "doctor", underage: false });
-  if (PATTERNS.watch.test(t)) hits.push({ level: 1, screen: null, underage: false });
+  if (hit("r5", t)) hits.push({ level: 2, screen: "psychosis", underage: false });
+  if (hit("r3", t)) hits.push({ level: 2, screen: "mixed", underage: false });
+  if (hit("r9", t)) hits.push({ level: 2, screen: "doctor", underage: false });
+  if (hit("watch", t)) hits.push({ level: 1, screen: null, underage: false });
 
   return highest(hits);
 }

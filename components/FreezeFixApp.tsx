@@ -2,6 +2,9 @@
 
 import { useEffect, useState } from "react";
 import HelpScreen, { ContactButton } from "@/components/HelpScreen";
+import VoiceRecorder from "@/components/VoiceRecorder";
+import ScreenshotPicker from "@/components/ScreenshotPicker";
+import SiteFooter from "@/components/SiteFooter";
 import { SAFETY_BUTTONS, keywordCheck, type HelpScreen as HelpScreenId, type RiskLevel, type RiskResult } from "@/lib/risk";
 import { MOMENTS, type MomentId } from "@/lib/prompt";
 import { detectRegion } from "@/lib/country";
@@ -21,10 +24,17 @@ type Step =
   | "doing"
   | "thanks"
   | "error"
-  | "help";
+  | "help"
+  | "consent"
+  | "consent-declined"
+  | "settings"
+  | "delete-confirm"
+  | "deleted";
 
 // Browser storage keys. Nothing here leaves the phone.
 const K_ADULT = "ff_adult"; // "yes" once the 18+ gate is passed
+const K_ADULT_DATE = "ff_adult_date"; // date the age was confirmed (never a birth date)
+const K_CONSENT = "ff_health_consent"; // date the health-data consent box was ticked
 const K_BLOCK = "ff_block_until"; // under-18 answer blocks this device for 24h
 const K_REGION = "ff_region"; // country picked in the switcher
 const K_LEVEL = "ff_session_level"; // highest risk level this session (sessionStorage)
@@ -76,6 +86,19 @@ export default function FreezeFixApp() {
   const [help, setHelp] = useState<{ screen: HelpScreenId; returnTo: Step | "continue" | "words-ack" | null } | null>(null);
   const [helped, setHelped] = useState<boolean | null>(null);
   const [acked, setAcked] = useState<HelpScreenId[]>([]);
+  const [voiceText, setVoiceText] = useState("");
+  const [image, setImage] = useState<string | null>(null);
+  const [inputNote, setInputNote] = useState<string | null>(null);
+  const [consentTicked, setConsentTicked] = useState(false);
+  const [features, setFeatures] = useState({ ai: false, voice: false, screenshot: false });
+
+  // Which optional inputs are switched on (voice needs a transcription key, screenshots need the AI).
+  useEffect(() => {
+    fetch("/api/config")
+      .then((r) => r.json())
+      .then((f) => setFeatures({ ai: !!f.ai, voice: !!f.voice, screenshot: !!f.screenshot }))
+      .catch(() => {});
+  }, []);
 
   // First load: 18+ gate, 24h block, country, session risk level.
   useEffect(() => {
@@ -161,6 +184,9 @@ export default function FreezeFixApp() {
 
   function resetFlow() {
     setText("");
+    setVoiceText("");
+    setImage(null);
+    setInputNote(null);
     setMoves([]);
     setPicked(null);
     setCheckQuestion(null);
@@ -174,16 +200,39 @@ export default function FreezeFixApp() {
       return;
     }
     // Same keyword check in the browser first, so help shows instantly even offline.
-    if (route(keywordCheck(text), ack)) return;
+    if (route(keywordCheck([text, voiceText].filter(Boolean).join("\n")), ack)) return;
 
     setStep("thinking");
     try {
       const res = await fetch("/api/moves", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ moment, text, groundingOnly: mixed || ack.includes("mixed"), country: region, acknowledged: ack }),
+        body: JSON.stringify({
+          moment,
+          text,
+          voice: voiceText || undefined,
+          image: image || undefined,
+          groundingOnly: mixed || ack.includes("mixed"),
+          country: region,
+          acknowledged: ack,
+        }),
       });
-      if (!res.ok) throw new Error(String(res.status));
+      if (!res.ok) {
+        const err = ((await res.json().catch(() => ({}))) as { error?: string }).error;
+        const notes: Record<string, string> = {
+          people_photo: "That looks like a photo of people. For now FreezeFix only takes screenshots, like a chat or an email.",
+          screenshot_limit: "That's today's screenshots. You can still type or say it, and help is always here.",
+          screenshot_off: "Screenshots aren't switched on yet. You can type instead.",
+          bad_image: "Couldn't read that image. Try another screenshot.",
+        };
+        if (err && notes[err]) {
+          setImage(null);
+          setInputNote(notes[err]);
+          setStep("words");
+          return;
+        }
+        throw new Error(String(res.status));
+      }
       const data = (await res.json()) as {
         level: RiskLevel;
         screen: HelpScreenId | null;
@@ -199,6 +248,27 @@ export default function FreezeFixApp() {
     } catch {
       setStep("error");
     }
+  }
+
+  // Settings → Delete everything. Clears this device and the anonymous device cookie.
+  // (No accounts exist yet; when paid plans ship, this also deletes the account on the server.)
+  async function deleteEverything() {
+    // Keep an under-18 block in place so it can't be skipped by deleting.
+    const block = get("local", K_BLOCK);
+    try {
+      window.localStorage.clear();
+      window.sessionStorage.clear();
+      if (block && Number(block) > Date.now()) window.localStorage.setItem(K_BLOCK, block);
+    } catch {
+      /* ignore */
+    }
+    await fetch("/api/forget", { method: "POST" }).catch(() => {});
+    resetFlow();
+    setSessionLevel(0);
+    setMixed(false);
+    setAcked([]);
+    setConsentTicked(false);
+    setStep("deleted");
   }
 
   function sendFeedback(value: boolean) {
@@ -244,17 +314,18 @@ export default function FreezeFixApp() {
 
         {step === "gate" && (
           <Screen title="First things first">
-            <p className="text-lg text-ink-soft">FreezeFix is for adults 18 and over. Are you 18 or older?</p>
+            <p className="text-lg text-ink-soft">FreezeFix is for adults only. Are you 18 or over?</p>
             <div className="mt-6 flex flex-col gap-3">
               <BigButton
                 onClick={() => {
                   set("local", K_ADULT, "yes");
+                  set("local", K_ADULT_DATE, new Date().toISOString().slice(0, 10));
                   setStep("home");
                 }}
               >
-                Yes, I&apos;m 18+
+                I&apos;m 18 or over
               </BigButton>
-              <GhostButton onClick={blockDevice}>No</GhostButton>
+              <GhostButton onClick={blockDevice}>I&apos;m under 18</GhostButton>
             </div>
           </Screen>
         )}
@@ -277,7 +348,7 @@ export default function FreezeFixApp() {
               <button
                 onClick={() => {
                   resetFlow();
-                  setStep("moment");
+                  setStep(get("local", K_CONSENT) ? "moment" : "consent");
                 }}
                 className="w-full rounded-3xl bg-accent px-6 py-7 text-2xl font-bold text-accent-ink shadow-lg transition active:scale-[0.98]"
               >
@@ -285,7 +356,12 @@ export default function FreezeFixApp() {
               </button>
               <p className="text-center text-sm text-ink-faint">Can&apos;t change you. Still got you.</p>
             </div>
-            <Footer />
+            <div className="flex flex-col gap-4">
+              <button onClick={() => setStep("settings")} className="self-center text-sm text-ink-soft underline underline-offset-4">
+                Privacy &amp; settings
+              </button>
+              <SiteFooter />
+            </div>
           </div>
         )}
 
@@ -335,20 +411,45 @@ export default function FreezeFixApp() {
             <textarea
               value={text}
               onChange={(e) => setText(e.target.value.slice(0, 400))}
-              rows={4}
+              rows={3}
               placeholder={PLACEHOLDERS[moment]}
               className="w-full resize-none rounded-2xl border border-line bg-card p-4 text-lg text-ink placeholder:text-ink-faint focus:border-accent focus:outline-none"
-              autoFocus
             />
-            <div className="mt-1 text-right text-xs text-ink-faint">{text.length}/400</div>
-            <div className="mt-4 flex flex-col gap-3">
+            <div className="mt-1 flex justify-between text-xs text-ink-faint">
+              <span>Any language is fine, Hinglish too.</span>
+              <span>{text.length}/400</span>
+            </div>
+
+            {voiceText && (
+              <div className="mt-3 rounded-2xl border border-line bg-card p-3">
+                <div className="mb-1 flex items-center justify-between text-xs text-ink-faint">
+                  <span>Your voice note</span>
+                  <button onClick={() => setVoiceText("")} className="underline">
+                    Remove
+                  </button>
+                </div>
+                <p className="text-base text-ink">{voiceText}</p>
+              </div>
+            )}
+
+            <div className="mt-3 flex flex-col gap-3">
+              {features.voice && !voiceText && (
+                <VoiceRecorder onText={(t) => setVoiceText(t)} onLimit={(m) => setInputNote(m)} />
+              )}
+              {features.screenshot && <ScreenshotPicker image={image} onChange={(d) => { setImage(d); setInputNote(null); }} />}
+            </div>
+
+            {inputNote && <p className="mt-3 rounded-xl bg-chip px-4 py-3 text-sm text-ink-soft">{inputNote}</p>}
+
+            <div className="mt-5 flex flex-col gap-3">
               <BigButton onClick={() => getMoves()}>Get my moves</BigButton>
-              {!text.trim() && (
+              {!text.trim() && !voiceText && !image && (
                 <GhostButton onClick={() => getMoves()}>Skip, just give me moves</GhostButton>
               )}
             </div>
             <p className="mt-6 text-center text-xs leading-relaxed text-ink-faint">
               Your notes stay on your phone. What you type goes to our AI to get your moves and isn&apos;t stored.
+              {(features.voice || features.screenshot) && " Voice notes and screenshots are handled the same way: used once, never stored."}
             </p>
           </Screen>
         )}
@@ -400,6 +501,10 @@ export default function FreezeFixApp() {
                     <span className="text-base text-ink-soft">{m.detail}</span>
                   </button>
                 ))}
+                <p className="mt-2 text-sm leading-relaxed text-ink-faint">
+                  FreezeFix gives ideas, not medical advice. If you feel unsafe, have chest pain or can&apos;t breathe, call
+                  your local emergency number.
+                </p>
               </div>
             )}
           </Screen>
@@ -446,6 +551,117 @@ export default function FreezeFixApp() {
               >
                 Done
               </GhostButton>
+            </div>
+          </Screen>
+        )}
+
+        {step === "consent" && (
+          <Screen title="Before we start">
+            <div className="flex flex-col gap-4 text-lg text-ink-soft">
+              <p>
+                To suggest your next steps, FreezeFix needs to use what you share in a session, like how you&apos;re feeling and
+                whether you&apos;ve used cannabis. That&apos;s health information, so we need your OK.
+              </p>
+              <ul className="list-disc space-y-1 pl-5 text-base">
+                <li>We use it only to suggest your moves and show help when you need it.</li>
+                <li>It&apos;s processed by our AI provider for us, never sold, never used for ads.</li>
+                <li>Session text isn&apos;t stored after your moves are shown.</li>
+              </ul>
+              <label className="mt-2 flex cursor-pointer items-start gap-3 rounded-2xl border border-line bg-card p-4 text-base text-ink">
+                <input
+                  type="checkbox"
+                  checked={consentTicked}
+                  onChange={(e) => setConsentTicked(e.target.checked)}
+                  className="mt-1 h-5 w-5 shrink-0 accent-[var(--color-accent)]"
+                />
+                <span>I agree FreezeFix can use the health information I share to give me suggestions, as explained in the Privacy Policy.</span>
+              </label>
+              <a href="/privacy" target="_blank" className="text-base text-accent underline underline-offset-4">
+                Read the Privacy Policy
+              </a>
+            </div>
+            <div className="mt-6 flex flex-col gap-3">
+              <button
+                disabled={!consentTicked}
+                onClick={() => {
+                  set("local", K_CONSENT, new Date().toISOString().slice(0, 10));
+                  setStep("moment");
+                }}
+                className="w-full rounded-3xl bg-accent px-5 py-5 text-xl font-bold text-accent-ink transition disabled:opacity-40"
+              >
+                Continue
+              </button>
+              <GhostButton onClick={() => setStep("consent-declined")}>Not now</GhostButton>
+            </div>
+          </Screen>
+        )}
+
+        {step === "consent-declined" && (
+          <Screen title="No problem">
+            <p className="text-lg text-ink-soft">
+              Without your OK, FreezeFix can&apos;t suggest moves. Help is always here though, free, with the Emergency button up top.
+            </p>
+            <div className="mt-6 flex flex-col gap-3">
+              <BigButton onClick={() => setStep("consent")}>I&apos;ve changed my mind</BigButton>
+              <GhostButton onClick={() => setStep("home")}>Back to home</GhostButton>
+            </div>
+          </Screen>
+        )}
+
+        {step === "settings" && (
+          <Screen title="Privacy & settings">
+            <div className="flex flex-col gap-3">
+              <div className="rounded-2xl border border-line bg-card p-4 text-base text-ink-soft">
+                Your notes stay on your phone. What you type goes to our AI to get your moves and isn&apos;t stored.
+              </div>
+              {get("local", K_CONSENT) ? (
+                <GhostButton
+                  onClick={() => {
+                    try {
+                      window.localStorage.removeItem(K_CONSENT);
+                    } catch {
+                      /* ignore */
+                    }
+                    setConsentTicked(false);
+                    setStep("home");
+                  }}
+                >
+                  Withdraw consent
+                </GhostButton>
+              ) : (
+                <p className="px-1 text-sm text-ink-faint">You haven&apos;t given consent for sessions on this device.</p>
+              )}
+              <GhostButton onClick={() => setStep("delete-confirm")}>Delete everything</GhostButton>
+              <div className="mt-2 flex justify-center gap-4 text-sm text-ink-soft">
+                <a href="/privacy" className="underline underline-offset-4">Privacy Policy</a>
+                <a href="/terms" className="underline underline-offset-4">Terms</a>
+                <a href="/refunds" className="underline underline-offset-4">Refunds</a>
+              </div>
+              <button onClick={() => setStep("home")} className="mt-4 self-center text-sm text-ink-faint underline underline-offset-4">
+                Back
+              </button>
+            </div>
+          </Screen>
+        )}
+
+        {step === "delete-confirm" && (
+          <Screen title="Delete everything?">
+            <p className="text-lg text-ink-soft">
+              This removes your account, saved notes and everything we hold about you. It can&apos;t be undone. Payment records we
+              must keep for tax are kept until the law lets us delete them.
+            </p>
+            <div className="mt-6 flex flex-col gap-3">
+              <BigButton onClick={deleteEverything}>Delete everything</BigButton>
+              <GhostButton onClick={() => setStep("settings")}>Cancel</GhostButton>
+            </div>
+          </Screen>
+        )}
+
+        {step === "deleted" && (
+          <Screen title="Done. It's all gone.">
+            <p className="text-lg text-ink-soft">Everything on this device is cleared. Take care of yourself.</p>
+            <div className="mt-6">
+              <BigButton onClick={() => setStep("gate")}>Start fresh</BigButton>
             </div>
           </Screen>
         )}
@@ -530,13 +746,5 @@ function OptionButton({ onClick, children }: { onClick: () => void; children: Re
     >
       {children}
     </button>
-  );
-}
-
-function Footer() {
-  return (
-    <footer className="text-center text-xs leading-relaxed text-ink-faint">
-      FreezeFix isn&apos;t therapy, medical advice or an emergency service. 18+ only.
-    </footer>
   );
 }

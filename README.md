@@ -15,7 +15,11 @@ One safe next step in under 60 seconds. Next.js on Cloudflare Workers (via OpenN
 | `app/api/moves/route.ts` | Server: keyword check → AI → takes the higher risk level → returns moves or a help screen. |
 | `app/api/feedback/route.ts` | Records 👍/👎 only (no text, no ID). |
 | `supabase/schema.sql` | Anonymous counts table. Paste into Supabase SQL Editor. |
-| `scripts/test-risk.ts` | Runs the red-team set against the safety check: `npm run test:risk`. |
+| `scripts/test-risk.ts` | Runs the red-team set (plus Hindi/Hinglish and false-alarm tests) against the safety check: `npm run test:risk`. |
+| `components/VoiceRecorder.tsx`, `app/api/transcribe` | Voice notes up to 60 s; 3/day free, 6/day paid, counted on the server. Off until `ENABLE_VOICE=true`. |
+| `components/ScreenshotPicker.tsx` | One screenshot per session, shrunk on the phone; the AI reads it as text, then the safety check runs. Off until `ENABLE_SCREENSHOTS=true`. |
+| `lib/quota.ts` | Server-side daily limits (anonymous device cookie + salted IP hash, no raw IDs stored). |
+| `lib/legal.ts`, `app/privacy`, `app/terms`, `app/refunds` | Legal pages from Setup & Legal's Legal Pack. |
 
 ## Secrets (never in code)
 
@@ -23,7 +27,10 @@ Add these in **Cloudflare dashboard → Workers → freezefix → Settings → V
 
 - `ANTHROPIC_API_KEY`: without it, the app uses safe built-in moves
 - `AI_MODEL`: optional, defaults to `claude-haiku-5-5`
-- `SUPABASE_URL` and `SUPABASE_ANON_KEY`: optional; logging is off without them
+- `SUPABASE_URL` and `SUPABASE_ANON_KEY`: anonymous counts + daily limits (create the Supabase project in the **EU (Frankfurt)** region, as the privacy policy says)
+- `QUOTA_SALT`: any long random text
+- `TRANSCRIBE_API_KEY` (+ optional `TRANSCRIBE_URL`, `TRANSCRIBE_MODEL`): voice provider chosen by Budget & Ops
+- `ENABLE_SCREENSHOTS`, `ENABLE_VOICE`: keep `false` until HQ T31, T32 and T33 are Done
 
 ## Commands
 
