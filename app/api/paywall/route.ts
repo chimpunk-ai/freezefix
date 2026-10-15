@@ -12,7 +12,8 @@ export async function GET(req: Request) {
   const isNew = !deviceId;
   if (!deviceId) deviceId = newDeviceId();
 
-  const ent = await getEntitlement(deviceId);
+  // No payments set up yet = open beta: everyone counts as active, so no paywall shows.
+  const ent = paymentsOn() ? await getEntitlement(deviceId) : { active: true, status: "beta" };
   const res = NextResponse.json({
     active: ent.active,
     status: ent.status,

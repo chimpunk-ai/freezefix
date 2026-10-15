@@ -5,6 +5,7 @@ import { BUILT_IN_MOVES, GROUNDING_MOVES, cleanMoves, type Move } from "@/lib/mo
 import { logEvent } from "@/lib/log";
 import { consumeQuota, refundQuota, readDeviceId, newDeviceId, deviceCookie, getEntitlement, claimFreeSession } from "@/lib/quota";
 import { screenshotsOn } from "@/lib/features";
+import { paymentsOn } from "@/lib/plans";
 
 // What the browser sends. We never store any of it.
 type Body = {
@@ -112,7 +113,8 @@ export async function POST(req: Request) {
   // Paywall (founder decision 16 Oct): first unfreeze free, then a trial or plan is needed.
   // Checked HERE, on the server, and only AFTER the safety check above, so help screens are
   // never behind it. People at the paywall still get the AI's safety check below.
-  const ent = await getEntitlement(deviceId);
+  // Until payments are switched on (Paddle keys set), there is no paywall: the beta is open.
+  const ent = paymentsOn() ? await getEntitlement(deviceId) : { active: true, status: "beta" };
   const entitled = ent.active || (await claimFreeSession(deviceId));
   const paywall = () => respond({ paywall: true, level: keyword.level });
 
