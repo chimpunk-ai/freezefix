@@ -3,12 +3,15 @@
 // salted, daily-rotating hash of the IP address as a backstop. We never store raw IPs.
 // Help screens and typing are NEVER limited.
 
-export type QuotaKind = "voice" | "screenshot";
+export type QuotaKind = "voice" | "screenshot" | "check";
 
 export const LIMITS = {
   voice: { free: 3, paid: 6 },
   // Founder set voice limits (16 Oct). Screenshot cap is a cost guard; Budget & Ops tunes it.
   screenshot: { free: Number(process.env.SCREENSHOT_DAILY_LIMIT || 10), paid: Number(process.env.SCREENSHOT_DAILY_LIMIT_PAID || 20) },
+  // Safety checks the AI runs for people who hit the paywall (so crisis help is never missed
+  // just because someone hasn't paid). Cost guard only; Budget & Ops tunes it.
+  check: { free: 20, paid: 50 },
 } as const;
 
 // Per-IP backstop per day (stops someone clearing cookies over and over).
@@ -18,10 +21,43 @@ export const DEVICE_COOKIE = "ff_did";
 
 export type QuotaResult = { allowed: boolean; used: number; limit: number; reason?: "limit" | "unavailable" };
 
-// Payments aren't built yet (HQ order: paywall after the core flow), so everyone is on the
-// free/trial limit. When payments ship, this checks the subscription ON THE SERVER.
-export async function isPaid(_deviceId: string): Promise<boolean> {
-  return false;
+// Paid = an active Plus plan (not the trial). Checked ON THE SERVER, never trusted from the browser.
+// Trial users get the free limits (3 voice notes a day); Plus gets 6.
+export async function isPaid(deviceId: string): Promise<boolean> {
+  const e = await getEntitlement(deviceId);
+  return e.active && e.status !== "trialing";
+}
+
+export type Entitlement = { active: boolean; status: string };
+
+// Is this device on an active trial or plan? Fails closed (not active) if the database is down,
+// which only ever affects the paywall: help screens never check this.
+export async function getEntitlement(deviceId: string): Promise<Entitlement> {
+  try {
+    const out = (await rpc("get_entitlement", { p_device_ref: await deviceRef(deviceId) })) as Entitlement;
+    return { active: Boolean(out?.active), status: String(out?.status ?? "none") };
+  } catch {
+    return { active: false, status: "unknown" };
+  }
+}
+
+// One-way hash of the device ID. This is what we hand to the payment provider (custom data)
+// and what the webhook stores, so the raw device ID never leaves our server.
+export async function deviceRef(deviceId: string): Promise<string> {
+  const salt = process.env.QUOTA_SALT || "freezefix-dev-salt";
+  return sha256(`ref:${deviceId}:${salt}`);
+}
+
+// The one free unfreeze per device (founder decision 16 Oct).
+export async function claimFreeSession(deviceId: string): Promise<boolean> {
+  const dbReady = Boolean(process.env.SUPABASE_URL && process.env.SUPABASE_ANON_KEY);
+  if (!dbReady) return process.env.NODE_ENV !== "production";
+  try {
+    const out = (await rpc("use_free_session", { p_device_key: await deviceRef(deviceId) })) as { allowed?: boolean };
+    return Boolean(out?.allowed);
+  } catch {
+    return false;
+  }
 }
 
 export function readDeviceId(req: Request): string | null {
@@ -39,7 +75,7 @@ export function deviceCookie(id: string): string {
   return `${DEVICE_COOKIE}=${id}; Path=/; Max-Age=31536000; HttpOnly; Secure; SameSite=Lax`;
 }
 
-async function sha256(text: string): Promise<string> {
+export async function sha256(text: string): Promise<string> {
   const buf = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(text));
   return Array.from(new Uint8Array(buf))
     .map((b) => b.toString(16).padStart(2, "0"))
@@ -60,9 +96,10 @@ async function keysFor(req: Request, deviceId: string) {
   };
 }
 
-async function rpc(name: string, args: Record<string, unknown>): Promise<unknown> {
+export async function rpc(name: string, args: Record<string, unknown>, opts?: { service?: boolean }): Promise<unknown> {
   const url = process.env.SUPABASE_URL;
-  const key = process.env.SUPABASE_ANON_KEY;
+  // The service key is used ONLY by the payment webhook to write subscriptions.
+  const key = opts?.service ? process.env.SUPABASE_SERVICE_ROLE_KEY : process.env.SUPABASE_ANON_KEY;
   if (!url || !key) throw new Error("no_db");
   const res = await fetch(`${url.replace(/\/$/, "")}/rest/v1/rpc/${name}`, {
     method: "POST",
@@ -75,7 +112,8 @@ async function rpc(name: string, args: Record<string, unknown>): Promise<unknown
     signal: AbortSignal.timeout(5000),
   });
   if (!res.ok) throw new Error(`db_${res.status}`);
-  return res.json();
+  const body = await res.text();
+  return body ? JSON.parse(body) : null;
 }
 
 // Uses one of today's allowance. Returns allowed=false if the limit is reached.

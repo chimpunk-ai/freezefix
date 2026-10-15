@@ -24,3 +24,14 @@ SCREENSHOT_DAILY_LIMIT_PAID=20
 # Switches for optional inputs. Keep "false" until HQ T31, T32 and T33 are Done.
 ENABLE_SCREENSHOTS=false
 ENABLE_VOICE=false
+
+# Payments: Paddle Billing (merchant of record). Budget & Ops sets up the account.
+# Both prices need a 4-day free trial set in Paddle. Client token is public; the rest are secret.
+PADDLE_ENV=sandbox
+PADDLE_CLIENT_TOKEN=
+PADDLE_PRICE_YEARLY=
+PADDLE_PRICE_MONTHLY=
+PADDLE_WEBHOOK_SECRET=
+PADDLE_API_KEY=
+# Used ONLY by the payment webhook to save subscriptions.
+SUPABASE_SERVICE_ROLE_KEY=

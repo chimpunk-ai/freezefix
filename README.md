@@ -20,6 +20,7 @@ One safe next step in under 60 seconds. Next.js on Cloudflare Workers (via OpenN
 | `components/ScreenshotPicker.tsx` | One screenshot per session, shrunk on the phone; the AI reads it as text, then the safety check runs. Off until `ENABLE_SCREENSHOTS=true`. |
 | `lib/quota.ts` | Server-side daily limits (anonymous device cookie + salted IP hash, no raw IDs stored). |
 | `lib/legal.ts`, `app/privacy`, `app/terms`, `app/refunds` | Legal pages from Setup & Legal's Legal Pack. |
+| `components/Paywall.tsx`, `app/api/paywall`, `app/api/webhooks/paddle`, `app/api/portal` | Paywall: first unfreeze free, paywall after the first 👍, 4-day trial, $39.99/yr (default) or $9.99/mo via Paddle. Checked on the server, always AFTER the safety check. |
 
 ## Secrets (never in code)
 
@@ -31,6 +32,7 @@ Add these in **Cloudflare dashboard → Workers → freezefix → Settings → V
 - `QUOTA_SALT`: any long random text
 - `TRANSCRIBE_API_KEY` (+ optional `TRANSCRIBE_URL`, `TRANSCRIBE_MODEL`): voice provider chosen by Budget & Ops
 - `ENABLE_SCREENSHOTS`, `ENABLE_VOICE`: keep `false` until HQ T31, T32 and T33 are Done
+- Payments (Paddle): `PADDLE_ENV`, `PADDLE_CLIENT_TOKEN`, `PADDLE_PRICE_YEARLY`, `PADDLE_PRICE_MONTHLY`, `PADDLE_WEBHOOK_SECRET`, `PADDLE_API_KEY`, `SUPABASE_SERVICE_ROLE_KEY`. Webhook URL to give Paddle: `https://getfreezefix.com/api/webhooks/paddle` (subscription events).
 
 ## Commands
 

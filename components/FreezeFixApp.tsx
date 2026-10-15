@@ -5,6 +5,7 @@ import HelpScreen, { ContactButton } from "@/components/HelpScreen";
 import VoiceRecorder from "@/components/VoiceRecorder";
 import ScreenshotPicker from "@/components/ScreenshotPicker";
 import SiteFooter from "@/components/SiteFooter";
+import Paywall from "@/components/Paywall";
 import { SAFETY_BUTTONS, keywordCheck, type HelpScreen as HelpScreenId, type RiskLevel, type RiskResult } from "@/lib/risk";
 import { MOMENTS, type MomentId } from "@/lib/prompt";
 import { detectRegion } from "@/lib/country";
@@ -29,7 +30,8 @@ type Step =
   | "consent-declined"
   | "settings"
   | "delete-confirm"
-  | "deleted";
+  | "deleted"
+  | "paywall";
 
 // Browser storage keys. Nothing here leaves the phone.
 const K_ADULT = "ff_adult"; // "yes" once the 18+ gate is passed
@@ -90,6 +92,8 @@ export default function FreezeFixApp() {
   const [image, setImage] = useState<string | null>(null);
   const [inputNote, setInputNote] = useState<string | null>(null);
   const [consentTicked, setConsentTicked] = useState(false);
+  const [paywallFrom, setPaywallFrom] = useState<"feedback" | "session">("session");
+  const [settingsNote, setSettingsNote] = useState<string | null>(null);
   const [features, setFeatures] = useState({ ai: false, voice: false, screenshot: false });
 
   // Which optional inputs are switched on (voice needs a transcription key, screenshots need the AI).
@@ -234,12 +238,20 @@ export default function FreezeFixApp() {
         throw new Error(String(res.status));
       }
       const data = (await res.json()) as {
+        paywall?: boolean;
         level: RiskLevel;
         screen: HelpScreenId | null;
         underage: boolean;
         checkQuestion: string | null;
         moves: Move[];
       };
+      if (data.paywall) {
+        // Free unfreeze used and no trial/plan yet. Safety already ran on the server.
+        if (data.level > 0) raiseLevel(data.level);
+        setPaywallFrom("session");
+        setStep("paywall");
+        return;
+      }
       if (route({ level: data.level, screen: data.screen, underage: data.underage }, ack)) return;
       if (data.level > 0) raiseLevel(data.level);
       setMoves(data.moves);
@@ -273,7 +285,14 @@ export default function FreezeFixApp() {
 
   function sendFeedback(value: boolean) {
     setHelped(value);
-    setStep("thanks");
+    // Paywall right after a 👍 (founder decision 16 Oct). People already on a trial or plan
+    // pass straight through to the thanks screen.
+    if (value) {
+      setPaywallFrom("feedback");
+      setStep("paywall");
+    } else {
+      setStep("thanks");
+    }
     fetch("/api/feedback", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -555,6 +574,16 @@ export default function FreezeFixApp() {
           </Screen>
         )}
 
+        {step === "paywall" && (
+          <Paywall
+            onActive={() => {
+              if (paywallFrom === "session") getMoves();
+              else setStep("thanks");
+            }}
+            onClose={() => setStep(paywallFrom === "feedback" ? "thanks" : "home")}
+          />
+        )}
+
         {step === "consent" && (
           <Screen title="Before we start">
             <div className="flex flex-col gap-4 text-lg text-ink-soft">
@@ -631,6 +660,22 @@ export default function FreezeFixApp() {
               ) : (
                 <p className="px-1 text-sm text-ink-faint">You haven&apos;t given consent for sessions on this device.</p>
               )}
+              <GhostButton
+                onClick={async () => {
+                  setSettingsNote(null);
+                  try {
+                    const r = await fetch("/api/portal", { method: "POST" });
+                    const d = (await r.json()) as { url?: string; error?: string };
+                    if (d.url) window.location.href = d.url;
+                    else setSettingsNote(d.error === "no_subscription" ? "There's no plan on this device." : "Couldn't open that right now. Email hello@getfreezefix.com and we'll sort it.");
+                  } catch {
+                    setSettingsNote("Couldn't open that right now. Email hello@getfreezefix.com and we'll sort it.");
+                  }
+                }}
+              >
+                Manage subscription
+              </GhostButton>
+              {settingsNote && <p className="px-1 text-sm text-ink-soft">{settingsNote}</p>}
               <GhostButton onClick={() => setStep("delete-confirm")}>Delete everything</GhostButton>
               <div className="mt-2 flex justify-center gap-4 text-sm text-ink-soft">
                 <a href="/privacy" className="underline underline-offset-4">Privacy Policy</a>
@@ -649,6 +694,9 @@ export default function FreezeFixApp() {
             <p className="text-lg text-ink-soft">
               This removes your account, saved notes and everything we hold about you. It can&apos;t be undone. Payment records we
               must keep for tax are kept until the law lets us delete them.
+            </p>
+            <p className="mt-3 text-base text-ink-soft">
+              Got a plan? Cancel it first in Manage subscription, or it keeps renewing.
             </p>
             <div className="mt-6 flex flex-col gap-3">
               <BigButton onClick={deleteEverything}>Delete everything</BigButton>

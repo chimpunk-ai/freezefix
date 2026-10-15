@@ -3,7 +3,7 @@ import { keywordCheck, othersCheck, highest, type RiskLevel, type RiskResult, ty
 import { buildSystemPrompt, buildUserMessage, SCREENSHOT_READER_PROMPT, MOMENTS, type MomentId } from "@/lib/prompt";
 import { BUILT_IN_MOVES, GROUNDING_MOVES, cleanMoves, type Move } from "@/lib/moves";
 import { logEvent } from "@/lib/log";
-import { consumeQuota, refundQuota, readDeviceId, newDeviceId, deviceCookie } from "@/lib/quota";
+import { consumeQuota, refundQuota, readDeviceId, newDeviceId, deviceCookie, getEntitlement, claimFreeSession } from "@/lib/quota";
 import { screenshotsOn } from "@/lib/features";
 
 // What the browser sends. We never store any of it.
@@ -109,8 +109,16 @@ export async function POST(req: Request) {
   const grounding = groundingOnly || acked.includes("mixed") || keyword.screen === "mixed";
   const fallback = grounding ? GROUNDING_MOVES : BUILT_IN_MOVES[moment];
 
+  // Paywall (founder decision 16 Oct): first unfreeze free, then a trial or plan is needed.
+  // Checked HERE, on the server, and only AFTER the safety check above, so help screens are
+  // never behind it. People at the paywall still get the AI's safety check below.
+  const ent = await getEntitlement(deviceId);
+  const entitled = ent.active || (await claimFreeSession(deviceId));
+  const paywall = () => respond({ paywall: true, level: keyword.level });
+
   // 2) No AI key yet (local testing): use safe built-in moves.
   if (!apiKey) {
+    if (!entitled) return paywall();
     const reply: Reply = {
       level: keyword.level,
       screen: null,
@@ -124,6 +132,11 @@ export async function POST(req: Request) {
   }
 
   // 3) Ask the AI. The model also checks risk; we use the HIGHER of the two.
+  //    For someone at the paywall the AI call is only a safety check (cost-capped per day).
+  if (!entitled) {
+    const q = await consumeQuota(req, deviceId, "check");
+    if (!q.allowed) return paywall();
+  }
   try {
     const raw = await callClaude(
       apiKey,
@@ -152,6 +165,7 @@ export async function POST(req: Request) {
     if (final.level > 0) await logEvent({ kind: "risk", value: final.level, moment, country });
 
     if (mustRoute(final)) return respond(routeOnly(final));
+    if (!entitled) return paywall();
 
     const reply: Reply = {
       level: final.level,
