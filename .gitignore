@@ -1,0 +1,26 @@
+# dependencies
+/node_modules
+
+# builds
+/.next/
+/.open-next/
+/out/
+/build
+*.tsbuildinfo
+next-env.d.ts
+
+# Cloudflare local
+.wrangler/
+.dev.vars
+cloudflare-env.d.ts
+
+# secrets: never commit these
+.env
+.env.*
+!.env.example
+!.dev.vars.example
+
+# misc
+.DS_Store
+*.pem
+npm-debug.log*

@@ -1,0 +1,36 @@
+@import "tailwindcss";
+
+/* FreezeFix colours: calm, dark, easy on the eyes at night. One warm accent. */
+@theme {
+  --color-bg: #0f1215;
+  --color-card: #171b20;
+  --color-chip: #232931;
+  --color-line: #2a3038;
+  --color-ink: #f2efe9;
+  --color-ink-soft: #c4c0b8;
+  --color-ink-faint: #8a8780;
+  --color-accent: #9be3c4;
+  --color-accent-ink: #0d2a1f;
+  --font-sans: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", sans-serif;
+}
+
+html,
+body {
+  background: var(--color-bg);
+  color: var(--color-ink);
+}
+
+body {
+  -webkit-font-smoothing: antialiased;
+  -webkit-tap-highlight-color: transparent;
+}
+
+button,
+a {
+  touch-action: manipulation;
+}
+
+:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 3px;
+}

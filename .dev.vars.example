@@ -1,0 +1,10 @@
+# Copy this file to .dev.vars for local testing. NEVER commit real keys.
+# On Cloudflare, add these as Secrets in the dashboard instead.
+
+# AI (leave empty to use the safe built-in moves while testing)
+ANTHROPIC_API_KEY=
+AI_MODEL=claude-haiku-5-5
+
+# Anonymous counts only (risk level, "Did it help?"). Leave empty to turn logging off.
+SUPABASE_URL=
+SUPABASE_ANON_KEY=
