@@ -45,6 +45,27 @@ const K_ACK = "ff_session_ack"; // urgent help screens the user has seen and tap
 
 const DAY_MS = 24 * 60 * 60 * 1000;
 
+const K_WINS = "ff_wins"; // how many times a move helped (stays on the phone)
+
+const MOMENT_EMOJI: Record<MomentId, string> = { people: "👀", alone: "🌀", task: "🧱", reply: "💬" };
+
+// One-tap phrases so nobody has to type when they're frozen (lazy-friendly).
+const QUICK_PICKS: Record<MomentId, string[]> = {
+  people: ["everyone's looking at me", "I said something weird", "can't join in", "want to leave"],
+  alone: ["can't stop overthinking", "replaying what I said", "feel on edge", "it's all too much"],
+  task: ["can't start", "keep scrolling instead", "it's too big", "deadline's close"],
+  reply: ["don't know what to say", "it's been hours", "scared how it'll sound", "left them on read"],
+};
+
+// A tiny buzz on Android when a big button is tapped. iPhones ignore it.
+function buzz(ms = 12) {
+  try {
+    navigator.vibrate?.(ms);
+  } catch {
+    /* ignore */
+  }
+}
+
 const PLACEHOLDERS: Record<MomentId, string> = {
   people: "e.g. at a mate's place, everyone's talking and I think they're looking at me",
   alone: "e.g. can't stop replaying what I said earlier",
@@ -94,6 +115,8 @@ export default function FreezeFixApp() {
   const [consentTicked, setConsentTicked] = useState(false);
   const [paywallFrom, setPaywallFrom] = useState<"feedback" | "session">("session");
   const [settingsNote, setSettingsNote] = useState<string | null>(null);
+  const [wins, setWins] = useState(0);
+  const [thawing, setThawing] = useState(false);
   const [features, setFeatures] = useState({ ai: false, voice: false, screenshot: false });
 
   // Which optional inputs are switched on (voice needs a transcription key, screenshots need the AI).
@@ -111,6 +134,7 @@ export default function FreezeFixApp() {
     setRegion(get("local", K_REGION) || d);
     setSessionLevel((Number(get("session", K_LEVEL)) || 0) as RiskLevel);
     setMixed(get("session", K_MIXED) === "1");
+    setWins(Number(get("local", K_WINS)) || 0);
     try {
       setAcked(JSON.parse(get("session", K_ACK) || "[]"));
     } catch {
@@ -285,6 +309,12 @@ export default function FreezeFixApp() {
 
   function sendFeedback(value: boolean) {
     setHelped(value);
+    buzz(value ? 30 : 12);
+    if (value) {
+      const next = wins + 1;
+      setWins(next);
+      set("local", K_WINS, String(next));
+    }
     // Paywall right after a 👍 (founder decision 16 Oct). People already on a trial or plan
     // pass straight through to the thanks screen.
     if (value) {
@@ -313,15 +343,15 @@ export default function FreezeFixApp() {
             resetFlow();
             setStep("home");
           }}
-          className="text-lg font-bold tracking-tight text-ink"
+          className="font-[family-name:var(--font-display)] text-xl font-extrabold tracking-tight text-frost"
           aria-label="FreezeFix home"
         >
-          Freeze<span className="text-accent">Fix</span>
+          freezefix
         </button>
         {step !== "loading-app" && !(step === "help" && help?.screen === "emergency") && (
           <button
             onClick={() => showHelp("emergency", step === "blocked" ? null : step === "help" ? help?.returnTo ?? "home" : step)}
-            className="rounded-full border border-line px-3 py-1.5 text-sm font-medium text-ink-soft"
+            className="rounded-full bg-chip px-4 py-2 text-sm font-semibold text-ink"
           >
             Emergency
           </button>
@@ -355,21 +385,30 @@ export default function FreezeFixApp() {
 
         {step === "home" && (
           <div className="flex flex-1 flex-col justify-between gap-10">
-            <div className="flex flex-col gap-4 pt-6">
-              <h1 className="text-4xl font-bold leading-tight tracking-tight text-ink">
-                Frozen right now?
-              </h1>
-              <p className="text-lg text-ink-soft">
-                One safe next step in under 60 seconds. No lectures, no judgment.
-              </p>
+            <div className="flex flex-col gap-3 pt-4">
+              <h1 className="text-[4.25rem] font-extrabold leading-[0.9] text-ink">Frozen?</h1>
+              <p className="max-w-[22ch] text-xl leading-snug text-ink-soft">One tiny move. Under a minute. No lectures.</p>
+              {wins > 0 && (
+                <p className="mt-2 inline-flex w-fit items-center gap-2 rounded-full bg-chip px-3 py-1.5 text-sm font-semibold text-glow">
+                  ✦ You&apos;ve unfrozen {wins} {wins === 1 ? "time" : "times"}
+                </p>
+              )}
             </div>
             <div className="flex flex-col gap-4">
               <button
                 onClick={() => {
-                  resetFlow();
-                  setStep(get("local", K_CONSENT) ? "moment" : "consent");
+                  buzz(25);
+                  setThawing(true);
+                  const go = () => {
+                    setThawing(false);
+                    resetFlow();
+                    setStep(get("local", K_CONSENT) ? "moment" : "consent");
+                  };
+                  const reduce = typeof window !== "undefined" && window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
+                  if (reduce) go();
+                  else setTimeout(go, 450);
                 }}
-                className="w-full rounded-3xl bg-accent px-6 py-7 text-2xl font-bold text-accent-ink shadow-lg transition active:scale-[0.98]"
+                className={`ice w-full rounded-[2rem] px-6 py-9 font-[family-name:var(--font-display)] text-3xl font-extrabold ${thawing ? "thawing" : ""}`}
               >
                 Unfreeze me
               </button>
@@ -385,18 +424,21 @@ export default function FreezeFixApp() {
         )}
 
         {step === "moment" && (
-          <Screen title="What's the moment?">
-            <div className="flex flex-col gap-3">
+          <Screen title="What's going on?">
+            <div className="grid grid-cols-2 gap-3">
               {(Object.keys(MOMENTS) as MomentId[]).map((m) => (
-                <OptionButton
+                <button
                   key={m}
                   onClick={() => {
+                    buzz();
                     setMoment(m);
                     setStep("check");
                   }}
+                  className="flex aspect-square flex-col justify-between rounded-[1.75rem] border border-line bg-card p-4 text-left transition active:scale-[0.97]"
                 >
-                  {MOMENTS[m]}
-                </OptionButton>
+                  <span className="text-4xl" aria-hidden="true">{MOMENT_EMOJI[m]}</span>
+                  <span className="text-lg font-semibold leading-tight text-ink">{MOMENTS[m]}</span>
+                </button>
               ))}
             </div>
           </Screen>
@@ -426,7 +468,21 @@ export default function FreezeFixApp() {
         )}
 
         {step === "words" && (
-          <Screen title="Say it in a few words" subtitle={MOMENTS[moment]}>
+          <Screen title="Say it in a few words" subtitle="Tap one, type, or both.">
+            <div className="mb-3 flex flex-wrap gap-2">
+              {QUICK_PICKS[moment].map((q) => (
+                <button
+                  key={q}
+                  onClick={() => {
+                    buzz();
+                    setText((t) => (t.trim() ? `${t.trim()}, ${q}` : q).slice(0, 400));
+                  }}
+                  className="rounded-full bg-chip px-4 py-2 text-base text-ink transition active:scale-95"
+                >
+                  {q}
+                </button>
+              ))}
+            </div>
             <textarea
               value={text}
               onChange={(e) => setText(e.target.value.slice(0, 400))}
@@ -514,9 +570,9 @@ export default function FreezeFixApp() {
                       setPicked(m);
                       setStep("doing");
                     }}
-                    className="flex flex-col gap-1 rounded-2xl border border-line bg-card px-5 py-4 text-left transition active:scale-[0.99]"
+                    className="flex flex-col gap-1 rounded-[1.75rem] border border-line bg-card px-5 py-5 text-left transition hover:border-accent active:scale-[0.98]"
                   >
-                    <span className="text-lg font-semibold text-ink">{m.title}</span>
+                    <span className="text-xl font-bold text-ink">{m.title}</span>
                     <span className="text-base text-ink-soft">{m.detail}</span>
                   </button>
                 ))}
@@ -538,14 +594,14 @@ export default function FreezeFixApp() {
               <div className="grid grid-cols-2 gap-3">
                 <button
                   onClick={() => sendFeedback(true)}
-                  className="rounded-2xl border border-line bg-card py-5 text-3xl"
+                  className="rounded-[1.75rem] bg-accent py-7 text-5xl transition active:scale-95"
                   aria-label="Yes, it helped"
                 >
                   👍
                 </button>
                 <button
                   onClick={() => sendFeedback(false)}
-                  className="rounded-2xl border border-line bg-card py-5 text-3xl"
+                  className="rounded-[1.75rem] border border-line bg-card py-7 text-5xl transition active:scale-95"
                   aria-label="No, it didn't help"
                 >
                   👎
@@ -557,6 +613,11 @@ export default function FreezeFixApp() {
 
         {step === "thanks" && (
           <Screen title={helped ? "Nice one." : "Thanks for saying."}>
+            {helped && (
+              <p className="reward mb-4 font-[family-name:var(--font-display)] text-6xl font-extrabold text-glow" aria-label="Plus half a percent">
+                +0.5%
+              </p>
+            )}
             <p className="text-lg text-ink-soft">
               {helped ? "That's your 0.5% today. Small moves count." : "Not every move lands. Want to try a different one?"}
             </p>
@@ -760,7 +821,7 @@ export default function FreezeFixApp() {
 function Screen({ title, subtitle, children }: { title: string; subtitle?: string; children: React.ReactNode }) {
   return (
     <section className="flex flex-col">
-      <h1 className="text-3xl font-bold leading-tight tracking-tight text-ink">{title}</h1>
+      <h1 className="text-[2.6rem] font-extrabold leading-[0.95] text-ink">{title}</h1>
       {subtitle && <p className="mt-2 text-lg text-ink-soft">{subtitle}</p>}
       <div className="mt-6">{children}</div>
     </section>
@@ -771,7 +832,7 @@ function BigButton({ onClick, children }: { onClick: () => void; children: React
   return (
     <button
       onClick={onClick}
-      className="w-full rounded-3xl bg-accent px-5 py-5 text-xl font-bold text-accent-ink transition active:scale-[0.98]"
+      className="w-full rounded-[1.75rem] bg-accent px-5 py-5 text-xl font-bold text-accent-ink shadow-[0_14px_36px_-14px_rgba(255,159,110,0.8)] transition active:scale-[0.98]"
     >
       {children}
     </button>
@@ -786,13 +847,3 @@ function GhostButton({ onClick, children }: { onClick: () => void; children: Rea
   );
 }
 
-function OptionButton({ onClick, children }: { onClick: () => void; children: React.ReactNode }) {
-  return (
-    <button
-      onClick={onClick}
-      className="w-full rounded-2xl border border-line bg-card px-5 py-5 text-left text-xl font-semibold text-ink transition active:scale-[0.99]"
-    >
-      {children}
-    </button>
-  );
-}

@@ -1,17 +1,21 @@
 @import "tailwindcss";
 
-/* FreezeFix colours: calm, dark, easy on the eyes at night. One warm accent. */
+/* FreezeFix "Thaw" theme: frozen night blues warming to apricot.
+   Calm enough for 2am, warm enough to feel like a mate. No alarm reds anywhere. */
 @theme {
-  --color-bg: #0f1215;
-  --color-card: #171b20;
-  --color-chip: #232931;
-  --color-line: #2a3038;
-  --color-ink: #f2efe9;
-  --color-ink-soft: #c4c0b8;
-  --color-ink-faint: #8a8780;
-  --color-accent: #9be3c4;
-  --color-accent-ink: #0d2a1f;
-  --font-sans: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", sans-serif;
+  --color-bg: #10142a; /* night */
+  --color-card: #1a2040;
+  --color-chip: #232a52;
+  --color-line: #2c3566;
+  --color-ink: #f5f7ff; /* snow */
+  --color-ink-soft: #c9d6ff; /* frost */
+  --color-ink-faint: #8d98c7;
+  --color-accent: #ff9f6e; /* thaw */
+  --color-accent-ink: #2a1206;
+  --color-glow: #ffd36e;
+  --color-frost: #c9d6ff;
+  --font-sans: var(--font-body), ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --font-display: var(--font-display-face), var(--font-body), ui-sans-serif, system-ui, sans-serif;
 }
 
 html,
@@ -23,6 +27,16 @@ body {
 body {
   -webkit-font-smoothing: antialiased;
   -webkit-tap-highlight-color: transparent;
+  /* A faint frosty glow at the top of the night sky. */
+  background-image: radial-gradient(120% 60% at 50% -10%, rgba(201, 214, 255, 0.12), transparent 60%);
+  background-attachment: fixed;
+}
+
+h1,
+h2 {
+  font-family: var(--font-display);
+  font-variation-settings: "wdth" 90;
+  letter-spacing: -0.02em;
 }
 
 button,
@@ -33,4 +47,58 @@ a {
 :focus-visible {
   outline: 2px solid var(--color-accent);
   outline-offset: 3px;
+}
+
+/* The signature moment: the ice block that thaws when you press it. */
+.ice {
+  position: relative;
+  isolation: isolate;
+  background: linear-gradient(160deg, #e9efff 0%, #c9d6ff 45%, #9fb1f5 100%);
+  color: #10142a;
+  box-shadow:
+    inset 0 2px 0 rgba(255, 255, 255, 0.7),
+    inset 0 -10px 24px rgba(16, 20, 42, 0.18),
+    0 18px 40px -12px rgba(159, 177, 245, 0.55);
+  transition: transform 160ms ease;
+}
+.ice::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: linear-gradient(160deg, #ffd36e 0%, #ff9f6e 60%, #ff7f6e 100%);
+  opacity: 0;
+  z-index: -1;
+  transition: opacity 420ms ease;
+}
+.ice:active {
+  transform: scale(0.97);
+}
+.ice.thawing {
+  background: transparent;
+  color: #2a1206;
+  box-shadow: 0 18px 50px -10px rgba(255, 159, 110, 0.7);
+}
+.ice.thawing::after {
+  opacity: 1;
+}
+
+/* "+0.5%" reward when a move helped. */
+@keyframes rise {
+  0% { transform: translateY(12px) scale(0.9); opacity: 0; }
+  30% { transform: translateY(0) scale(1.06); opacity: 1; }
+  100% { transform: translateY(-6px) scale(1); opacity: 1; }
+}
+.reward {
+  animation: rise 700ms cubic-bezier(0.2, 0.9, 0.3, 1.2) both;
+  text-shadow: 0 0 32px rgba(255, 211, 110, 0.55);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ice,
+  .ice::after,
+  .reward {
+    transition: none;
+    animation: none;
+  }
 }
