@@ -16,7 +16,7 @@ import { MOMENTS, type MomentId } from "@/lib/prompt";
 import { detectRegion } from "@/lib/country";
 import { resourcesFor, VERIFIED_COUNTRIES } from "@/lib/resources";
 import type { Move } from "@/lib/moves";
-import { scenariosFor, checkInLine, type Scenario } from "@/lib/scenarios";
+import { scenariosFor, checkInLine, SCENARIOS, type Scenario } from "@/lib/scenarios";
 
 type Step =
   | "loading-app"
@@ -186,6 +186,19 @@ export default function FreezeFixApp() {
     setHello(greeting());
     setMemOn(memoryOn());
     setCheckIn(checkInLine());
+
+    // A scenario card on the landing page hands over as /app?s=<id>. Unknown ids are
+    // ignored rather than trusted, and the parameter is cleaned off the URL afterwards so a
+    // shared link doesn't carry someone's situation around with it.
+    let wanted: Scenario | null = null;
+    try {
+      const id = new URLSearchParams(window.location.search).get("s");
+      wanted = (id && SCENARIOS.find((x) => x.id === id)) || null;
+      if (id) window.history.replaceState({}, "", window.location.pathname);
+    } catch {
+      wanted = null;
+    }
+
     let recent: string[] = [];
     try {
       recent = JSON.parse(get("local", K_RECENT) || "[]");
@@ -203,8 +216,22 @@ export default function FreezeFixApp() {
     if (blockUntil > Date.now()) {
       setStep("blocked");
     } else if (get("local", K_ADULT) === "yes") {
-      setStep("home");
+      // A deep-linked scenario skips the home screen, but never the consent or the
+      // onboarding they haven't done yet.
+      if (wanted) {
+        setScenario(wanted);
+        setMoment(wanted.moment);
+        noteScenario(wanted.id);
+        setStep(!get("local", K_CONSENT) ? "consent" : !get("local", K_ONBOARDED) ? "onboarding" : "chat");
+      } else {
+        setStep("home");
+      }
     } else {
+      // The 18+ gate comes first, always. The scenario is held until they're through it.
+      if (wanted) {
+        setScenario(wanted);
+        setMoment(wanted.moment);
+      }
       setStep("gate");
     }
   }, []);

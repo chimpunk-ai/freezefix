@@ -10,6 +10,7 @@
     "typecheck": "tsc --noEmit",
     "test:risk": "tsx scripts/test-risk.ts",
     "test:scenarios": "tsx scripts/test-scenarios.ts",
+    "test:plans": "tsx scripts/test-plans.ts",
     "preview": "opennextjs-cloudflare build && opennextjs-cloudflare preview",
     "deploy": "opennextjs-cloudflare build && opennextjs-cloudflare deploy",
     "upload": "opennextjs-cloudflare build && opennextjs-cloudflare upload",

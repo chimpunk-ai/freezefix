@@ -1,5 +1,6 @@
-import FreezeFixApp from "@/components/FreezeFixApp";
+import Landing from "@/components/Landing";
 
+// The public front door. The app itself lives at /app.
 export default function Page() {
-  return <FreezeFixApp />;
+  return <Landing />;
 }
