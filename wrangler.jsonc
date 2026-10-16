@@ -10,7 +10,11 @@
   },
   "observability": {
     "enabled": true
-  }
+  },
+  // Anything set in the Cloudflare dashboard survives a deploy from GitHub.
+  // Without this, `wrangler deploy` overwrites dashboard variables with whatever is in this
+  // file, which is nothing, so the API key vanished on the next push.
+  "keep_vars": true
   // Secrets (ANTHROPIC_API_KEY, SUPABASE_URL, SUPABASE_ANON_KEY) are added in the
   // Cloudflare dashboard, never in this file.
 }
