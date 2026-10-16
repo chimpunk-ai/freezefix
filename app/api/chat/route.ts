@@ -217,7 +217,10 @@ export async function POST(req: Request) {
 
         if (routed) return;
         if (!verdict) {
-          send({ error: "ai_unavailable" });
+          // The model replied but not in the RISK/FLAG format the safety router needs.
+          // The detail is this caller's own answer, so it reveals nothing about anyone else,
+          // and without it this failure is invisible from outside.
+          send({ error: "ai_unavailable", detail: buf.slice(0, 300) });
         } else {
           send({
             done: true,
