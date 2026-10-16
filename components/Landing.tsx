@@ -8,6 +8,7 @@ import { SCENARIOS } from "@/lib/scenarios";
 import { plansFor, TRIAL_DAYS } from "@/lib/plans";
 import { detectRegion } from "@/lib/country";
 import FactCard from "@/components/FactCard";
+import Suggest from "@/components/Suggest";
 import { LoopArt, StartArt, RoomArt } from "@/components/Art";
 
 // The public front door. Everything here is honest: no invented reviews, no download counts,
@@ -253,6 +254,11 @@ export default function Landing() {
         >
           {cta}
         </Link>
+      </section>
+
+      {/* Asked while the product is still being finished, so the answer can still change it. */}
+      <section className="ff-rise py-12">
+        <Suggest />
       </section>
 
       {/* Honest limits */}

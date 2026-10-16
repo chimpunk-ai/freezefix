@@ -15,6 +15,7 @@ import Wins from "@/components/Wins";
 import InstallPrompt from "@/components/InstallPrompt";
 import { addWin } from "@/lib/wins";
 import FactCard from "@/components/FactCard";
+import Suggest from "@/components/Suggest";
 
 import { greeting, readableMemory, memoryOn, setMemoryOn, forgetAll, noteVisit, type MemoryLine } from "@/lib/memory";
 import { SAFETY_BUTTONS, keywordCheck, type HelpScreen as HelpScreenId, type RiskLevel, type RiskResult } from "@/lib/risk";
@@ -561,6 +562,8 @@ export default function FreezeFixApp() {
             </div>
 
             <FactCard />
+
+            <Suggest compact onRoute={(r) => route({ level: r.level, screen: r.screen, underage: r.underage })} />
 
             <div className="mt-auto flex flex-col gap-4 pt-2">
               <p className="mx-auto max-w-[30ch] text-center text-sm leading-relaxed text-ink-faint">

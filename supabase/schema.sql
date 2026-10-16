@@ -204,3 +204,61 @@ language sql security definer set search_path = public stable as $$
 $$;
 revoke all on function public.get_subscription_ids(text) from public;
 grant execute on function public.get_subscription_ids(text) to anon;
+
+-- ─────────────────────────────────────────────────────────────────────────────
+-- Suggestions (founder decision 16 Oct): while the app and payments are being
+-- finished, ask visitors whether this is actually needed and what they'd want.
+--
+-- This is the ONE place the product stores something a person typed, so it is
+-- kept deliberately thin: the answer, their words, a country and a timestamp.
+-- No device id, no IP, no name, nothing that joins it back to a conversation.
+-- Nobody can read it back out with the public key.
+
+create table if not exists public.suggestions (
+  id bigint generated always as identity primary key,
+  -- 'yes' | 'maybe' | 'no': would they use it
+  needed text not null check (needed in ('yes', 'maybe', 'no')),
+  -- What they'd want, in their words. Optional, and capped.
+  words text check (words is null or char_length(words) <= 600),
+  -- Optional, only if they offer it, so the founder can reply.
+  contact text check (contact is null or char_length(contact) <= 120),
+  country text check (country is null or char_length(country) <= 8),
+  created_at timestamptz not null default now()
+);
+
+alter table public.suggestions enable row level security;
+-- No policies: the public key cannot read or write this table directly.
+
+-- Insert-only, through a function, so nothing can be listed or edited from the browser.
+create or replace function public.add_suggestion(
+  p_needed text, p_words text, p_contact text, p_country text
+) returns void
+language plpgsql
+security definer
+set search_path = public
+as $$
+begin
+  if p_needed not in ('yes', 'maybe', 'no') then
+    return;
+  end if;
+  insert into suggestions (needed, words, contact, country)
+  values (
+    p_needed,
+    nullif(left(coalesce(p_words, ''), 600), ''),
+    nullif(left(coalesce(p_contact, ''), 120), ''),
+    nullif(upper(left(coalesce(p_country, ''), 8)), '')
+  );
+end;
+$$;
+
+revoke all on function public.add_suggestion(text, text, text, text) from public;
+grant execute on function public.add_suggestion(text, text, text, text) to anon;
+
+-- What the founder reads. Dashboard only; the public key can't touch it.
+create or replace view public.suggestion_summary as
+  select date_trunc('day', created_at)::date as day, needed, country, count(*) as n
+  from public.suggestions
+  group by 1, 2, 3
+  order by 1 desc, 4 desc;
+
+revoke all on public.suggestion_summary from anon, authenticated;
