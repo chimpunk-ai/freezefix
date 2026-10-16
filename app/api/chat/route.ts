@@ -161,7 +161,11 @@ export async function POST(req: Request) {
           headers: { "x-api-key": apiKey, "anthropic-version": "2023-06-01", "content-type": "application/json" },
           body: JSON.stringify({
             model: process.env.AI_MODEL || "claude-haiku-5-5",
-            max_tokens: 300,
+            // Not a brevity control. Length is enforced by the prompt, because the model's
+            // own reasoning is spent from this same budget: at 300 some turns used the lot
+            // thinking and stopped at max_tokens before writing a single word, which looked
+            // from outside like the API was down.
+            max_tokens: 900,
             system: [{ type: "text", text: systemWithOpener, cache_control: { type: "ephemeral" } }],
             messages,
             stream: true,
