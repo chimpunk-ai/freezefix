@@ -133,7 +133,6 @@ export async function POST(req: Request) {
           body: JSON.stringify({
             model: process.env.AI_MODEL || "claude-haiku-5-5",
             max_tokens: 500,
-            temperature: 0.8,
             system: [{ type: "text", text: system, cache_control: { type: "ephemeral" } }],
             messages,
             stream: true,
@@ -318,7 +317,6 @@ async function complete(
     body: JSON.stringify({
       model: process.env.AI_MODEL || "claude-haiku-5-5",
       max_tokens: maxTokens,
-      temperature: 0.4,
       system,
       messages,
     }),

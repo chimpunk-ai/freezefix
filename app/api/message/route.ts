@@ -87,7 +87,6 @@ export async function POST(req: Request) {
       body: JSON.stringify({
         model: process.env.AI_MODEL || "claude-haiku-5-5",
         max_tokens: 300,
-        temperature: 0.8,
         system: SYSTEM,
         messages: [
           {

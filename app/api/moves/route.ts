@@ -200,7 +200,6 @@ async function callClaude(apiKey: string, system: string, content: string | Cont
     body: JSON.stringify({
       model: process.env.AI_MODEL || "claude-haiku-5-5",
       max_tokens: maxTokens,
-      temperature: 0.4,
       system,
       messages: [{ role: "user", content }],
     }),
