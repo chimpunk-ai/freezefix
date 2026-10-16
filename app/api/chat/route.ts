@@ -139,7 +139,7 @@ export async function POST(req: Request) {
     : system;
   const messages = [
     ...history,
-    { role: "user" as const, content: buildTurn(moment, message, shotMe, shotThem, history.length === 0) },
+    { role: "user" as const, content: buildTurn(scenario ? MOMENTS[moment] : null, message, shotMe, shotThem, history.length === 0) },
   ];
 
   // 2) Stream, holding back every character until RISK and FLAG have arrived.
@@ -342,8 +342,12 @@ export async function POST(req: Request) {
   return new Response(stream, { headers });
 }
 
-function buildTurn(moment: MomentId, message: string, shotMe: string, shotThem: string, first: boolean) {
-  let out = first ? `[They opened with: ${MOMENTS[moment]}]\n` : "";
+// `opened` is the situation they actually CHOSE, or null when they just started typing.
+// It used to be the moment id, which defaults to "alone" in the code, so every first message
+// arrived labelled "Alone and spiralling" whether or not anyone had picked it. The model
+// believed the label over the person and answered "alright mate" with "spiralling how?".
+function buildTurn(opened: string | null, message: string, shotMe: string, shotThem: string, first: boolean) {
+  let out = first && opened ? `[They opened with: ${opened}]\n` : "";
   out += message || "(no words, just the image)";
   if (shotMe) out += `\n\n[From an image they shared, their own side: """${shotMe}"""]`;
   if (shotThem) {
