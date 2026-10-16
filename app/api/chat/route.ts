@@ -151,6 +151,9 @@ export async function POST(req: Request) {
       let streamError: string | null = null;
       const seen: string[] = [];
       let stopReason: string | null = null;
+      // Set if the provider rejects the thinking field, so the retry goes without it rather
+      // than failing twice for a reason we can already see.
+      let noThinking = false;
       try {
         // Two attempts at most. A retry only happens when nothing has reached the screen,
         // so nobody ever sees half a reply, then a second one.
@@ -161,6 +164,11 @@ export async function POST(req: Request) {
           headers: { "x-api-key": apiKey, "anthropic-version": "2023-06-01", "content-type": "application/json" },
           body: JSON.stringify({
             model: process.env.AI_MODEL || "claude-haiku-5-5",
+            // Fix answers in one line; it has nothing to reason about at length. Left on,
+            // the model spends the whole budget thinking on some turns and stops at
+            // max_tokens having written nothing, which looks from outside like an outage.
+            // Dropped automatically below if a model doesn't accept the field.
+            ...(noThinking ? {} : { thinking: { type: "disabled" } }),
             // Not a brevity control. Length is enforced by the prompt, because the model's
             // own reasoning is spent from this same budget: at 300 some turns used the lot
             // thinking and stopped at max_tokens before writing a single word, which looked
@@ -176,6 +184,10 @@ export async function POST(req: Request) {
           // Surface the provider's own reason: it is the difference between a bad key,
           // a wrong model name and a malformed request, and guessing wastes hours.
           const detail = await upstream.text().catch(() => "");
+          if (upstream.status === 400 && /thinking/i.test(detail) && !noThinking && attempt === 0) {
+            noThinking = true;
+            continue;
+          }
           send({ error: "ai_unavailable", status: upstream.status, detail: detail.slice(0, 300) });
           controller.close();
           return;
