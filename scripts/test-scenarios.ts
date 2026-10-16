@@ -8,6 +8,9 @@ if (ids.size !== SCENARIOS.length) throw new Error("duplicate scenario id");
 for (const s of SCENARIOS) {
   for (const f of ["label","blurb","emoji","context","opener"] as const) if (!s[f]) throw new Error(`${s.id} missing ${f}`);
   if (!s.chips.length) throw new Error(`${s.id} has no chips`);
+  // Fix texts like a mate. An opener that runs long teaches the model the wrong length.
+  if (s.opener.length > 62) throw new Error(`${s.id} opener too long (${s.opener.length}): ${s.opener}`);
+  if (/\bor is it\b|, or /.test(s.opener)) throw new Error(`${s.id} opener is an either/or question`);
 }
 // pres card is evening-only and must survive the midnight wrap
 const at = (h: number) => scenariosFor({ now: new Date(2026, 9, 16, h) }).map(s => s.id);

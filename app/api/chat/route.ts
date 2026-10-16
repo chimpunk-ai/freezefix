@@ -144,7 +144,7 @@ export async function POST(req: Request) {
           headers: { "x-api-key": apiKey, "anthropic-version": "2023-06-01", "content-type": "application/json" },
           body: JSON.stringify({
             model: process.env.AI_MODEL || "claude-haiku-5-5",
-            max_tokens: 500,
+            max_tokens: 300,
             system: [{ type: "text", text: systemWithOpener, cache_control: { type: "ephemeral" } }],
             messages,
             stream: true,

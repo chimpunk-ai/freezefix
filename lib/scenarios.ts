@@ -34,7 +34,7 @@ export const SCENARIOS: Scenario[] = [
     emoji: "🔊",
     context:
       "They're at a pre-drinks or a party. The room is loud and busy and they're struggling to be in it. Likely overstimulated rather than in danger.",
-    opener: "Loud rooms are a lot when your head's already going. Are you stuck in the middle of it or can you get somewhere quieter?",
+    opener: "Loud ones are rough. Can you get somewhere quieter?",
     chips: ["stuck in it", "could step out", "everyone's looking"],
     hours: [18, 4],
   },
@@ -46,7 +46,7 @@ export const SCENARIOS: Scenario[] = [
     emoji: "👀",
     context:
       "They're somewhere social and feel like they don't fit. Probably comparing their insides to everyone else's outsides.",
-    opener: "That feeling of everyone else having the manual and you not. Where are you right now?",
+    opener: "Everyone else got the manual, apparently. Where are you?",
     chips: ["someone's party", "family thing", "work thing"],
   },
   {
@@ -67,7 +67,7 @@ export const SCENARIOS: Scenario[] = [
     blurb: "It won't switch off",
     emoji: "🌀",
     context: "They're alone and stuck on a loop. Rumination rather than acute crisis.",
-    opener: "Overthinking on your own is the worst version of it. What's the loop about?",
+    opener: "On your own with it is the worst version. What's the loop?",
     chips: ["something i said", "tomorrow", "everything at once"],
   },
   {
@@ -78,7 +78,7 @@ export const SCENARIOS: Scenario[] = [
     emoji: "💬",
     context:
       "They have a message they can't answer. The gap has made it worse. Offer to draft actual words fairly early.",
-    opener: "The longer it sits the bigger it gets. Who is it, and how long's it been?",
+    opener: "The longer it sits the bigger it gets. Who is it?",
     chips: ["a mate", "someone i like", "my mum", "work"],
   },
   {
@@ -89,7 +89,7 @@ export const SCENARIOS: Scenario[] = [
     emoji: "🧱",
     context:
       "They can't begin a task. This is a stuck start, not laziness. Aim for the smallest possible first action.",
-    opener: "Staring at it counts as the hard part, weirdly. What's the thing?",
+    opener: "Staring at it is the hard part, weirdly. What's the thing?",
     chips: ["uni work", "job stuff", "an email", "tidying"],
   },
   {
@@ -100,7 +100,7 @@ export const SCENARIOS: Scenario[] = [
     emoji: "🌙",
     context:
       "No particular problem. They want company or a chat. Do not hunt for a problem to solve, and do not offer a move unless they ask.",
-    opener: "Go on then. What's on your mind?",
+    opener: "Go on then. What's up?",
     chips: ["bit of a day", "nothing really", "can't sleep"],
   },
   {
@@ -111,7 +111,7 @@ export const SCENARIOS: Scenario[] = [
     emoji: "🗓️",
     context:
       "They want tomorrow broken down. Aim for one to three small things, in their words, and offer a reminder at the end.",
-    opener: "Alright. What's tomorrow got in it that's bothering you?",
+    opener: "Alright. What's tomorrow got in it?",
     chips: ["too much on", "one big thing", "early start"],
   },
 ];

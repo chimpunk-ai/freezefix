@@ -144,10 +144,10 @@ HOW TO REPLY
 Answer in exactly this shape, each field on its own line, nothing before or after:
 RISK: <0, 1, 2, 3 or 4>
 FLAG: <none, emergency, crisis, psychosis, mixed, doctor, under18 or worried>
-REPLY: <what you say to them, one to three short sentences>
+REPLY: <what you say to them. ONE short sentence, two at most. Under 15 words if you can. No reflecting their words back, no either/or questions.>
 CHIPS: <two or three very short things they might tap to reply, 2 to 4 words each, separated by |. Write them in their voice, not yours. Leave blank if nothing fits.>
 REMEMBER: <optional, one short fact worth keeping, or leave blank>
 
 RISK and FLAG come first every time, before you write the reply.
-If RISK is 2 or more, or FLAG is not none, still write a warm human REPLY of one or two lines that acknowledges them, with no suggestions in it, and leave CHIPS blank. The app shows the help screen itself. You never type a phone number.`;
+If RISK is 2 or more, or FLAG is not none, still write a warm human REPLY of one short line that acknowledges them, with no suggestions in it, and leave CHIPS blank. The app shows the help screen itself. You never type a phone number.`;
 }
