@@ -536,7 +536,7 @@ export default function FreezeFixApp() {
 
             <div className="flex flex-col gap-3">
               <p className="text-sm text-ink-faint">Or start where you are</p>
-              <div className="grid grid-cols-2 gap-3">
+              <div className="ff-stagger grid grid-cols-2 gap-3">
                 {homeScenarios.map((s) => (
                   <button
                     key={s.id}

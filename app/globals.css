@@ -175,3 +175,64 @@ a {
   from { opacity: 0; transform: translateY(18px); }
   to { opacity: 1; transform: none; }
 }
+
+/* ── Interface polish ─────────────────────────────────────────────────────────
+   Motion here is there to make the thing feel alive and responsive, never to
+   decorate. Everything stops under the reduced-motion rule above. */
+
+/* Chat bubbles land rather than appear. */
+.ff-bubble {
+  animation: ff-bubble 260ms cubic-bezier(.2,.8,.3,1) both;
+}
+@keyframes ff-bubble {
+  from { opacity: 0; transform: translateY(10px) scale(0.97); }
+  to { opacity: 1; transform: none; }
+}
+
+/* Home-screen cards arrive one after another, not all at once. */
+.ff-stagger > * {
+  animation: ff-bubble 380ms cubic-bezier(.2,.8,.3,1) both;
+}
+.ff-stagger > *:nth-child(1) { animation-delay: 20ms; }
+.ff-stagger > *:nth-child(2) { animation-delay: 60ms; }
+.ff-stagger > *:nth-child(3) { animation-delay: 100ms; }
+.ff-stagger > *:nth-child(4) { animation-delay: 140ms; }
+.ff-stagger > *:nth-child(5) { animation-delay: 180ms; }
+.ff-stagger > *:nth-child(6) { animation-delay: 220ms; }
+.ff-stagger > *:nth-child(7) { animation-delay: 260ms; }
+.ff-stagger > *:nth-child(8) { animation-delay: 300ms; }
+
+/* The aurora drifts, very slowly. Long enough that you notice it only if you look. */
+@media (prefers-reduced-motion: no-preference) {
+  body {
+    animation: ff-aurora 48s ease-in-out infinite alternate;
+  }
+}
+@keyframes ff-aurora {
+  from { background-position: 0% 0%, 100% 0%, 50% 100%; }
+  to { background-position: 12% 6%, 86% 10%, 58% 94%; }
+}
+
+/* Chips invite a tap: they lift slightly on press rather than just changing colour. */
+.ff-chip {
+  transition: transform 140ms cubic-bezier(.2,.8,.3,1), background-color 140ms ease;
+}
+.ff-chip:active {
+  transform: scale(0.94);
+}
+
+/* The cursor that blinks while a reply is still arriving. */
+.ff-caret::after {
+  content: "";
+  display: inline-block;
+  width: 0.5ch;
+  height: 1.05em;
+  margin-left: 2px;
+  vertical-align: -0.16em;
+  background: currentColor;
+  opacity: 0.55;
+  animation: ff-caret 1.05s steps(2, start) infinite;
+}
+@keyframes ff-caret {
+  to { opacity: 0; }
+}

@@ -81,6 +81,11 @@ export default function Chat({
     setShowAttach(false);
     setNote(null);
     setBusy(true);
+    try {
+      navigator.vibrate?.(8);
+    } catch {
+      /* iPhones ignore this; nothing depends on it */
+    }
 
     try {
       const res = await fetch("/api/chat", {
@@ -189,11 +194,14 @@ export default function Chat({
             key={i}
             className={
               t.role === "assistant"
-                ? "max-w-[85%] self-start rounded-[1.4rem] rounded-bl-md bg-card px-4 py-3 text-lg leading-relaxed text-ink"
-                : "max-w-[85%] self-end rounded-[1.4rem] rounded-br-md bg-accent px-4 py-3 text-lg leading-relaxed text-accent-ink"
+                ? "ff-bubble max-w-[85%] self-start rounded-[1.4rem] rounded-bl-md bg-card px-4 py-3 text-lg leading-relaxed text-ink"
+                : "ff-bubble max-w-[85%] self-end rounded-[1.4rem] rounded-br-md bg-accent px-4 py-3 text-lg leading-relaxed text-accent-ink"
             }
           >
-            {t.text}
+            {/* The caret only follows the reply that is still arriving. */}
+            <span className={busy && t.role === "assistant" && i === turns.length - 1 ? "ff-caret" : undefined}>
+              {t.text}
+            </span>
           </div>
         ))}
         {busy && turns[turns.length - 1]?.role === "user" && (
@@ -214,7 +222,7 @@ export default function Chat({
             <button
               key={c}
               onClick={() => send(c)}
-              className="rounded-full bg-chip px-4 py-2 text-base text-ink transition active:scale-95"
+              className="ff-chip rounded-full bg-chip px-4 py-2 text-base text-ink"
             >
               {c}
             </button>
