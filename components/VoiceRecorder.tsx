@@ -2,8 +2,11 @@
 
 import { useEffect, useRef, useState } from "react";
 
-// Records a voice note up to 60 seconds, sends it to /api/transcribe, and hands back the text.
-// The text is shown to the user before anything else happens. Audio is never saved.
+// Voice notes, up to 60 seconds.
+// First choice is the browser's own speech engine: free, instant, no account, and the audio
+// never leaves the phone. If the browser can't do it we fall back to the paid transcription
+// service (server route), which is where the daily limits apply.
+// Either way FreezeFix stores no audio, and the text goes through the same safety check.
 
 const MAX_SECONDS = 60;
 
@@ -11,6 +14,25 @@ type Props = {
   onText: (text: string) => void;
   onLimit: (msg: string) => void;
 };
+
+type SpeechResultList = { length: number; [i: number]: { 0: { transcript: string }; isFinal: boolean } };
+type Recognition = {
+  lang: string;
+  continuous: boolean;
+  interimResults: boolean;
+  start: () => void;
+  stop: () => void;
+  onresult: ((e: { resultIndex: number; results: SpeechResultList }) => void) | null;
+  onerror: ((e: { error?: string }) => void) | null;
+  onend: (() => void) | null;
+};
+
+function speechEngine(): Recognition | null {
+  if (typeof window === "undefined") return null;
+  const w = window as unknown as { SpeechRecognition?: new () => Recognition; webkitSpeechRecognition?: new () => Recognition };
+  const Ctor = w.SpeechRecognition || w.webkitSpeechRecognition;
+  return Ctor ? new Ctor() : null;
+}
 
 function pickMimeType(): string {
   if (typeof MediaRecorder === "undefined") return "";
@@ -23,12 +45,16 @@ function pickMimeType(): string {
 export default function VoiceRecorder({ onText, onLimit }: Props) {
   const [state, setState] = useState<"idle" | "recording" | "sending">("idle");
   const [seconds, setSeconds] = useState(0);
+  const [heard, setHeard] = useState("");
   const [note, setNote] = useState<string | null>(null);
+
+  const recognition = useRef<Recognition | null>(null);
+  const finalText = useRef("");
   const recorder = useRef<MediaRecorder | null>(null);
   const chunks = useRef<Blob[]>([]);
+  const stream = useRef<MediaStream | null>(null);
   const timer = useRef<ReturnType<typeof setInterval> | null>(null);
   const started = useRef(0);
-  const stream = useRef<MediaStream | null>(null);
 
   useEffect(() => () => cleanup(), []);
 
@@ -37,10 +63,70 @@ export default function VoiceRecorder({ onText, onLimit }: Props) {
     timer.current = null;
     stream.current?.getTracks().forEach((t) => t.stop());
     stream.current = null;
+    try {
+      recognition.current?.stop();
+    } catch {
+      /* already stopped */
+    }
+    recognition.current = null;
+  }
+
+  function startTimer(onTimeout: () => void) {
+    started.current = Date.now();
+    setSeconds(0);
+    timer.current = setInterval(() => {
+      const s = Math.floor((Date.now() - started.current) / 1000);
+      setSeconds(s);
+      if (s >= MAX_SECONDS) onTimeout();
+    }, 250);
   }
 
   async function start() {
     setNote(null);
+    setHeard("");
+    finalText.current = "";
+
+    const engine = speechEngine();
+    if (engine) {
+      engine.lang = navigator.language || "en-GB";
+      engine.continuous = true;
+      engine.interimResults = true;
+      engine.onresult = (e) => {
+        let interim = "";
+        for (let i = e.resultIndex; i < e.results.length; i++) {
+          const r = e.results[i];
+          if (r.isFinal) finalText.current += r[0].transcript;
+          else interim += r[0].transcript;
+        }
+        setHeard((finalText.current + interim).trim());
+      };
+      engine.onerror = (e) => {
+        const why = e?.error;
+        stopEverything();
+        if (why === "not-allowed" || why === "service-not-allowed") {
+          setNote("No mic access. Allow it in your browser settings, or just type.");
+        } else if (why === "no-speech") {
+          setNote("Couldn't catch that. Type it in a few words?");
+        } else {
+          setNote("Voice didn't work there. You can type instead.");
+        }
+      };
+      engine.onend = () => {
+        if (timer.current) finishLocal();
+      };
+      recognition.current = engine;
+      try {
+        engine.start();
+      } catch {
+        setNote("Voice didn't start. You can type instead.");
+        return;
+      }
+      setState("recording");
+      startTimer(finishLocal);
+      return;
+    }
+
+    // No speech engine: record and send to the transcription service.
     if (!navigator.mediaDevices?.getUserMedia || typeof MediaRecorder === "undefined") {
       setNote("Voice notes don't work in this browser. You can type instead.");
       return;
@@ -48,32 +134,43 @@ export default function VoiceRecorder({ onText, onLimit }: Props) {
     try {
       stream.current = await navigator.mediaDevices.getUserMedia({ audio: true });
     } catch {
-      setNote("No mic access. You can allow it in your browser settings, or just type.");
+      setNote("No mic access. Allow it in your browser settings, or just type.");
       return;
     }
     const mimeType = pickMimeType();
     const rec = new MediaRecorder(stream.current, mimeType ? { mimeType } : undefined);
     chunks.current = [];
     rec.ondataavailable = (e) => e.data.size && chunks.current.push(e.data);
-    rec.onstop = () => send(new Blob(chunks.current, { type: rec.mimeType || mimeType || "audio/webm" }));
+    rec.onstop = () => upload(new Blob(chunks.current, { type: rec.mimeType || mimeType || "audio/webm" }));
     recorder.current = rec;
     rec.start();
-    started.current = Date.now();
-    setSeconds(0);
     setState("recording");
-    timer.current = setInterval(() => {
-      const s = Math.floor((Date.now() - started.current) / 1000);
-      setSeconds(s);
-      if (s >= MAX_SECONDS) stop();
-    }, 250);
+    startTimer(stopEverything);
   }
 
-  function stop() {
+  function finishLocal() {
+    const text = (finalText.current || heard).trim();
+    cleanup();
+    setState("idle");
+    setSeconds(0);
+    if (text) {
+      onText(text);
+      setHeard("");
+    } else {
+      setNote("Couldn't catch that. Type it in a few words?");
+    }
+  }
+
+  function stopEverything() {
+    if (recognition.current) {
+      finishLocal();
+      return;
+    }
     if (recorder.current && recorder.current.state === "recording") recorder.current.stop();
     cleanup();
   }
 
-  async function send(blob: Blob) {
+  async function upload(blob: Blob) {
     setState("sending");
     const secs = Math.min(MAX_SECONDS, Math.round((Date.now() - started.current) / 1000));
     if (secs < 1 || blob.size < 1000) {
@@ -94,14 +191,12 @@ export default function VoiceRecorder({ onText, onLimit }: Props) {
       } else if (data.error === "limit") {
         onLimit("That's today's voice notes. You can still type, and help is always here.");
       } else if (data.error === "voice_off") {
-        setNote("Voice notes aren't switched on yet. You can type instead.");
-      } else if (data.error === "empty") {
-        setNote("Couldn't catch that. Type it in a few words?");
+        setNote("Voice isn't switched on in this browser. You can type instead.");
       } else {
         setNote("Couldn't catch that. Type it in a few words?");
       }
     } catch {
-      setNote("That didn't go through. Try again, or type instead.");
+      setNote("Couldn't catch that. Type it in a few words?");
     }
     setState("idle");
   }
@@ -110,7 +205,7 @@ export default function VoiceRecorder({ onText, onLimit }: Props) {
     <div className="flex flex-col gap-2">
       {state === "recording" ? (
         <button
-          onClick={stop}
+          onClick={stopEverything}
           className="flex items-center justify-center gap-3 rounded-2xl border border-accent bg-card px-4 py-4 text-lg font-semibold text-ink"
         >
           <span className="h-3 w-3 animate-pulse rounded-full bg-accent" />
@@ -123,9 +218,10 @@ export default function VoiceRecorder({ onText, onLimit }: Props) {
           className="flex items-center justify-center gap-2 rounded-2xl border border-line bg-card px-4 py-4 text-lg font-medium text-ink disabled:opacity-60"
         >
           <MicIcon />
-          {state === "sending" ? "Listening back…" : "Say it instead (up to 60s)"}
+          {state === "sending" ? "Listening back…" : "Say it instead"}
         </button>
       )}
+      {state === "recording" && heard && <p className="px-1 text-base text-ink-soft">{heard}</p>}
       {note && <p className="text-center text-sm text-ink-faint">{note}</p>}
     </div>
   );

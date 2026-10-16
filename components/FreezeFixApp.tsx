@@ -132,7 +132,15 @@ export default function FreezeFixApp() {
   useEffect(() => {
     fetch("/api/config")
       .then((r) => r.json())
-      .then((f) => setFeatures({ ai: !!f.ai, voice: !!f.voice, screenshot: !!f.screenshot }))
+      .then((f) => {
+        const browserSpeech =
+          typeof window !== "undefined" &&
+          Boolean(
+            (window as unknown as { SpeechRecognition?: unknown; webkitSpeechRecognition?: unknown }).SpeechRecognition ||
+              (window as unknown as { webkitSpeechRecognition?: unknown }).webkitSpeechRecognition
+          );
+        setFeatures({ ai: !!f.ai, voice: !!f.voice || browserSpeech, screenshot: !!f.screenshot });
+      })
       .catch(() => {});
   }, []);
 

@@ -6,7 +6,8 @@
 // Set ENABLE_SCREENSHOTS=true / ENABLE_VOICE=true only after those are Done.
 
 export function screenshotsOn(): boolean {
-  return process.env.ENABLE_SCREENSHOTS === "true" && Boolean(process.env.ANTHROPIC_API_KEY);
+  if (process.env.ENABLE_SCREENSHOTS === "false") return false;
+  return Boolean(process.env.ANTHROPIC_API_KEY);
 }
 
 export function voiceOn(): boolean {

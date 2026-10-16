@@ -30,7 +30,7 @@ Contact for anything about your data: **privacy@getfreezefix.com**.
 | What | Examples | Why we use it | Legal basis (UK/EU) |
 | --- | --- | --- | --- |
 | Age confirmation | You confirm you are 18 or over | To keep FreezeFix adults-only | Legal obligation; legitimate interests |
-| Session details (health data) | The moment you pick (around people, alone and spiralling, stuck on a task, can't reply), your safety-check answers, the few words you type, an optional voice note | To suggest 3 small next steps and to show crisis help when you need it | **Your explicit consent** (you tick a box before your first session) |
+| Session details (health data) | The moment you pick (around people, alone and spiralling, stuck on a task, can't reply), what you type in the chat, an optional voice note, and an optional image you choose to share | To work out your next steps and to show crisis help when you need it | **Your explicit consent** (you tick a box before your first session) |
 | Feedback | "Did it help?" thumbs up or down, which move you picked | To learn which moves help and improve them | Your explicit consent |
 | Account details (paid plan only) | Email address, plan, trial and renewal dates | To run your subscription, reminders and Tomorrow plan | Contract |
 | Payment details | Handled by our payment provider; we never see your full card number | To take payment and send receipts | Contract; legal obligation (tax) |
@@ -40,11 +40,15 @@ Contact for anything about your data: **privacy@getfreezefix.com**.
 
 **Health data.** What you share in a session can reveal your mental health and substance use. The law treats this as special (sensitive) data. We only process it with your explicit consent, and you can withdraw consent at any time in Settings. Withdrawing stops future sessions; it does not undo what was lawful before.
 
-**Never collected:** photos or screenshots, contacts, precise location, or data from anyone under 18.
+**Images you choose to share.** You can attach a chat screenshot, or a photo of a place or object, if it helps explain what's going on. Our AI reads it once to pull out the text or a short description, and that is all it is used for. We never store the image, and it is deleted from our AI provider as described below. We refuse images of people, ID documents, bank or card details, and sexual images, and we do not describe a refused image back to you.
+
+**Voice notes.** Most browsers turn your voice into text on your own device, so the audio never reaches us at all. Where your browser can't do that, the audio goes once to our transcription provider and is not stored by us. Only the text is used.
+
+**Never collected:** contacts, precise location, camera or microphone access without you starting it, or data from anyone under 18.
 
 ## 3. How the AI part works
 
-To suggest your moves, the words or voice transcript you share in a session are sent to our AI model provider, Anthropic (the Claude API), which processes them for us under contract. Anthropic does not use this data to train its models and deletes it within 30 days. If Anthropic's automated safety systems flag a message as breaking its usage policy, Anthropic may keep that message for up to 2 years.
+To work out your next steps, what you type, any voice transcript and any image you attach are sent to our AI model provider, Anthropic (the Claude API), which processes them for us under contract. Anthropic does not use this data to train its models and deletes it within 30 days. If Anthropic's automated safety systems flag a message as breaking its usage policy, Anthropic may keep that message for up to 2 years.
 
 The AI suggests ideas; it does not make decisions about you with legal or similarly significant effects. Its suggestions can be wrong. Use your own judgment, and get real help if you are unsafe.
 
@@ -73,7 +77,7 @@ We are based in India and our providers operate in several countries, including 
 
 | Data | How long |
 | --- | --- |
-| Session words and voice notes | Not stored by FreezeFix after your moves are shown. Our AI provider deletes them within 30 days (see section 3). Notes you save stay on your phone |
+| Chat messages, voice notes and images | Not stored by FreezeFix at all. Our AI provider deletes them within 30 days (see section 3). Notes you save stay on your phone |
 | Feedback ("Did it help?") | 24 months, not linked to your name |
 | Account details | Until you delete your account, or 12 months after your last sign-in |
 | Payment and tax records | As long as tax law requires |
