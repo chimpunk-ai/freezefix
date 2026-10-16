@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { keywordCheck, type RiskLevel } from "@/lib/risk";
 import { consumeQuota, readDeviceId, newDeviceId, deviceCookie } from "@/lib/quota";
+import { aiKey } from "@/lib/ai";
 
 // "Message someone I trust" drafter (founder, 16 Oct).
 // The user types broken fragments. We turn them into something a real person would text.
@@ -60,7 +61,7 @@ export async function POST(req: Request) {
     });
   }
 
-  const apiKey = process.env.ANTHROPIC_API_KEY;
+  const apiKey = aiKey();
   if (!apiKey) {
     // No AI yet: hand back something plain and honest rather than nothing.
     return respond({

@@ -6,6 +6,7 @@ import { logEvent } from "@/lib/log";
 import { consumeQuota, refundQuota, readDeviceId, newDeviceId, deviceCookie, getEntitlement, claimFreeSession } from "@/lib/quota";
 import { screenshotsOn } from "@/lib/features";
 import { paymentsOn } from "@/lib/plans";
+import { aiKey } from "@/lib/ai";
 
 // What the browser sends. We never store any of it.
 type Body = {
@@ -49,7 +50,7 @@ export async function POST(req: Request) {
   const acked = Array.isArray(body.acknowledged)
     ? body.acknowledged.filter((s): s is HelpScreen => VALID_FLAGS.includes(s as HelpScreen))
     : [];
-  const apiKey = process.env.ANTHROPIC_API_KEY;
+  const apiKey = aiKey();
 
   // Device cookie (only needed for the screenshot daily limit).
   let deviceId = readDeviceId(req);

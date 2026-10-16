@@ -5,6 +5,7 @@ import { logEvent } from "@/lib/log";
 import { consumeQuota, refundQuota, readDeviceId, newDeviceId, deviceCookie, getEntitlement, claimFreeSession } from "@/lib/quota";
 import { screenshotsOn } from "@/lib/features";
 import { paymentsOn } from "@/lib/plans";
+import { aiKey } from "@/lib/ai";
 
 // The buddy. Streams its reply, but ONLY after the risk verdict has arrived.
 //
@@ -53,7 +54,7 @@ export async function POST(req: Request) {
     .map((t) => ({ role: t.role, content: String(t.text).slice(0, MAX_CHARS) }));
   const memory = sanitiseMemory(body.memory);
 
-  const apiKey = process.env.ANTHROPIC_API_KEY;
+  const apiKey = aiKey();
 
   let deviceId = readDeviceId(req);
   const isNew = !deviceId;
