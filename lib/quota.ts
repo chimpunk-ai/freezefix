@@ -19,7 +19,7 @@ const IP_MULTIPLIER = 3;
 
 export const DEVICE_COOKIE = "ff_did";
 
-export type QuotaResult = { allowed: boolean; used: number; limit: number; reason?: "limit" | "unavailable" };
+export type QuotaResult = { allowed: boolean; used: number; limit: number; reason?: "limit" | "unavailable"; setCookie?: string };
 
 // Paid = an active Plus plan (not the trial). Checked ON THE SERVER, never trusted from the browser.
 // Trial users get the free limits (3 voice notes a day); Plus gets 6.
@@ -123,9 +123,12 @@ export async function consumeQuota(req: Request, deviceId: string, kind: QuotaKi
 
   const dbReady = Boolean(process.env.SUPABASE_URL && process.env.SUPABASE_ANON_KEY);
   if (!dbReady) {
-    // Local testing only. Live, we fail closed so costs can't run away.
-    if (process.env.NODE_ENV !== "production") return { allowed: true, used: 0, limit };
-    return { allowed: false, used: 0, limit, reason: "unavailable" };
+    // No database yet. This used to fail closed, which quietly killed every image and voice
+    // note on the live site and reported it as "you've hit today's limit", which was a lie.
+    // Falling back to a per-device cookie counter keeps the feature working and still caps
+    // the spend. It is weaker: clearing cookies resets it, and there is no cap per address.
+    // Set SUPABASE_URL and SUPABASE_ANON_KEY to get the real limits back.
+    return countInCookie(req, kind, limit);
   }
 
   try {
@@ -151,4 +154,34 @@ export async function refundQuota(req: Request, deviceId: string, kind: QuotaKin
   } catch {
     /* ignore */
   }
+}
+
+// Fallback day counter, kept in a cookie, for when no database is configured.
+// Returned alongside the result so the caller can set it on the response.
+export type CookieCount = QuotaResult & { setCookie?: string };
+
+const COUNT_COOKIE = "ff_q";
+
+function countInCookie(req: Request, kind: QuotaKind, limit: number): CookieCount {
+  const today = new Date().toISOString().slice(0, 10);
+  const raw = /(?:^|;\s*)ff_q=([^;]+)/.exec(req.headers.get("cookie") ?? "")?.[1];
+  let counts: Record<string, number> = {};
+  let day = today;
+  try {
+    const parsed = JSON.parse(decodeURIComponent(raw ?? "")) as { d?: string; c?: Record<string, number> };
+    if (parsed.d === today && parsed.c) counts = parsed.c;
+    day = today;
+  } catch {
+    counts = {};
+  }
+  const used = counts[kind] ?? 0;
+  if (used >= limit) return { allowed: false, used, limit, reason: "limit" };
+  const next = { d: day, c: { ...counts, [kind]: used + 1 } };
+  const value = encodeURIComponent(JSON.stringify(next));
+  return {
+    allowed: true,
+    used: used + 1,
+    limit,
+    setCookie: `${COUNT_COOKIE}=${value}; Path=/; Max-Age=172800; HttpOnly; Secure; SameSite=Lax`,
+  };
 }

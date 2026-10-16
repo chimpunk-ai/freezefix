@@ -64,6 +64,8 @@ export async function POST(req: Request) {
   const isNew = !deviceId;
   if (!deviceId) deviceId = newDeviceId();
   const cookie = isNew ? deviceCookie(deviceId) : null;
+  // Set when the day counter lives in a cookie because no database is configured.
+  let countCookie: string | null = null;
 
   const mustRoute = (r: RiskResult) =>
     r.underage || r.level >= 3 || (r.level === 2 && !!r.screen && !acked.includes(r.screen));
@@ -76,7 +78,13 @@ export async function POST(req: Request) {
     if (!img) return json({ error: "bad_image" }, 400, cookie);
     if (!apiKey || !screenshotsOn()) return json({ error: "screenshot_off" }, 503, cookie);
     const quota = await consumeQuota(req, deviceId, "screenshot");
-    if (!quota.allowed) return json({ error: "screenshot_limit", limit: quota.limit }, 429, cookie);
+    countCookie = quota.setCookie ?? null;
+    if (!quota.allowed) {
+      // "unavailable" is not a limit, and telling someone they've used today's images when
+      // the counter is simply broken is a lie they can't act on.
+      const why = quota.reason === "unavailable" ? "screenshot_off" : "screenshot_limit";
+      return json({ error: why, limit: quota.limit }, 429, cookie);
+    }
     try {
       const raw = await complete(apiKey, SCREENSHOT_READER_PROMPT, [
         {
@@ -254,10 +262,23 @@ export async function POST(req: Request) {
         }
 
         if (routed) return;
-        if (!verdict) {
+
+        // The model sometimes gives RISK and FLAG and then just talks, with no REPLY: label.
+        // The words are right there and the safety verdict has already been applied, so take
+        // everything after the FLAG line rather than showing an empty bubble.
+        if (verdict && !replyStarted) {
+          const after = /FLAG:\s*\w+[ \t]*\n?([\s\S]*)/.exec(buf)?.[1] ?? "";
+          const salvaged = after.split(/\n\s*(?:CHIPS|REMEMBER)\s*:/)[0].replace(/^\s*REPLY:\s*/, "").trim();
+          if (salvaged) {
+            send({ delta: salvaged });
+            replyStarted = true;
+          }
+        }
+
+        if (!verdict || !replyStarted) {
           // Nothing usable came back and nothing was shown. Worth one more go: this is
           // almost always the provider reporting "overloaded" part-way through.
-          if (attempt === 0 && !reply) continue;
+          if (attempt === 0 && !reply && !replyStarted) continue;
           // The detail is this caller's own answer, so it reveals nothing about anyone else,
           // and without it this failure is invisible from outside.
           send({ error: "ai_unavailable", detail: streamError ?? buf.slice(0, 300) });
@@ -283,6 +304,7 @@ export async function POST(req: Request) {
   });
 
   const headers = new Headers({ "Content-Type": "application/x-ndjson", "Cache-Control": "no-store" });
+  if (countCookie) headers.append("Set-Cookie", countCookie);
   if (cookie) headers.append("Set-Cookie", cookie);
   return new Response(stream, { headers });
 }

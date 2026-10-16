@@ -1,7 +1,8 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { PLANS, TRIAL_DAYS, type PlanId } from "@/lib/plans";
+import { plansFor, TRIAL_DAYS, trialDates, type PlanId } from "@/lib/plans";
+import { detectRegion } from "@/lib/country";
 
 // Paywall (founder decision 16 Oct): shown after the first 👍, or when someone who has used
 // their free unfreeze starts another. Yearly is the default. Never shown on a help screen.
@@ -50,6 +51,11 @@ function loadPaddle(): Promise<PaddleGlobal> {
 
 export default function Paywall({ onActive, onClose }: Props) {
   const [plan, setPlan] = useState<PlanId>("yearly");
+  const [region, setRegion] = useState("");
+  useEffect(() => setRegion(detectRegion()), []);
+  const PLANS = plansFor(region);
+  // Real dates, worked out from today. Never a countdown, never a date we made up.
+  const dates = trialDates();
   const [state, setState] = useState<"loading" | "ready" | "off" | "opening" | "confirming" | "error">("loading");
   const cfg = useRef<{ ref: string; checkout: Checkout } | null>(null);
   const initialised = useRef(false);
@@ -120,6 +126,28 @@ export default function Paywall({ onActive, onClose }: Props) {
         <li>✓ Crisis help stays free for everyone, always</li>
       </ul>
 
+      {/* Exactly what happens and when, in dates rather than promises. */}
+      <ol className="mt-6 flex flex-col gap-3 rounded-2xl border border-line bg-card p-5">
+        <li className="flex gap-3">
+          <span className="mt-1 h-2.5 w-2.5 shrink-0 rounded-full bg-accent" />
+          <span className="text-base leading-snug text-ink">
+            <span className="font-semibold">{dates.startsLabel}</span> — full access, nothing charged.
+          </span>
+        </li>
+        <li className="flex gap-3">
+          <span className="mt-1 h-2.5 w-2.5 shrink-0 rounded-full bg-chip" />
+          <span className="text-base leading-snug text-ink-soft">
+            <span className="font-semibold text-ink">{dates.reminderLabel}</span> — we email you before anything happens.
+          </span>
+        </li>
+        <li className="flex gap-3">
+          <span className="mt-1 h-2.5 w-2.5 shrink-0 rounded-full bg-chip" />
+          <span className="text-base leading-snug text-ink-soft">
+            <span className="font-semibold text-ink">{dates.chargeLabel}</span> — first payment, unless you cancelled.
+          </span>
+        </li>
+      </ol>
+
       <div className="mt-6 flex flex-col gap-3" role="radiogroup" aria-label="Choose a plan">
         {(Object.keys(PLANS) as PlanId[]).map((id) => {
           const p = PLANS[id];
@@ -166,7 +194,8 @@ export default function Paywall({ onActive, onClose }: Props) {
       <p className="mt-3 text-center text-xs leading-relaxed text-ink-faint">
         By starting your free trial you agree to the{" "}
         <a href="/terms" target="_blank" className="underline">Terms of Use</a> and confirm you are 18 or over. Your plan renews
-        automatically at $9.99/month (or $39.99/year) after the trial until you cancel in Settings.{" "}
+        automatically at {PLANS.monthly.price} a month (or {PLANS.yearly.price} a year) after the trial until you cancel in
+        Settings. Your local currency and tax are applied at checkout.{" "}
         <a href="/privacy" target="_blank" className="underline">Privacy Policy</a>
       </p>
 
