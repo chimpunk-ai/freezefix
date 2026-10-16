@@ -219,7 +219,7 @@ export default function FreezeFixApp() {
     } catch {
       recent = [];
     }
-    setHomeScenarios(scenariosFor({ recent }).slice(0, 6));
+    setHomeScenarios(scenariosFor({ recent }).slice(0, 8));
     try {
       setAcked(JSON.parse(get("session", K_ACK) || "[]"));
     } catch {

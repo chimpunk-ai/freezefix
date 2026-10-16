@@ -104,6 +104,28 @@ export const SCENARIOS: Scenario[] = [
     chips: ["bit of a day", "nothing really", "can't sleep"],
   },
   {
+    id: "good",
+    moment: "alone",
+    label: "Something good happened",
+    blurb: "Let me tell you",
+    emoji: "🎉",
+    context:
+      "Something went well and they want to tell someone. There is no problem to solve here. Be properly pleased, ask about it, and let them tell the story. Do not offer a move, do not turn it into a lesson.",
+    opener: "Go on then. What happened?",
+    chips: ["got some news", "did the scary thing", "just a good day"],
+  },
+  {
+    id: "bored",
+    moment: "alone",
+    label: "I'm just bored",
+    blurb: "Nothing's wrong",
+    emoji: "🛋️",
+    context:
+      "Nothing is wrong. They are bored or want company. Do not hunt for a problem and do not ask how they are feeling. Be good company: ask what they're up to, what they're watching, what's on this week.",
+    opener: "Fair enough. What you up to?",
+    chips: ["scrolling", "can't sleep", "avoiding something"],
+  },
+  {
     id: "tomorrow",
     moment: "task",
     label: "Help me plan tomorrow",
