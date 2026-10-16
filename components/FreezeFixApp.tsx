@@ -8,6 +8,7 @@ import SiteFooter from "@/components/SiteFooter";
 import Paywall from "@/components/Paywall";
 import TrustedMessage from "@/components/TrustedMessage";
 import WinCard from "@/components/WinCard";
+import Chat from "@/components/Chat";
 import { factForToday, type Fact } from "@/lib/facts";
 import { SAFETY_BUTTONS, keywordCheck, type HelpScreen as HelpScreenId, type RiskLevel, type RiskResult } from "@/lib/risk";
 import { MOMENTS, type MomentId } from "@/lib/prompt";
@@ -36,7 +37,8 @@ type Step =
   | "deleted"
   | "paywall"
   | "trusted"
-  | "wincard";
+  | "wincard"
+  | "chat";
 
 // Browser storage keys. Nothing here leaves the phone.
 const K_ADULT = "ff_adult"; // "yes" once the 18+ gate is passed
@@ -448,7 +450,7 @@ export default function FreezeFixApp() {
                   onClick={() => {
                     buzz();
                     setMoment(m);
-                    setStep("words");
+                    setStep(features.ai ? "chat" : "words");
                   }}
                   className="flex aspect-square flex-col justify-between rounded-[1.75rem] border border-line bg-card p-4 text-left transition active:scale-[0.97]"
                 >
@@ -663,6 +665,23 @@ export default function FreezeFixApp() {
           </Screen>
         )}
 
+        {step === "chat" && (
+          <Chat
+            moment={moment}
+            region={region}
+            groundingOnly={mixed}
+            acknowledged={acked}
+            features={features}
+            onRoute={(r) => route({ level: r.level, screen: r.screen, underage: r.underage })}
+            onPaywall={() => {
+              setPaywallFrom("session");
+              setStep("paywall");
+            }}
+            onTrusted={() => setStep("trusted")}
+            onHelped={() => sendFeedback(true)}
+          />
+        )}
+
         {step === "wincard" && (
           <WinCard moment={moment} wins={wins} onClose={() => setStep("thanks")} />
         )}
@@ -676,7 +695,7 @@ export default function FreezeFixApp() {
                 showHelp(screen, "home");
               }
             }}
-            onClose={() => setStep(moves.length ? "moves" : "home")}
+            onClose={() => setStep(features.ai ? "chat" : moves.length ? "moves" : "home")}
           />
         )}
 

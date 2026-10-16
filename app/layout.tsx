@@ -9,6 +9,8 @@ const bodyFont = Sora({ subsets: ["latin"], variable: "--font-body", display: "s
 export const metadata: Metadata = {
   title: "FreezeFix: one tiny move, under a minute",
   description: "Frozen after smoking? Get one safe next step in under 60 seconds. No lectures, no judgment. 18+.",
+  // Private beta: keep it out of search until the founder says go.
+  robots: { index: false, follow: false, nocache: true },
 };
 
 export const viewport: Viewport = {

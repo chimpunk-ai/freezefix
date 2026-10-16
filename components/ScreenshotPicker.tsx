@@ -13,6 +13,7 @@ const MAX_SIDE = 1600;
 type Props = {
   image: string | null;
   onChange: (dataUrl: string | null) => void;
+  allowCamera?: boolean;
 };
 
 async function shrink(file: File): Promise<string> {
@@ -30,8 +31,9 @@ async function shrink(file: File): Promise<string> {
   return canvas.toDataURL("image/jpeg", 0.82);
 }
 
-export default function ScreenshotPicker({ image, onChange }: Props) {
+export default function ScreenshotPicker({ image, onChange, allowCamera = false }: Props) {
   const input = useRef<HTMLInputElement>(null);
+  const cam = useRef<HTMLInputElement>(null);
   const [note, setNote] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
 
@@ -73,21 +75,42 @@ export default function ScreenshotPicker({ image, onChange }: Props) {
   return (
     <div className="flex flex-col gap-2">
       <p className="text-center text-xs leading-relaxed text-ink-faint">
-        Chat screenshots only. Crop or cover other people&apos;s names and photos first. Our AI reads the text to get your
-        moves, then it&apos;s gone from FreezeFix.
+        {allowCamera
+          ? "A chat screenshot, or a photo of the place or the thing. Nothing with people in it. Read once, then gone."
+          : "Chat screenshots only. Crop or cover other people's names and photos first. Read once, then gone."}
       </p>
       <input ref={input} type="file" accept="image/png,image/jpeg,image/webp" className="hidden" onChange={pick} />
+      <input ref={cam} type="file" accept="image/*" capture="environment" className="hidden" onChange={pick} />
       <button
         onClick={() => input.current?.click()}
         disabled={busy}
         className="flex items-center justify-center gap-2 rounded-2xl border border-line bg-card px-4 py-4 text-lg font-medium text-ink disabled:opacity-60"
       >
         <ImageIcon />
-        {busy ? "Getting it ready…" : "Add a screenshot"}
+        {busy ? "Getting it ready…" : allowCamera ? "Pick an image" : "Add a screenshot"}
       </button>
+      {allowCamera && (
+        <button
+          onClick={() => cam.current?.click()}
+          disabled={busy}
+          className="flex items-center justify-center gap-2 rounded-2xl border border-line bg-card px-4 py-4 text-lg font-medium text-ink disabled:opacity-60"
+        >
+          <CameraIcon />
+          Take a photo
+        </button>
+      )}
 
       {note && <p className="text-center text-sm text-ink-faint">{note}</p>}
     </div>
+  );
+}
+
+function CameraIcon() {
+  return (
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <path d="M3 8a2 2 0 0 1 2-2h2l1.5-2h7L17 6h2a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
+      <circle cx="12" cy="13" r="3.5" />
+    </svg>
   );
 }
 
