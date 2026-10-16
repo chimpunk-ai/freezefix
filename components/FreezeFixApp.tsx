@@ -9,6 +9,7 @@ import Paywall from "@/components/Paywall";
 import TrustedMessage from "@/components/TrustedMessage";
 import WinCard from "@/components/WinCard";
 import Chat from "@/components/Chat";
+import Onboarding from "@/components/Onboarding";
 import { greeting, readableMemory, memoryOn, setMemoryOn, forgetAll, noteVisit, type MemoryLine } from "@/lib/memory";
 import { SAFETY_BUTTONS, keywordCheck, type HelpScreen as HelpScreenId, type RiskLevel, type RiskResult } from "@/lib/risk";
 import { MOMENTS, type MomentId } from "@/lib/prompt";
@@ -40,6 +41,7 @@ type Step =
   | "trusted"
   | "wincard"
   | "chat"
+  | "onboarding"
   | "memory";
 
 // Browser storage keys. Nothing here leaves the phone.
@@ -57,6 +59,7 @@ const DAY_MS = 24 * 60 * 60 * 1000;
 const K_WINS = "ff_wins"; // how many times a move helped (stays on the phone)
 const K_VISITS = "ff_visits"; // used only to rotate the fact on the home screen
 const K_RECENT = "ff_recent_scenarios"; // scenario cards they actually use, most recent first
+const K_ONBOARDED = "ff_onboarded"; // the four questions have been asked once
 
 const MOMENT_EMOJI: Record<MomentId, string> = { people: "👀", alone: "🌀", task: "🧱", reply: "💬" };
 
@@ -124,6 +127,13 @@ export default function FreezeFixApp() {
   // about the time of day and trip a hydration error.
   const [homeScenarios, setHomeScenarios] = useState<Scenario[]>([]);
   const [checkIn, setCheckIn] = useState("");
+
+  // Where consent and onboarding hand off to: straight into the chat when they came from a
+  // scenario card, otherwise the "what's going on" picker.
+  function afterConsent(): Step {
+    if (scenario) return features.ai ? "chat" : "words";
+    return "moment";
+  }
 
   // Remembers which cards they actually tap, so the useful ones drift to the top.
   function noteScenario(id: string) {
@@ -738,6 +748,16 @@ export default function FreezeFixApp() {
           />
         )}
 
+        {step === "onboarding" && (
+          <Onboarding
+            onDone={() => {
+              set("local", K_ONBOARDED, "yes");
+              setHello(greeting());
+              setStep(afterConsent());
+            }}
+          />
+        )}
+
         {step === "memory" && (
           <Screen title="What Fix remembers" subtitle="All of it lives on this phone. None of it reaches us.">
             <label className="flex cursor-pointer items-center justify-between rounded-2xl border border-line bg-card p-4 text-base text-ink">
@@ -837,7 +857,7 @@ export default function FreezeFixApp() {
               </p>
               <ul className="list-disc space-y-1 pl-5 text-base">
                 <li>Only used to find your moves and get you help if you need it</li>
-                <li>Never sold, never ads, never handed to anyone else</li>
+                <li>Never sold, never ads. Our AI provider processes it to write the reply, and keeps it 30 days</li>
                 <li>We don&apos;t keep what you type. No account, no name, nothing tied to you</li>
                 <li>What Fix remembers about you and the people in your life stays on this phone</li>
               </ul>
@@ -859,7 +879,7 @@ export default function FreezeFixApp() {
                 disabled={!consentTicked}
                 onClick={() => {
                   set("local", K_CONSENT, new Date().toISOString().slice(0, 10));
-                  setStep("moment");
+                  setStep(get("local", K_ONBOARDED) ? afterConsent() : "onboarding");
                 }}
                 className="w-full rounded-[1.75rem] bg-accent px-5 py-5 text-xl font-bold text-accent-ink transition disabled:opacity-40"
               >
