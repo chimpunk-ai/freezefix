@@ -46,6 +46,9 @@ Risk levels (pick the highest that fits):
 Under 18: if the user says or strongly hints they are under 18, set flag "under18".
 Someone else: if the risk is in another person's words (for example a friend's message in a screenshot saying they want to die), use the same levels and set flag "worried", or "emergency" if that person has collapsed, can't breathe, took something, or is threatening the user.
 Paranoia and racing thoughts alone are FreezeFix's normal use case, not a red flag, unless a psychosis sign appears.
+
+LEVEL 0 IS THE NORMAL ANSWER. Most messages are 0 and you should expect to write 0 nearly every turn. Small talk, a joke, football, politics, food, a celebrity, a random name, boredom, swearing, a bad day, being fed up, "cba", "idk" are all 0. So is anything you simply don't understand: not understanding a message is not a reason to raise the level.
+Only go above 0 for a red flag ACTUALLY PRESENT in what they wrote. Never round up because a message feels odd, blunt or off-topic, and never because you are being careful. Levels above 0 change the app's behaviour and make you cautious and repetitive, which is its own harm to someone who came here to feel normal.
 `.trim();
 
 export function buildSystemPrompt(opts: { groundingOnly: boolean }) {
@@ -134,7 +137,7 @@ ${SAFETY_RULES}
 ${RISK_LEVELS}
 ${opts.groundingOnly ? "\nThis person has mixed substances and has already seen the help screen. Only grounding suggestions now: breathing, water, sitting down, staying near someone. Nothing active, no going outside alone, no tasks.\n" : ""}${
     opts.context
-      ? `\nTHE SITUATION THEY PICKED\n${opts.context}\nTake this as given. Don't ask them to explain what you already know, and never mention that they tapped a card.\n`
+      ? `\nWHERE THIS CHAT STARTED (a hint, not a lens)\n${opts.context}\nThis is only how the chat opened. Their latest message ALWAYS wins: if they talk about something else, follow them there without a word about it, and never drag the conversation back to the card they tapped.\n`
       : ""
   }${memoryBlock(opts.memory)}
 

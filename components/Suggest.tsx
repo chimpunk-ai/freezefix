@@ -72,8 +72,9 @@ export default function Suggest({ onRoute, compact = false }: Props) {
 
   return (
     <div className={box(compact)}>
-      <p className="text-xs uppercase tracking-widest text-ink-faint">Before we finish building it</p>
-      <h3 className="mt-2 text-2xl font-extrabold leading-tight text-ink">Is this actually needed?</h3>
+      <p className="text-xs uppercase tracking-widest text-ink-faint">Help us build it</p>
+      <h3 className="mt-2 text-2xl font-extrabold leading-tight text-ink">10-second feedback</h3>
+      <p className="mt-1 text-base text-ink-soft">Is this actually needed?</p>
       <p className="mt-2 text-base leading-relaxed text-ink-soft">
         Honest answer please. No is a real option and it&apos;s the useful one.
       </p>

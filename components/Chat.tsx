@@ -6,6 +6,7 @@ import ScreenshotPicker from "@/components/ScreenshotPicker";
 import { loadMemory, remember, noteVisit } from "@/lib/memory";
 import type { HelpScreen as HelpScreenId, RiskLevel } from "@/lib/risk";
 import { MOMENTS, type MomentId } from "@/lib/prompt";
+import { NdjsonReader } from "@/lib/ndjson";
 
 // The buddy chat. Replies stream in, but the server holds every character back until the
 // safety verdict has landed, so nothing unsafe can reach the screen.
@@ -64,15 +65,20 @@ export default function Chat({
   const [busy, setBusy] = useState(false);
   const [note, setNote] = useState<string | null>(null);
   const [showAttach, setShowAttach] = useState(false);
+  // Held when a reply never arrived, so the message is never lost.
+  const [pending, setPending] = useState<{ text: string; image: string | null } | null>(null);
   const bottom = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
     bottom.current?.scrollIntoView({ behavior: "smooth", block: "end" });
   }, [turns, busy]);
 
-  async function send(raw: string, img?: string | null) {
+  async function send(raw: string, img?: string | null, attempt = 0) {
     const clean = raw.trim();
     if ((!clean && !img) || busy) return;
+    // A retry replaces the user bubble it already drew rather than adding a second one.
+    if (attempt > 0) setTurns((t) => t.slice(0, -1));
+    setPending(null);
     const history = turns;
     setTurns([...history, { role: "user", text: clean || "(an image)" }]);
     setText("");
@@ -115,7 +121,7 @@ export default function Chat({
 
       const reader = res.body.getReader();
       const decoder = new TextDecoder();
-      let buffer = "";
+      const nd = new NdjsonReader();
       let open = false; // has the assistant bubble been created yet
 
       const handle = (evt: Record<string, unknown>) => {
@@ -158,25 +164,27 @@ export default function Chat({
       let stop = false;
       while (!stop) {
         const { done, value } = await reader.read();
-        if (done) break;
-        buffer += decoder.decode(value, { stream: true });
-        const lines = buffer.split("\n");
-        buffer = lines.pop() ?? "";
-        for (const line of lines) {
-          if (!line.trim()) continue;
-          try {
-            if (handle(JSON.parse(line) as Record<string, unknown>)) {
-              stop = true;
-              break;
-            }
-          } catch {
-            /* partial line, wait for more */
+        if (done) {
+          for (const evt of nd.end()) if (handle(evt)) break;
+          break;
+        }
+        for (const evt of nd.push(decoder.decode(value, { stream: true }))) {
+          if (handle(evt)) {
+            stop = true;
+            break;
           }
         }
       }
-      if (!open && !stop) setNote("That didn't come through. Try again.");
+      if (!open && !stop) throw new Error("empty");
     } catch {
-      setNote("That didn't come through. Try again.");
+      // Nothing reached the screen, so a second attempt can't duplicate half a reply.
+      // One silent go, then hand it to them rather than leaving a dead end.
+      if (attempt === 0) {
+        setBusy(false);
+        return send(raw, img, 1);
+      }
+      setPending({ text: raw, image: img ?? null });
+      setNote("Lost signal for a sec.");
     } finally {
       setBusy(false);
     }
@@ -185,7 +193,9 @@ export default function Chat({
   return (
     <section className="flex min-h-0 flex-1 flex-col">
       <p className="mb-2 text-xs text-ink-faint">
-        {MOMENTS[moment]} · Fix is an AI, not a therapist
+        {/* Only name the situation when they actually chose one. The label used to show
+            whatever the code had defaulted to, which read as the app mishearing them. */}
+        {scenario ? `${MOMENTS[moment]} · ` : ""}Fix is an AI, not a therapist
       </p>
 
       <div className="flex flex-1 flex-col gap-2.5 overflow-y-auto pb-2">
@@ -214,7 +224,22 @@ export default function Chat({
         <div ref={bottom} />
       </div>
 
-      {note && <p className="mb-2 rounded-xl bg-chip px-4 py-3 text-sm text-ink-soft">{note}</p>}
+      {note &&
+        (pending ? (
+          <button
+            onClick={() => {
+              const p = pending;
+              setNote(null);
+              setPending(null);
+              send(p.text, p.image);
+            }}
+            className="mb-2 w-full rounded-xl bg-chip px-4 py-3 text-left text-sm text-ink"
+          >
+            {note} <span className="font-semibold underline underline-offset-2">Tap to resend</span>
+          </button>
+        ) : (
+          <p className="mb-2 rounded-xl bg-chip px-4 py-3 text-sm text-ink-soft">{note}</p>
+        ))}
 
       {chips.length > 0 && !busy && (
         <div className="mb-2 flex flex-wrap gap-2">
@@ -284,7 +309,7 @@ export default function Chat({
             }}
             className="flex-1 rounded-2xl border border-line px-3 py-2.5 text-sm text-ink-soft"
           >
-            That helped
+            I'm done
           </button>
         </div>
       )}

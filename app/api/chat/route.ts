@@ -269,7 +269,8 @@ export async function POST(req: Request) {
               const i = buf.indexOf("REPLY:");
               if (i === -1) continue;
               replyStarted = true;
-              tail = buf.slice(i + 6);
+              // The space after "REPLY:" is part of the label, not the reply.
+              tail = buf.slice(i + 6).replace(/^[ \t]+/, "");
             } else {
               tail += evt.delta.text;
             }
