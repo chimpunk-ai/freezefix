@@ -157,10 +157,17 @@ export async function POST(req: Request) {
 
         const reader = upstream.body.getReader();
         const decoder = new TextDecoder();
+        // A network chunk can end mid-line, so the leftover is carried into the next read.
+        // Splitting each chunk on its own silently drops whichever line straddles the join,
+        // which is how whole words, and once the FLAG header itself, went missing.
+        let pending = "";
         while (true) {
           const { done, value } = await reader.read();
           if (done) break;
-          for (const line of decoder.decode(value, { stream: true }).split("\n")) {
+          pending += decoder.decode(value, { stream: true });
+          const lines = pending.split("\n");
+          pending = lines.pop() ?? "";
+          for (const line of lines) {
             if (!line.startsWith("data:")) continue;
             let evt: { type?: string; delta?: { text?: string } };
             try {
