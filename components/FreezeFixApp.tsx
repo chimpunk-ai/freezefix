@@ -10,6 +10,10 @@ import TrustedMessage from "@/components/TrustedMessage";
 import WinCard from "@/components/WinCard";
 import Chat from "@/components/Chat";
 import Onboarding from "@/components/Onboarding";
+import Breathe from "@/components/Breathe";
+import Wins from "@/components/Wins";
+import InstallPrompt from "@/components/InstallPrompt";
+import { addWin } from "@/lib/wins";
 import { greeting, readableMemory, memoryOn, setMemoryOn, forgetAll, noteVisit, type MemoryLine } from "@/lib/memory";
 import { SAFETY_BUTTONS, keywordCheck, type HelpScreen as HelpScreenId, type RiskLevel, type RiskResult } from "@/lib/risk";
 import { MOMENTS, type MomentId } from "@/lib/prompt";
@@ -42,6 +46,9 @@ type Step =
   | "wincard"
   | "chat"
   | "onboarding"
+  | "breathe"
+  | "wins"
+  | "savewin"
   | "memory";
 
 // Browser storage keys. Nothing here leaves the phone.
@@ -127,6 +134,13 @@ export default function FreezeFixApp() {
   // about the time of day and trip a hydration error.
   const [homeScenarios, setHomeScenarios] = useState<Scenario[]>([]);
   const [checkIn, setCheckIn] = useState("");
+  const [winText, setWinText] = useState("");
+
+  function saveWin() {
+    if (winText.trim()) addWin(winText, MOMENTS[moment]);
+    setWinText("");
+    setStep("wins");
+  }
 
   // Where consent and onboarding hand off to: straight into the chat when they came from a
   // scenario card, otherwise the "what's going on" picker.
@@ -496,6 +510,28 @@ export default function FreezeFixApp() {
               I&apos;m frozen
             </button>
 
+            {/* Works with no AI, no signal and no account, so it sits next to the big button. */}
+            <div className="flex gap-3">
+              <button
+                onClick={() => {
+                  buzz();
+                  setStep("breathe");
+                }}
+                className="flex-1 rounded-2xl border border-line bg-card px-4 py-3.5 text-base font-medium text-ink transition active:scale-[0.97]"
+              >
+                Just breathe · 1 min
+              </button>
+              <button
+                onClick={() => {
+                  buzz();
+                  setStep("wins");
+                }}
+                className="flex-1 rounded-2xl border border-line bg-card px-4 py-3.5 text-base font-medium text-ink transition active:scale-[0.97]"
+              >
+                Your wins
+              </button>
+            </div>
+
             <div className="flex flex-col gap-3">
               <p className="text-sm text-ink-faint">Or start where you are</p>
               <div className="grid grid-cols-2 gap-3">
@@ -740,7 +776,8 @@ export default function FreezeFixApp() {
               {helped ? "Go easy on yourself tonight." : "Fair enough. Want to try something else?"}
             </p>
             <div className="mt-6 flex flex-col gap-3">
-              {helped && <BigButton onClick={() => setStep("wincard")}>Make a card for it</BigButton>}
+              {helped && <BigButton onClick={() => setStep("savewin")}>Save this one</BigButton>}
+              {helped && <GhostButton onClick={() => setStep("wincard")}>Make a card for it</GhostButton>}
               {!helped && moves.length > 1 && <BigButton onClick={() => setStep("moves")}>Try another move</BigButton>}
               <GhostButton
                 onClick={() => {
@@ -751,6 +788,13 @@ export default function FreezeFixApp() {
                 Done
               </GhostButton>
             </div>
+            {/* Offered only here: something has just gone well, which is the one moment
+                asking isn't an interruption. */}
+            {helped && (
+              <div className="mt-6">
+                <InstallPrompt />
+              </div>
+            )}
           </Screen>
         )}
 
@@ -773,6 +817,35 @@ export default function FreezeFixApp() {
             onTrusted={() => setStep("trusted")}
             onHelped={() => sendFeedback(true)}
           />
+        )}
+
+        {step === "breathe" && <Breathe onDone={() => setStep("home")} />}
+
+        {step === "wins" && <Wins onBack={() => setStep("home")} onAdd={() => setStep("savewin")} />}
+
+        {step === "savewin" && (
+          <Screen title="What did you get through?">
+            <p className="text-lg text-ink-soft">Your words. Short is fine.</p>
+            <input
+              value={winText}
+              onChange={(e) => setWinText(e.target.value.slice(0, 140))}
+              onKeyDown={(e) => e.key === "Enter" && saveWin()}
+              placeholder="e.g. sent the message"
+              autoComplete="off"
+              className="mt-4 w-full rounded-2xl border border-line bg-card px-5 py-4 text-xl text-ink placeholder:text-ink-faint focus:border-accent focus:outline-none"
+            />
+            <div className="mt-3 flex flex-wrap gap-2">
+              {["went anyway", "sent it", "started it", "said no"].map((s) => (
+                <button key={s} onClick={() => setWinText(s)} className="rounded-full bg-chip px-4 py-2 text-base text-ink">
+                  {s}
+                </button>
+              ))}
+            </div>
+            <div className="mt-6 flex flex-col gap-3">
+              <BigButton onClick={saveWin}>Save it</BigButton>
+              <GhostButton onClick={() => setStep("wins")}>Skip</GhostButton>
+            </div>
+          </Screen>
         )}
 
         {step === "onboarding" && (
