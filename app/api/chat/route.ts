@@ -139,7 +139,14 @@ export async function POST(req: Request) {
           }),
           signal: AbortSignal.timeout(30000),
         });
-        if (!upstream.ok || !upstream.body) throw new Error(`ai_${upstream.status}`);
+        if (!upstream.ok || !upstream.body) {
+          // Surface the provider's own reason: it is the difference between a bad key,
+          // a wrong model name and a malformed request, and guessing wastes hours.
+          const detail = await upstream.text().catch(() => "");
+          send({ error: "ai_unavailable", status: upstream.status, detail: detail.slice(0, 300) });
+          controller.close();
+          return;
+        }
 
         let buf = "";
         let verdict: RiskResult | null = null;
