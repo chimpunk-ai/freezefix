@@ -149,6 +149,8 @@ export async function POST(req: Request) {
       // Set if the stream reports an error after opening successfully. Nothing has been sent
       // to the screen at that point, so the whole attempt can be made again cleanly.
       let streamError: string | null = null;
+      const seen: string[] = [];
+      let stopReason: string | null = null;
       try {
         // Two attempts at most. A retry only happens when nothing has reached the screen,
         // so nobody ever sees half a reply, then a second one.
@@ -208,6 +210,14 @@ export async function POST(req: Request) {
             if (evt.type === "error") {
               streamError = evt.error?.type || "stream_error";
               break;
+            }
+            // When a stream yields no text at all, the only way to tell why is to know what
+            // it DID send: a stop_reason, a refusal, or nothing. Without this the failure is
+            // invisible from outside and costs hours of guessing.
+            if (evt.type) seen.push(evt.type);
+            if (evt.type === "message_delta") {
+              const why = (evt as { delta?: { stop_reason?: string } }).delta?.stop_reason;
+              if (why) stopReason = why;
             }
             if (evt.type !== "content_block_delta" || !evt.delta?.text) continue;
             buf += evt.delta.text;
@@ -281,7 +291,13 @@ export async function POST(req: Request) {
           if (attempt === 0 && !reply && !replyStarted) continue;
           // The detail is this caller's own answer, so it reveals nothing about anyone else,
           // and without it this failure is invisible from outside.
-          send({ error: "ai_unavailable", detail: streamError ?? buf.slice(0, 300) });
+          send({
+            error: "ai_unavailable",
+            detail: streamError ?? buf.slice(0, 300),
+            // Only ever shapes of events and a stop reason: no other caller's content.
+            events: [...new Set(seen)].join(","),
+            stop: stopReason ?? undefined,
+          });
         } else {
           send({
             done: true,
