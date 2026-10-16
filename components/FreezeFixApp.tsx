@@ -14,6 +14,8 @@ import Breathe from "@/components/Breathe";
 import Wins from "@/components/Wins";
 import InstallPrompt from "@/components/InstallPrompt";
 import { addWin } from "@/lib/wins";
+import FactCard from "@/components/FactCard";
+
 import { greeting, readableMemory, memoryOn, setMemoryOn, forgetAll, noteVisit, type MemoryLine } from "@/lib/memory";
 import { SAFETY_BUTTONS, keywordCheck, type HelpScreen as HelpScreenId, type RiskLevel, type RiskResult } from "@/lib/risk";
 import { MOMENTS, type MomentId } from "@/lib/prompt";
@@ -557,6 +559,8 @@ export default function FreezeFixApp() {
                 ))}
               </div>
             </div>
+
+            <FactCard />
 
             <div className="mt-auto flex flex-col gap-4 pt-2">
               <p className="mx-auto max-w-[30ch] text-center text-sm leading-relaxed text-ink-faint">

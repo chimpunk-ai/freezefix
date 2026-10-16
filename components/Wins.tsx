@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { allWins, removeWin, thisWeek, type Win, type WeekSummary } from "@/lib/wins";
+import { WinsArt } from "@/components/Art";
 
 // The wins screen and the weekly card. Plain language, no scores, no streaks, no graphs
 // of someone's worst week. If there's nothing logged yet, it says so honestly rather than
@@ -47,6 +48,7 @@ export default function Wins({ onBack, onAdd }: { onBack: () => void; onAdd: () 
       <div className="flex min-h-0 flex-1 flex-col gap-2.5 overflow-y-auto">
         {wins.length === 0 ? (
           <div className="rounded-[1.75rem] border border-line border-dashed bg-card p-6 text-center">
+            <WinsArt className="mx-auto mb-4 w-40" />
             <p className="text-lg leading-relaxed text-ink-soft">Nothing here yet.</p>
             <p className="mt-2 text-base leading-relaxed text-ink-faint">
               When something works, save it. Sent the message, went anyway, started the thing. Small counts.
