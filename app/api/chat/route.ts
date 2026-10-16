@@ -6,6 +6,7 @@ import { consumeQuota, refundQuota, readDeviceId, newDeviceId, deviceCookie, get
 import { screenshotsOn } from "@/lib/features";
 import { paymentsOn } from "@/lib/plans";
 import { aiKey } from "@/lib/ai";
+import { SCENARIOS } from "@/lib/scenarios";
 
 // The buddy. Streams its reply, but ONLY after the risk verdict has arrived.
 //
@@ -26,6 +27,9 @@ type Body = {
   groundingOnly?: boolean;
   country?: string;
   acknowledged?: string[];
+  /** Id of a scenario card. The context text is looked up here, never sent by the client,
+   *  so nobody can post their own text into the system prompt. */
+  scenario?: string;
 };
 
 const MAX_CHARS = 800;
@@ -116,7 +120,15 @@ export async function POST(req: Request) {
   }
 
   const grounding = Boolean(body.groundingOnly) || acked.includes("mixed") || keyword.screen === "mixed";
-  const system = buildChatPrompt({ groundingOnly: grounding, memory });
+  const scenario = SCENARIOS.find((s) => s.id === body.scenario);
+  const system = buildChatPrompt({ groundingOnly: grounding, memory, context: scenario?.context });
+  // The chat opens with a line from Fix, so the history can begin with an assistant turn.
+  // The API requires the first message to be the user's, so a leading opener is folded into
+  // the system prompt instead of being dropped, which would leave Fix repeating itself.
+  const opener = history[0]?.role === "assistant" ? history.shift() : undefined;
+  const systemWithOpener = opener
+    ? `${system}\n\nYOU ALREADY OPENED THIS CHAT WITH:\n"${opener.content}"\nDon't ask that again.`
+    : system;
   const messages = [
     ...history,
     { role: "user" as const, content: buildTurn(moment, message, shotMe, shotThem, history.length === 0) },
@@ -133,7 +145,7 @@ export async function POST(req: Request) {
           body: JSON.stringify({
             model: process.env.AI_MODEL || "claude-haiku-5-5",
             max_tokens: 500,
-            system: [{ type: "text", text: system, cache_control: { type: "ephemeral" } }],
+            system: [{ type: "text", text: systemWithOpener, cache_control: { type: "ephemeral" } }],
             messages,
             stream: true,
           }),

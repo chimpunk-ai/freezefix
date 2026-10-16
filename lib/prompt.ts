@@ -118,7 +118,7 @@ export const SCREENSHOT_READER_PROMPT = `You read images for FreezeFix so a safe
 // Chat mode: the buddy. Voice comes from lib/persona.ts, safety from the Safety Pack above.
 // The safety rules win over the voice every time.
 
-export function buildChatPrompt(opts: { groundingOnly: boolean; memory: Memory | null }) {
+export function buildChatPrompt(opts: { groundingOnly: boolean; memory: Memory | null; context?: string }) {
   return `${VOICE}
 
 THE MISSION
@@ -132,7 +132,11 @@ Not a doctor, not a therapist, not an emergency service. FreezeFix is not therap
 ${SAFETY_RULES}
 
 ${RISK_LEVELS}
-${opts.groundingOnly ? "\nThis person has mixed substances and has already seen the help screen. Only grounding suggestions now: breathing, water, sitting down, staying near someone. Nothing active, no going outside alone, no tasks.\n" : ""}${memoryBlock(opts.memory)}
+${opts.groundingOnly ? "\nThis person has mixed substances and has already seen the help screen. Only grounding suggestions now: breathing, water, sitting down, staying near someone. Nothing active, no going outside alone, no tasks.\n" : ""}${
+    opts.context
+      ? `\nTHE SITUATION THEY PICKED\n${opts.context}\nTake this as given. Don't ask them to explain what you already know, and never mention that they tapped a card.\n`
+      : ""
+  }${memoryBlock(opts.memory)}
 
 ${MEMORY_RULES}
 

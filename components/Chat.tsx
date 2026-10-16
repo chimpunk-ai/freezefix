@@ -19,6 +19,10 @@ type Props = {
   acknowledged: HelpScreenId[];
   features: { voice: boolean; screenshot: boolean };
   opener?: string;
+  /** Scenario card this chat started from, if any. The server turns the id into context. */
+  scenario?: string;
+  /** Taps shown under the opener, before they've said anything. */
+  openerChips?: string[];
   onRoute: (r: { level: RiskLevel; screen: HelpScreenId; underage: boolean }) => void;
   onPaywall: () => void;
   onTrusted: () => void;
@@ -46,13 +50,15 @@ export default function Chat({
   acknowledged,
   features,
   opener,
+  scenario,
+  openerChips,
   onRoute,
   onPaywall,
   onTrusted,
   onHelped,
 }: Props) {
   const [turns, setTurns] = useState<Turn[]>([{ role: "assistant", text: opener || OPENERS[moment] }]);
-  const [chips, setChips] = useState<string[]>(FIRST_CHIPS[moment]);
+  const [chips, setChips] = useState<string[]>(openerChips ?? FIRST_CHIPS[moment]);
   const [text, setText] = useState("");
   const [image, setImage] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
@@ -82,9 +88,12 @@ export default function Chat({
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           moment,
+          scenario,
           message: clean,
           image: img || undefined,
-          history: history.slice(1),
+          // The opener is included: Fix wrote it, so it needs to know what it already asked
+          // rather than opening with the same question twice.
+          history,
           memory: loadMemory() ?? undefined,
           groundingOnly,
           country: region,

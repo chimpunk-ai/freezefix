@@ -15,6 +15,7 @@ import { MOMENTS, type MomentId } from "@/lib/prompt";
 import { detectRegion } from "@/lib/country";
 import { resourcesFor, VERIFIED_COUNTRIES } from "@/lib/resources";
 import type { Move } from "@/lib/moves";
+import { scenariosFor, checkInLine, type Scenario } from "@/lib/scenarios";
 
 type Step =
   | "loading-app"
@@ -55,6 +56,7 @@ const DAY_MS = 24 * 60 * 60 * 1000;
 
 const K_WINS = "ff_wins"; // how many times a move helped (stays on the phone)
 const K_VISITS = "ff_visits"; // used only to rotate the fact on the home screen
+const K_RECENT = "ff_recent_scenarios"; // scenario cards they actually use, most recent first
 
 const MOMENT_EMOJI: Record<MomentId, string> = { people: "👀", alone: "🌀", task: "🧱", reply: "💬" };
 
@@ -117,6 +119,22 @@ export default function FreezeFixApp() {
   const [mixed, setMixed] = useState(false);
   const [help, setHelp] = useState<{ screen: HelpScreenId; returnTo: Step | "continue" | "words-ack" | null } | null>(null);
   const [helped, setHelped] = useState<boolean | null>(null);
+  const [scenario, setScenario] = useState<Scenario | null>(null);
+  // Worked out once the component is on screen, so the server and the phone can't disagree
+  // about the time of day and trip a hydration error.
+  const [homeScenarios, setHomeScenarios] = useState<Scenario[]>([]);
+  const [checkIn, setCheckIn] = useState("");
+
+  // Remembers which cards they actually tap, so the useful ones drift to the top.
+  function noteScenario(id: string) {
+    let recent: string[] = [];
+    try {
+      recent = JSON.parse(get("local", K_RECENT) || "[]");
+    } catch {
+      recent = [];
+    }
+    set("local", K_RECENT, JSON.stringify([id, ...recent.filter((r) => r !== id)].slice(0, 6)));
+  }
   const [acked, setAcked] = useState<HelpScreenId[]>([]);
   const [voiceText, setVoiceText] = useState("");
   const [image, setImage] = useState<string | null>(null);
@@ -157,6 +175,14 @@ export default function FreezeFixApp() {
     setWins(Number(get("local", K_WINS)) || 0);
     setHello(greeting());
     setMemOn(memoryOn());
+    setCheckIn(checkInLine());
+    let recent: string[] = [];
+    try {
+      recent = JSON.parse(get("local", K_RECENT) || "[]");
+    } catch {
+      recent = [];
+    }
+    setHomeScenarios(scenariosFor({ recent }).slice(0, 6));
     try {
       setAcked(JSON.parse(get("session", K_ACK) || "[]"));
     } catch {
@@ -407,38 +433,62 @@ export default function FreezeFixApp() {
         )}
 
         {step === "home" && (
-          <div className="flex flex-1 flex-col justify-between gap-10">
-            <div className="flex flex-col gap-3 pt-4">
-              {hello && <p className="text-lg text-ink-soft">{hello}</p>}
-              <h1 className="text-[4.25rem] font-extrabold leading-[0.9] text-ink">Frozen?</h1>
-              <p className="max-w-[22ch] text-xl leading-snug text-ink-soft">One tiny move. Under a minute. No lectures.</p>
-
-
+          <div className="flex flex-1 flex-col gap-6">
+            <div className="flex flex-col gap-1 pt-3">
+              <p className="text-lg text-ink-soft">{hello || "Hey."}</p>
+              <h1 className="text-[2.6rem] font-extrabold leading-[1.05] text-ink">{checkIn || "Frozen?"}</h1>
             </div>
-            <div className="flex flex-col gap-4">
-              <button
-                onClick={() => {
-                  buzz(25);
-                  setThawing(true);
-                  const go = () => {
-                    setThawing(false);
-                    resetFlow();
-                    setStep(get("local", K_CONSENT) ? "moment" : "consent");
-                  };
-                  const reduce = typeof window !== "undefined" && window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
-                  if (reduce) go();
-                  else setTimeout(go, 450);
-                }}
-                className={`ice w-full rounded-[2rem] px-6 py-9 font-[family-name:var(--font-display)] text-3xl font-extrabold ${thawing ? "thawing" : ""}`}
-              >
-                Unfreeze me
-              </button>
-              <p className="text-center text-sm text-ink-faint">Can&apos;t change you. Still got you.</p>
+
+            {/* Always reachable, whatever else is on the screen. */}
+            <button
+              onClick={() => {
+                buzz(25);
+                setThawing(true);
+                const go = () => {
+                  setThawing(false);
+                  resetFlow();
+                  setScenario(null);
+                  setStep(get("local", K_CONSENT) ? "moment" : "consent");
+                };
+                const reduce = typeof window !== "undefined" && window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
+                if (reduce) go();
+                else setTimeout(go, 450);
+              }}
+              className={`ice w-full rounded-[2rem] px-6 py-7 font-[family-name:var(--font-display)] text-3xl font-extrabold ${thawing ? "thawing" : ""}`}
+            >
+              I&apos;m frozen
+            </button>
+
+            <div className="flex flex-col gap-3">
+              <p className="text-sm text-ink-faint">Or start where you are</p>
+              <div className="grid grid-cols-2 gap-3">
+                {homeScenarios.map((s) => (
+                  <button
+                    key={s.id}
+                    onClick={() => {
+                      buzz();
+                      resetFlow();
+                      setScenario(s);
+                      setMoment(s.moment);
+                      noteScenario(s.id);
+                      setStep(get("local", K_CONSENT) ? (features.ai ? "chat" : "words") : "consent");
+                    }}
+                    className="flex min-h-[8.5rem] flex-col justify-between rounded-[1.75rem] border border-line bg-card p-4 text-left transition active:scale-[0.97]"
+                  >
+                    <span className="text-3xl" aria-hidden="true">{s.emoji}</span>
+                    <span>
+                      <span className="block text-base font-semibold leading-tight text-ink">{s.label}</span>
+                      <span className="mt-0.5 block text-sm leading-snug text-ink-faint">{s.blurb}</span>
+                    </span>
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <div className="mt-auto flex flex-col gap-4 pt-2">
               <p className="mx-auto max-w-[30ch] text-center text-sm leading-relaxed text-ink-faint">
                 No account, no name. What it learns about you stays on this phone, not on our servers.
               </p>
-            </div>
-            <div className="flex flex-col gap-4">
               <button onClick={() => setStep("settings")} className="self-center text-sm text-ink-soft underline underline-offset-4">
                 Privacy &amp; settings
               </button>
@@ -669,11 +719,15 @@ export default function FreezeFixApp() {
 
         {step === "chat" && (
           <Chat
+            key={scenario?.id ?? moment}
             moment={moment}
             region={region}
             groundingOnly={mixed}
             acknowledged={acked}
             features={features}
+            scenario={scenario?.id}
+            opener={scenario?.opener}
+            openerChips={scenario?.chips}
             onRoute={(r) => route({ level: r.level, screen: r.screen, underage: r.underage })}
             onPaywall={() => {
               setPaywallFrom("session");
