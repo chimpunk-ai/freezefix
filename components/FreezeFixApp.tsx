@@ -9,7 +9,7 @@ import Paywall from "@/components/Paywall";
 import TrustedMessage from "@/components/TrustedMessage";
 import WinCard from "@/components/WinCard";
 import Chat from "@/components/Chat";
-import { factForToday, type Fact } from "@/lib/facts";
+import { greeting, readableMemory, memoryOn, setMemoryOn, forgetAll, noteVisit, type MemoryLine } from "@/lib/memory";
 import { SAFETY_BUTTONS, keywordCheck, type HelpScreen as HelpScreenId, type RiskLevel, type RiskResult } from "@/lib/risk";
 import { MOMENTS, type MomentId } from "@/lib/prompt";
 import { detectRegion } from "@/lib/country";
@@ -38,7 +38,8 @@ type Step =
   | "paywall"
   | "trusted"
   | "wincard"
-  | "chat";
+  | "chat"
+  | "memory";
 
 // Browser storage keys. Nothing here leaves the phone.
 const K_ADULT = "ff_adult"; // "yes" once the 18+ gate is passed
@@ -125,7 +126,9 @@ export default function FreezeFixApp() {
   const [settingsNote, setSettingsNote] = useState<string | null>(null);
   const [wins, setWins] = useState(0);
   const [thawing, setThawing] = useState(false);
-  const [fact, setFact] = useState<Fact | null>(null);
+  const [memLines, setMemLines] = useState<MemoryLine[]>([]);
+  const [memOn, setMemOn] = useState(true);
+  const [hello, setHello] = useState("");
   const [features, setFeatures] = useState({ ai: false, voice: false, screenshot: false });
 
   // Which optional inputs are switched on (voice needs a transcription key, screenshots need the AI).
@@ -152,9 +155,8 @@ export default function FreezeFixApp() {
     setSessionLevel((Number(get("session", K_LEVEL)) || 0) as RiskLevel);
     setMixed(get("session", K_MIXED) === "1");
     setWins(Number(get("local", K_WINS)) || 0);
-    const visits = (Number(get("local", K_VISITS)) || 0) + 1;
-    set("local", K_VISITS, String(visits));
-    setFact(factForToday(visits));
+    setHello(greeting());
+    setMemOn(memoryOn());
     try {
       setAcked(JSON.parse(get("session", K_ACK) || "[]"));
     } catch {
@@ -314,6 +316,7 @@ export default function FreezeFixApp() {
     try {
       window.localStorage.clear();
       window.sessionStorage.clear();
+      forgetAll();
       if (block && Number(block) > Date.now()) window.localStorage.setItem(K_BLOCK, block);
     } catch {
       /* ignore */
@@ -406,19 +409,11 @@ export default function FreezeFixApp() {
         {step === "home" && (
           <div className="flex flex-1 flex-col justify-between gap-10">
             <div className="flex flex-col gap-3 pt-4">
+              {hello && <p className="text-lg text-ink-soft">{hello}</p>}
               <h1 className="text-[4.25rem] font-extrabold leading-[0.9] text-ink">Frozen?</h1>
               <p className="max-w-[22ch] text-xl leading-snug text-ink-soft">One tiny move. Under a minute. No lectures.</p>
-              {wins > 0 && (
-                <p className="mt-2 inline-flex w-fit items-center gap-2 rounded-full bg-chip px-3 py-1.5 text-sm font-semibold text-glow">
-                  ✦ You&apos;ve unfrozen {wins} {wins === 1 ? "time" : "times"}
-                </p>
-              )}
-              {fact && (
-                <div className="mt-5 rounded-2xl border border-line bg-card p-4">
-                  <p className="text-base leading-relaxed text-ink">{fact.text}</p>
-                  {fact.note && <p className="mt-1.5 text-xs text-ink-faint">{fact.note}</p>}
-                </div>
-              )}
+
+
             </div>
             <div className="flex flex-col gap-4">
               <button
@@ -439,6 +434,9 @@ export default function FreezeFixApp() {
                 Unfreeze me
               </button>
               <p className="text-center text-sm text-ink-faint">Can&apos;t change you. Still got you.</p>
+              <p className="mx-auto max-w-[30ch] text-center text-sm leading-relaxed text-ink-faint">
+                No account, no name. What it learns about you stays on this phone, not on our servers.
+              </p>
             </div>
             <div className="flex flex-col gap-4">
               <button onClick={() => setStep("settings")} className="self-center text-sm text-ink-soft underline underline-offset-4">
@@ -650,13 +648,9 @@ export default function FreezeFixApp() {
 
         {step === "thanks" && (
           <Screen title={helped ? "Nice one." : "Thanks for saying."}>
-            {helped && (
-              <p className="reward mb-4 font-[family-name:var(--font-display)] text-6xl font-extrabold text-glow" aria-label="Plus half a percent">
-                +0.5%
-              </p>
-            )}
+
             <p className="text-lg text-ink-soft">
-              {helped ? "That's your 0.5% today. Small moves count." : "Not every move lands. Want to try a different one?"}
+              {helped ? "Go easy on yourself tonight." : "Fair enough. Want to try something else?"}
             </p>
             <div className="mt-6 flex flex-col gap-3">
               {helped && <BigButton onClick={() => setStep("wincard")}>Make a card for it</BigButton>}
@@ -688,6 +682,65 @@ export default function FreezeFixApp() {
             onTrusted={() => setStep("trusted")}
             onHelped={() => sendFeedback(true)}
           />
+        )}
+
+        {step === "memory" && (
+          <Screen title="What Fix remembers" subtitle="All of it lives on this phone. None of it reaches us.">
+            <label className="flex cursor-pointer items-center justify-between rounded-2xl border border-line bg-card p-4 text-base text-ink">
+              <span>Let Fix remember me</span>
+              <input
+                type="checkbox"
+                checked={memOn}
+                onChange={(e) => {
+                  setMemoryOn(e.target.checked);
+                  setMemOn(e.target.checked);
+                  setMemLines(readableMemory());
+                }}
+                className="h-5 w-5 accent-[var(--color-accent)]"
+              />
+            </label>
+
+            <div className="mt-4 flex flex-col gap-2">
+              {memLines.length === 0 && (
+                <p className="px-1 text-base text-ink-soft">
+                  {memOn ? "Nothing yet. It picks things up as you chat." : "Memory's off, so Fix starts fresh every time."}
+                </p>
+              )}
+              {memLines.map((l, i) => (
+                <div key={i} className="flex items-center gap-3 rounded-2xl border border-line bg-card px-4 py-3">
+                  <span className="flex-1">
+                    <span className="block text-xs text-ink-faint">{l.label}</span>
+                    <span className="text-base text-ink">{l.value}</span>
+                  </span>
+                  <button
+                    onClick={() => {
+                      l.clear();
+                      setMemLines(readableMemory());
+                    }}
+                    className="shrink-0 rounded-full bg-chip px-3 py-1.5 text-sm text-ink-soft"
+                  >
+                    Forget
+                  </button>
+                </div>
+              ))}
+            </div>
+
+            <div className="mt-6 flex flex-col gap-3">
+              {memLines.length > 0 && (
+                <GhostButton
+                  onClick={() => {
+                    forgetAll();
+                    setMemLines([]);
+                  }}
+                >
+                  Forget all of it
+                </GhostButton>
+              )}
+              <button onClick={() => setStep("settings")} className="self-center py-2 text-sm text-ink-faint underline underline-offset-4">
+                Back
+              </button>
+            </div>
+          </Screen>
         )}
 
         {step === "wincard" && (
@@ -731,7 +784,8 @@ export default function FreezeFixApp() {
               <ul className="list-disc space-y-1 pl-5 text-base">
                 <li>Only used to find your moves and get you help if you need it</li>
                 <li>Never sold, never ads, never handed to anyone else</li>
-                <li>We don&apos;t keep what you type</li>
+                <li>We don&apos;t keep what you type. No account, no name, nothing tied to you</li>
+                <li>What Fix remembers about you and the people in your life stays on this phone</li>
               </ul>
               <label className="mt-1 flex cursor-pointer items-start gap-3 rounded-2xl border border-line bg-card p-4 text-base text-ink">
                 <input
@@ -814,6 +868,15 @@ export default function FreezeFixApp() {
                 Manage subscription
               </GhostButton>
               {settingsNote && <p className="px-1 text-sm text-ink-soft">{settingsNote}</p>}
+              <GhostButton
+                onClick={() => {
+                  setMemLines(readableMemory());
+                  setMemOn(memoryOn());
+                  setStep("memory");
+                }}
+              >
+                What Fix remembers
+              </GhostButton>
               <GhostButton onClick={() => setStep("delete-confirm")}>Delete everything</GhostButton>
               <div className="mt-2 flex justify-center gap-4 text-sm text-ink-soft">
                 <a href="/privacy" className="underline underline-offset-4">Privacy Policy</a>
