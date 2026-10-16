@@ -138,7 +138,14 @@ export async function POST(req: Request) {
   const stream = new ReadableStream({
     async start(controller) {
       const send = (obj: unknown) => controller.enqueue(new TextEncoder().encode(JSON.stringify(obj) + "\n"));
+      // Set if the stream reports an error after opening successfully. Nothing has been sent
+      // to the screen at that point, so the whole attempt can be made again cleanly.
+      let streamError: string | null = null;
       try {
+        // Two attempts at most. A retry only happens when nothing has reached the screen,
+        // so nobody ever sees half a reply, then a second one.
+        for (let attempt = 0; attempt < 2; attempt++) {
+        streamError = null;
         const upstream = await fetch("https://api.anthropic.com/v1/messages", {
           method: "POST",
           headers: { "x-api-key": apiKey, "anthropic-version": "2023-06-01", "content-type": "application/json" },
@@ -181,11 +188,18 @@ export async function POST(req: Request) {
           pending = lines.pop() ?? "";
           for (const line of lines) {
             if (!line.startsWith("data:")) continue;
-            let evt: { type?: string; delta?: { text?: string } };
+            let evt: { type?: string; delta?: { text?: string }; error?: { type?: string; message?: string } };
             try {
               evt = JSON.parse(line.slice(5).trim());
             } catch {
               continue;
+            }
+            // The provider can report an error part-way through a stream that opened fine,
+            // usually "overloaded". Ignoring those events was why roughly half of all
+            // replies arrived completely empty with nothing to show for it.
+            if (evt.type === "error") {
+              streamError = evt.error?.type || "stream_error";
+              break;
             }
             if (evt.type !== "content_block_delta" || !evt.delta?.text) continue;
             buf += evt.delta.text;
@@ -235,14 +249,18 @@ export async function POST(req: Request) {
               reply = piece;
             }
           }
+          // The error ended this attempt; stop reading rather than draining a dead stream.
+          if (streamError) break;
         }
 
         if (routed) return;
         if (!verdict) {
-          // The model replied but not in the RISK/FLAG format the safety router needs.
+          // Nothing usable came back and nothing was shown. Worth one more go: this is
+          // almost always the provider reporting "overloaded" part-way through.
+          if (attempt === 0 && !reply) continue;
           // The detail is this caller's own answer, so it reveals nothing about anyone else,
           // and without it this failure is invisible from outside.
-          send({ error: "ai_unavailable", detail: buf.slice(0, 300) });
+          send({ error: "ai_unavailable", detail: streamError ?? buf.slice(0, 300) });
         } else {
           send({
             done: true,
@@ -251,6 +269,8 @@ export async function POST(req: Request) {
           });
         }
         controller.close();
+        return;
+        }
       } catch {
         try {
           send({ error: "ai_unavailable" });
