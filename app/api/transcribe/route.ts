@@ -20,9 +20,13 @@ export async function POST(req: Request) {
   const isNewDevice = !deviceId;
   if (!deviceId) deviceId = newDeviceId();
 
+  // Captured by `respond`: when the Supabase-less fallback counter in consumeQuota
+  // returns a Set-Cookie, we must apply it or the fallback never persists its count.
+  let countCookie: string | null = null;
   const respond = (body: unknown, status = 200) => {
     const res = NextResponse.json(body, { status });
     if (isNewDevice) res.headers.append("Set-Cookie", deviceCookie(deviceId!));
+    if (countCookie) res.headers.append("Set-Cookie", countCookie);
     return res;
   };
 
@@ -41,6 +45,7 @@ export async function POST(req: Request) {
 
   // Daily limit, counted on the server: 3 free, 6 paid.
   const quota = await consumeQuota(req, deviceId, "voice");
+  countCookie = quota.setCookie ?? null;
   if (!quota.allowed) {
     return respond({ error: quota.reason === "limit" ? "limit" : "voice_off", used: quota.used, limit: quota.limit }, 429);
   }

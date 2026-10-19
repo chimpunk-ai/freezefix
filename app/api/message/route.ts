@@ -44,9 +44,13 @@ export async function POST(req: Request) {
   let deviceId = readDeviceId(req);
   const isNew = !deviceId;
   if (!deviceId) deviceId = newDeviceId();
+  // Captured by `respond`: when the Supabase-less fallback counter in consumeQuota
+  // returns a Set-Cookie, we must apply it or the fallback never persists its count.
+  let countCookie: string | null = null;
   const respond = (payload: unknown, status = 200) => {
     const res = NextResponse.json(payload, { status });
     if (isNew) res.headers.append("Set-Cookie", deviceCookie(deviceId!));
+    if (countCookie) res.headers.append("Set-Cookie", countCookie);
     return res;
   };
 
@@ -72,6 +76,7 @@ export async function POST(req: Request) {
   }
 
   const q = await consumeQuota(req, deviceId, "check");
+  countCookie = q.setCookie ?? null;
   if (!q.allowed) {
     return respond({ message: "hey, not having a great one. you free to call?", alt: "you around?", source: "built-in" });
   }
