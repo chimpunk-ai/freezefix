@@ -80,18 +80,16 @@ jobs:
       - name: Type check
         run: npm run typecheck
 
-      - name: Lint (non-blocking for now — see summary / PR comment)
+      - name: Lint
         id: lint
-        # Captured so we can surface the actual output on the PR, since
-        # workflow log blobs are not reachable from every environment.
-        # The step is marked non-blocking so a lint failure does not stop the
-        # safety-check tests from running; a separate follow-up PR will land
-        # the lint fixes and this `continue-on-error` can be dropped.
-        continue-on-error: true
+        # Output is captured and also surfaced on the PR / step summary so a
+        # failure is actionable without having to fetch the raw log blobs.
         run: |
           set +e
           npm run lint 2>&1 | tee lint-output.txt
-          echo "exit_code=$?" >> "$GITHUB_OUTPUT"
+          code=$?
+          echo "exit_code=$code" >> "$GITHUB_OUTPUT"
+          exit $code
 
       - name: Surface lint output on the PR
         if: always() && github.event_name == 'pull_request'
