@@ -472,7 +472,23 @@ export default function FreezeFixApp() {
                 onClick={() => {
                   set("local", K_ADULT, "yes");
                   set("local", K_ADULT_DATE, new Date().toISOString().slice(0, 10));
-                  setStep("home");
+                  // Honour a scenario held from a landing-page deep link so a first-time
+                  // visitor who tapped a card goes straight into typing, not to the home
+                  // screen with another set of cards to pick from. Mirrors the already-18+
+                  // path at the top of the file (see useEffect, "deep-linked scenario").
+                  if (scenario) {
+                    setStep(
+                      !get("local", K_CONSENT)
+                        ? "consent"
+                        : !get("local", K_ONBOARDED)
+                          ? "onboarding"
+                          : features.ai
+                            ? "chat"
+                            : "words"
+                    );
+                  } else {
+                    setStep("home");
+                  }
                 }}
               >
                 I&apos;m 18 or over
