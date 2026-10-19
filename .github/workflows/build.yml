@@ -1,0 +1,80 @@
+name: Build and test
+
+# What this does, in plain words:
+# When someone pushes to a branch that isn't main (or opens a PR into main),
+# this job spins up a clean Ubuntu machine, installs the exact Node version
+# from .nvmrc, installs the npm dependencies, generates package-lock.json
+# the first time (and commits it back to the branch), then runs typecheck,
+# lint, and the safety-check tests. Green ✓ on the PR means everything
+# worked and it's safe to merge. Red ✗ means something failed — click the
+# failed job to see which step and why.
+#
+# This workflow does NOT deploy, publish, or touch Cloudflare, Supabase,
+# Paddle, DNS, or any secret.
+
+on:
+  push:
+    branches-ignore:
+      - main
+  pull_request:
+    branches:
+      - main
+
+permissions:
+  contents: write
+
+concurrency:
+  group: build-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out the branch
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.head_ref || github.ref_name }}
+          token: ${{ secrets.GITHUB_TOKEN }}
+          persist-credentials: true
+
+      - name: Set up Node (version from .nvmrc)
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          # Cache is only effective once a lockfile exists; harmless before.
+          cache: npm
+
+      - name: Install dependencies (generates lockfile the first time)
+        run: |
+          if [ -f package-lock.json ]; then
+            npm ci --no-audit --no-fund
+          else
+            npm install --no-audit --no-fund
+          fi
+
+      - name: Commit a newly generated lockfile back to this branch
+        # Only on `push` events — pull_request events run in a detached state
+        # and shouldn't try to push back to the source branch.
+        if: github.event_name == 'push'
+        run: |
+          if [ -n "$(git status --porcelain package-lock.json)" ]; then
+            git config user.name "github-actions[bot]"
+            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+            git add package-lock.json
+            git commit -m "chore(ci): generate package-lock.json"
+            git push
+            echo "::notice::Generated and pushed package-lock.json. A new workflow run will start on that commit and run the checks."
+            exit 0
+          fi
+
+      - name: Type check
+        run: npm run typecheck
+
+      - name: Lint
+        # Safety: keep the step strict. If lint config is missing, we want to
+        # know and fix it, not quietly pass.
+        run: npm run lint
+
+      - name: Safety-check tests (red-team keyword set)
+        run: npm run test:risk
