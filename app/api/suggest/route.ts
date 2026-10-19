@@ -21,9 +21,13 @@ export async function POST(req: Request) {
   const isNew = !deviceId;
   if (!deviceId) deviceId = newDeviceId();
 
+  // Captured by `respond`: when the Supabase-less fallback counter in consumeQuota
+  // returns a Set-Cookie, we must apply it or the fallback never persists its count.
+  let countCookie: string | null = null;
   const respond = (body: unknown, status = 200) => {
     const res = NextResponse.json(body, { status });
     if (isNew) res.headers.append("Set-Cookie", deviceCookie(deviceId!));
+    if (countCookie) res.headers.append("Set-Cookie", countCookie);
     return res;
   };
 
@@ -50,6 +54,7 @@ export async function POST(req: Request) {
 
   // A few per device per day is plenty for honest feedback and stops the box being flooded.
   const quota = await consumeQuota(req, deviceId, "check");
+  countCookie = quota.setCookie ?? null;
   if (!quota.allowed) return respond({ ok: true, throttled: true });
 
   const url = process.env.SUPABASE_URL;
