@@ -47,11 +47,17 @@ jobs:
           # of the very first run that generates the lockfile. We can turn the
           # npm cache back on in a follow-up once the lockfile is committed.
 
-      - name: Install dependencies (generates lockfile the first time)
+      - name: Install dependencies (generates/updates lockfile as needed)
         run: |
-          if [ -f package-lock.json ]; then
-            npm ci --no-audit --no-fund
+          # Strict install first (reproducible). If the lockfile is missing or
+          # out of sync with package.json — for example because this commit
+          # added or bumped a dep — fall back to a regular install, which
+          # updates the lockfile. The commit-back step below picks up the
+          # change so the branch stays in sync.
+          if [ -f package-lock.json ] && npm ci --no-audit --no-fund; then
+            echo "::notice::Installed from existing package-lock.json (npm ci)"
           else
+            echo "::warning::Lockfile missing or out of sync; running npm install to regenerate it"
             npm install --no-audit --no-fund
           fi
 
