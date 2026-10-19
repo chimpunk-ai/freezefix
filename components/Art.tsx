@@ -6,8 +6,17 @@
 //
 // Everything here is abstract and calm. All of it respects reduced motion, because the
 // audience is sometimes having a bad time with a racing heart.
+//
+// Colours below are drawn from the Grove palette in globals.css. Kept as literals here
+// (rather than CSS vars) only because SVG attributes need literal values at parse time.
 
-const soft = "rgba(255,255,255,0.14)";
+const SOFT = "rgba(239,236,227,0.1)";   // card tint
+const FAINT = "rgba(239,236,227,0.18)"; // line tint
+const DIM = "rgba(239,236,227,0.22)";   // ink dim
+const INK = "#eff0ea";
+const AMBER = "#e3b674";                // accent
+const MOSS = "#9fd2b6";                 // frost
+const TEAL = "#5aa89a";                 // sage-teal
 
 /** The loop that won't stop: a line that goes round and round and never lands. */
 export function LoopArt({ className = "" }: { className?: string }) {
@@ -15,11 +24,11 @@ export function LoopArt({ className = "" }: { className?: string }) {
     <svg viewBox="0 0 200 140" className={className} role="img" aria-label="A line looping back on itself">
       <defs>
         <linearGradient id="loopG" x1="0" y1="0" x2="1" y2="1">
-          <stop offset="0" stopColor="#7b5cff" />
-          <stop offset="1" stopColor="#ff8ad8" />
+          <stop offset="0" stopColor={MOSS} />
+          <stop offset="1" stopColor={AMBER} />
         </linearGradient>
       </defs>
-      <rect width="200" height="140" rx="20" fill={soft} />
+      <rect width="200" height="140" rx="20" fill={SOFT} />
       <path
         d="M58 96c-26 0-34-20-20-36 14-16 46-8 52 12 7 22 36 30 50 14 13-15 6-38-16-38"
         fill="none"
@@ -28,7 +37,7 @@ export function LoopArt({ className = "" }: { className?: string }) {
         strokeLinecap="round"
         className="ff-draw"
       />
-      <circle cx="124" cy="48" r="6" fill="#ff8ad8" />
+      <circle cx="124" cy="48" r="6" fill={AMBER} />
     </svg>
   );
 }
@@ -37,11 +46,11 @@ export function LoopArt({ className = "" }: { className?: string }) {
 export function StartArt({ className = "" }: { className?: string }) {
   return (
     <svg viewBox="0 0 200 140" className={className} role="img" aria-label="A mostly blank page with one line written">
-      <rect width="200" height="140" rx="20" fill={soft} />
-      <rect x="58" y="26" width="84" height="94" rx="10" fill="rgba(255,255,255,0.1)" stroke="rgba(255,255,255,0.25)" />
-      <rect x="72" y="44" width="46" height="6" rx="3" fill="#ff8ad8" className="ff-pulse" />
-      <rect x="72" y="62" width="56" height="5" rx="2.5" fill="rgba(255,255,255,0.18)" />
-      <rect x="72" y="76" width="36" height="5" rx="2.5" fill="rgba(255,255,255,0.12)" />
+      <rect width="200" height="140" rx="20" fill={SOFT} />
+      <rect x="58" y="26" width="84" height="94" rx="10" fill="rgba(239,236,227,0.08)" stroke="rgba(239,236,227,0.22)" />
+      <rect x="72" y="44" width="46" height="6" rx="3" fill={AMBER} className="ff-pulse" />
+      <rect x="72" y="62" width="56" height="5" rx="2.5" fill={FAINT} />
+      <rect x="72" y="76" width="36" height="5" rx="2.5" fill="rgba(239,236,227,0.12)" />
     </svg>
   );
 }
@@ -50,8 +59,8 @@ export function StartArt({ className = "" }: { className?: string }) {
 export function ReplyArt({ className = "" }: { className?: string }) {
   return (
     <svg viewBox="0 0 200 140" className={className} role="img" aria-label="Two message bubbles, one still empty">
-      <rect width="200" height="140" rx="20" fill={soft} />
-      <rect x="30" y="34" width="92" height="34" rx="16" fill="rgba(255,255,255,0.16)" />
+      <rect width="200" height="140" rx="20" fill={SOFT} />
+      <rect x="30" y="34" width="92" height="34" rx="16" fill="rgba(239,236,227,0.16)" />
       <rect
         x="78"
         y="80"
@@ -59,7 +68,7 @@ export function ReplyArt({ className = "" }: { className?: string }) {
         height="34"
         rx="16"
         fill="none"
-        stroke="#ff8ad8"
+        stroke={AMBER}
         strokeWidth="3"
         strokeDasharray="7 6"
         className="ff-dash"
@@ -73,7 +82,7 @@ export function RoomArt({ className = "" }: { className?: string }) {
   const bars = [26, 48, 70, 34, 0, 0, 40, 62, 30, 52];
   return (
     <svg viewBox="0 0 200 140" className={className} role="img" aria-label="Noise bars with a quiet gap in the middle">
-      <rect width="200" height="140" rx="20" fill={soft} />
+      <rect width="200" height="140" rx="20" fill={SOFT} />
       {bars.map((h, i) =>
         h === 0 ? null : (
           <rect
@@ -83,11 +92,11 @@ export function RoomArt({ className = "" }: { className?: string }) {
             width="9"
             height={h}
             rx="4.5"
-            fill={i < 4 ? "rgba(255,255,255,0.22)" : "rgba(255,255,255,0.22)"}
+            fill={DIM}
           />
         )
       )}
-      <circle cx="100" cy="86" r="13" fill="#39e0c8" opacity="0.85" className="ff-breathe" />
+      <circle cx="100" cy="86" r="13" fill={TEAL} opacity="0.9" className="ff-breathe" />
     </svg>
   );
 }
@@ -96,11 +105,11 @@ export function RoomArt({ className = "" }: { className?: string }) {
 export function WinsArt({ className = "" }: { className?: string }) {
   return (
     <svg viewBox="0 0 200 140" className={className} role="img" aria-label="A row of small ticks">
-      <rect width="200" height="140" rx="20" fill={soft} />
+      <rect width="200" height="140" rx="20" fill={SOFT} />
       {[0, 1, 2, 3].map((i) => (
         <g key={i} transform={`translate(${34 + i * 36}, ${86 - i * 10})`}>
-          <circle r="13" fill={i === 3 ? "#ff8ad8" : "rgba(255,255,255,0.18)"} />
-          <path d="M-5 0l3.5 4L6-4" fill="none" stroke="#f7f2ff" strokeWidth="3" strokeLinecap="round" />
+          <circle r="13" fill={i === 3 ? AMBER : "rgba(239,236,227,0.18)"} />
+          <path d="M-5 0l3.5 4L6-4" fill="none" stroke={INK} strokeWidth="3" strokeLinecap="round" />
         </g>
       ))}
     </svg>
