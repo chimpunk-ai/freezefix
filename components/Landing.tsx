@@ -51,24 +51,32 @@ export default function Landing() {
   return (
     <main className="mx-auto w-full max-w-5xl px-5 pb-16">
       <header className="flex items-center justify-between py-5">
-        <span className="text-lg font-extrabold text-ink">freezefix</span>
-        <nav className="flex items-center gap-4 text-sm text-ink-soft">
+        <span className="text-lg font-extrabold tracking-tight text-ink">freezefix</span>
+        <nav className="flex items-center gap-3 text-sm text-ink-soft sm:gap-5">
           <a href="#how" className="hidden hover:text-ink sm:block">
             How it works
           </a>
           <a href="#pricing" className="hidden hover:text-ink sm:block">
             Pricing
           </a>
-          <Link href="/app" className="rounded-full bg-chip px-4 py-2 text-ink">
+          {/* Crisis route is reachable from here without the 18+ gate, sign-up or payment.
+              Quiet styling so it isn't a scare button; always visible so it's never buried. */}
+          <Link
+            href="/help"
+            className="rounded-full border border-line px-3 py-1.5 text-ink-soft hover:text-ink"
+          >
+            Help now
+          </Link>
+          <Link href="/app" className="rounded-full bg-chip px-4 py-2 text-ink hover:bg-chip/80">
             Open
           </Link>
         </nav>
       </header>
 
       {/* Hero */}
-      <section className="grid items-center gap-10 py-8 md:grid-cols-2 md:py-14">
-        <div className="flex flex-col gap-5">
-          <h1 className="text-[2.75rem] font-extrabold leading-[0.98] text-ink sm:text-6xl">
+      <section className="grid items-center gap-10 py-10 md:grid-cols-2 md:py-16">
+        <div className="flex flex-col gap-6">
+          <h1 className="text-[2.9rem] font-extrabold leading-[0.95] text-ink sm:text-[4.25rem]">
             Frozen
             <br />
             after a smoke?
@@ -81,22 +89,25 @@ export default function Landing() {
             We&apos;re not here to tell you to stop. That&apos;s your call and we can&apos;t change it anyway. We
             can help with the bit afterwards.
           </p>
-          <div className="flex flex-wrap items-center gap-3">
+          <div className="mt-1 flex flex-wrap items-center gap-3">
             <Link
               href="/app"
-              className="rounded-[1.6rem] bg-accent px-7 py-4 text-lg font-bold text-accent-ink transition active:scale-[0.98]"
+              className="rounded-[1.6rem] bg-accent px-7 py-4 text-lg font-bold text-accent-ink shadow-[0_14px_32px_-14px_rgba(227,182,116,0.6)] transition active:scale-[0.98]"
             >
               {cta}
             </Link>
             <a
               href="#how"
-              className="rounded-[1.6rem] border border-line px-7 py-4 text-lg font-semibold text-ink transition active:scale-[0.98]"
+              className="rounded-[1.6rem] border border-line px-7 py-4 text-lg font-semibold text-ink transition hover:border-ink-soft active:scale-[0.98]"
             >
               See how it works
             </a>
           </div>
-          <p className="text-sm text-ink-faint">
-            18+. First conversation free, no card. Crisis help is always free.
+          <p className="text-sm leading-relaxed text-ink-faint">
+            18+. First conversation free, no card.{" "}
+            <Link href="/help" className="text-ink-soft underline underline-offset-4 hover:text-ink">
+              Crisis help is always free.
+            </Link>
           </p>
         </div>
         <ChatDemo />
