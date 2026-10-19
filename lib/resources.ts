@@ -12,6 +12,12 @@ export type Contact = {
   sms?: { to: string; body?: string }; // for an sms: link
   url?: string; // for chat links
   note?: string; // hours / cost
+  // One short, factual sentence explaining what the service is, for services
+  // that aren't instantly recognisable to a first-time user. Shown under the
+  // label. Keep under about 15 words; no marketing, no emotional claims. If a
+  // service is well-known in its country (Samaritans, 999, Childline), leave
+  // this unset.
+  blurb?: string;
 };
 
 export type CountryResources = {
@@ -51,15 +57,15 @@ export const RESOURCES: Record<CountryCode, CountryResources> = {
     name: "United States",
     emergency: { label: "Emergency", display: "911", tel: "911", note: "24/7, free" },
     crisis: [
-      { label: "988 Suicide & Crisis Lifeline", display: "Call or text 988", tel: "988", note: "24/7, free" },
+      { label: "988 Suicide & Crisis Lifeline", display: "Call or text 988", tel: "988", note: "24/7, free", blurb: "The US national suicide and crisis lifeline, run by SAMHSA." },
       { label: "988 text", display: "Text 988", sms: { to: "988" }, note: "24/7, free" },
       { label: "988 chat", display: "chat.988lifeline.org", url: "https://chat.988lifeline.org", note: "24/7, free" },
     ],
     urgentMentalHealth: [
-      { label: "988 Suicide & Crisis Lifeline", display: "Call or text 988", tel: "988", note: "24/7, free" },
+      { label: "988 Suicide & Crisis Lifeline", display: "Call or text 988", tel: "988", note: "24/7, free", blurb: "The US national suicide and crisis lifeline, run by SAMHSA." },
     ],
     substances: [
-      { label: "Poison Help", display: "1-800-222-1222", tel: "18002221222", note: "24/7, free" },
+      { label: "Poison Help", display: "1-800-222-1222", tel: "18002221222", note: "24/7, free", blurb: "A free US line for any medication, chemical, or overdose worry." },
       { label: "988 Lifeline (covers drug and alcohol worries)", display: "988", tel: "988", note: "24/7, free" },
     ],
     youth: [{ label: "988 (call or text, all ages)", display: "988", tel: "988", note: "24/7, free" }],
@@ -69,12 +75,12 @@ export const RESOURCES: Record<CountryCode, CountryResources> = {
     emergency: { label: "Emergency", display: "112 or 999", tel: "112", note: "24/7, free" },
     crisis: [
       { label: "Samaritans", display: "116 123", tel: "116123", note: "24/7, free" },
-      { label: "Pieta", display: "1800 247 247", tel: "1800247247", note: "24/7, free to call" },
+      { label: "Pieta", display: "1800 247 247", tel: "1800247247", note: "24/7, free to call", blurb: "Irish charity offering free crisis counselling and bereavement support." },
       { label: "Pieta (text)", display: "Text HELP to 51444", sms: { to: "51444", body: "HELP" }, note: "Standard text rate" },
-      { label: "Text line (HSE)", display: "Text HELLO to 50808", sms: { to: "50808", body: "HELLO" }, note: "24/7, free" },
+      { label: "Text line (HSE)", display: "Text HELLO to 50808", sms: { to: "50808", body: "HELLO" }, note: "24/7, free", blurb: "A free text-based support service from Ireland's HSE." },
     ],
     urgentMentalHealth: [
-      { label: "Pieta", display: "1800 247 247", tel: "1800247247", note: "24/7, free" },
+      { label: "Pieta", display: "1800 247 247", tel: "1800247247", note: "24/7, free", blurb: "Irish charity offering free crisis counselling and bereavement support." },
       { label: "Samaritans", display: "116 123", tel: "116123", note: "24/7, free" },
     ],
     substances: [{ label: "Samaritans", display: "116 123", tel: "116123", note: "24/7, free" }],
@@ -88,13 +94,13 @@ export const RESOURCES: Record<CountryCode, CountryResources> = {
     name: "Netherlands",
     emergency: { label: "Emergency", display: "112", tel: "112", note: "24/7, free" },
     crisis: [
-      { label: "113 Zelfmoordpreventie", display: "113", tel: "113", note: "24/7, free, anonymous" },
+      { label: "113 Zelfmoordpreventie", display: "113", tel: "113", note: "24/7, free, anonymous", blurb: "The Dutch national suicide-prevention line." },
       { label: "113 chat", display: "113.nl/chat", url: "https://www.113.nl/chat", note: "24/7, free, anonymous" },
     ],
-    urgentMentalHealth: [{ label: "113", display: "113", tel: "113", note: "24/7, free, anonymous" }],
-    substances: [{ label: "113", display: "113", tel: "113", note: "24/7, free, anonymous" }],
+    urgentMentalHealth: [{ label: "113", display: "113", tel: "113", note: "24/7, free, anonymous", blurb: "The Dutch national suicide-prevention line." }],
+    substances: [{ label: "113", display: "113", tel: "113", note: "24/7, free, anonymous", blurb: "The Dutch national suicide-prevention line." }],
     youth: [
-      { label: "De Kindertelefoon (8–18)", display: "0800-0432", tel: "08000432", note: "Free, anonymous; daytime and evening" },
+      { label: "De Kindertelefoon (8–18)", display: "0800-0432", tel: "08000432", note: "Free, anonymous; daytime and evening", blurb: "A free Dutch listening line for children and teens." },
       { label: "De Kindertelefoon (chat)", display: "kindertelefoon.nl", url: "https://www.kindertelefoon.nl", note: "Daytime and evening" },
     ],
     youthNightBackup: { label: "113", display: "113", tel: "113", note: "24/7, free" },
@@ -103,31 +109,31 @@ export const RESOURCES: Record<CountryCode, CountryResources> = {
     name: "Germany",
     emergency: { label: "Emergency (medical)", display: "112 (police 110)", tel: "112", note: "24/7, free" },
     crisis: [
-      { label: "TelefonSeelsorge", display: "0800 111 0 111", tel: "08001110111", note: "24/7, free" },
+      { label: "TelefonSeelsorge", display: "0800 111 0 111", tel: "08001110111", note: "24/7, free", blurb: "Germany's main free listening line, run by a non-profit." },
       { label: "TelefonSeelsorge", display: "0800 111 0 222", tel: "08001110222", note: "24/7, free" },
       { label: "TelefonSeelsorge", display: "116 123", tel: "116123", note: "24/7, free" },
     ],
     urgentMentalHealth: [
-      { label: "TelefonSeelsorge", display: "0800 111 0 111", tel: "08001110111", note: "24/7, free" },
-      { label: "Doctor on call (not life-threatening)", display: "116117", tel: "116117", note: "Out of hours, free" },
+      { label: "TelefonSeelsorge", display: "0800 111 0 111", tel: "08001110111", note: "24/7, free", blurb: "Germany's main free listening line, run by a non-profit." },
+      { label: "Doctor on call (not life-threatening)", display: "116117", tel: "116117", note: "Out of hours, free", blurb: "Germany's out-of-hours medical on-call service." },
     ],
     substances: [
-      { label: "Doctor on call (not life-threatening)", display: "116117", tel: "116117", note: "Out of hours, free" },
+      { label: "Doctor on call (not life-threatening)", display: "116117", tel: "116117", note: "Out of hours, free", blurb: "Germany's out-of-hours medical on-call service." },
       { label: "TelefonSeelsorge", display: "0800 111 0 111", tel: "08001110111", note: "24/7, free" },
     ],
-    youth: [{ label: "Nummer gegen Kummer", display: "116 111", tel: "116111", note: "Mon–Sat 14:00–20:00, free, anonymous" }],
+    youth: [{ label: "Nummer gegen Kummer", display: "116 111", tel: "116111", note: "Mon–Sat 14:00–20:00, free, anonymous", blurb: "A free German listening line for children and teens." }],
     youthNightBackup: { label: "TelefonSeelsorge", display: "116 123", tel: "116123", note: "24/7, free" },
   },
   IN: {
     name: "India",
-    emergency: { label: "Emergency", display: "112", tel: "112", note: "24/7, free, national" },
+    emergency: { label: "Emergency", display: "112", tel: "112", note: "24/7, free, national", blurb: "India's single national emergency number (police, fire, medical)." },
     crisis: [
-      { label: "Tele-MANAS", display: "14416", tel: "14416", note: "24/7, free, about 20 languages" },
-      { label: "Tele-MANAS", display: "1-800-891-4416", tel: "18008914416", note: "24/7, free" },
+      { label: "Tele-MANAS", display: "14416", tel: "14416", note: "24/7, free, about 20 languages", blurb: "India's national government mental-health helpline, launched by the Ministry of Health in 2022." },
+      { label: "Tele-MANAS", display: "1-800-891-4416", tel: "18008914416", note: "24/7, free", blurb: "Toll-free backup number for the same Tele-MANAS service." },
     ],
-    urgentMentalHealth: [{ label: "Tele-MANAS", display: "14416", tel: "14416", note: "24/7, free" }],
-    substances: [{ label: "Tele-MANAS", display: "14416", tel: "14416", note: "24/7, free" }],
-    youth: [{ label: "Child Helpline", display: "1098", tel: "1098", note: "24/7, free" }],
+    urgentMentalHealth: [{ label: "Tele-MANAS", display: "14416", tel: "14416", note: "24/7, free", blurb: "India's national government mental-health helpline." }],
+    substances: [{ label: "Tele-MANAS", display: "14416", tel: "14416", note: "24/7, free", blurb: "India's national government mental-health helpline, which also handles substance worries." }],
+    youth: [{ label: "Child Helpline", display: "1098", tel: "1098", note: "24/7, free", blurb: "India's national free helpline for children in distress." }],
     youthNightBackup: { label: "Tele-MANAS", display: "14416", tel: "14416", note: "24/7, free" },
   },
   // Outside the six verified countries: never show a UK or US number.
@@ -135,10 +141,10 @@ export const RESOURCES: Record<CountryCode, CountryResources> = {
   OTHER: {
     name: "Somewhere else",
     emergency: { label: "Your local emergency number", display: "Local emergency number", note: "" },
-    crisis: [{ label: "Find a free helpline near you", display: "findahelpline.com", url: "https://findahelpline.com", note: "" }],
-    urgentMentalHealth: [{ label: "Find a free helpline near you", display: "findahelpline.com", url: "https://findahelpline.com", note: "" }],
-    substances: [{ label: "Find a free helpline near you", display: "findahelpline.com", url: "https://findahelpline.com", note: "" }],
-    youth: [{ label: "Find a free helpline near you", display: "findahelpline.com", url: "https://findahelpline.com", note: "" }],
+    crisis: [{ label: "Find a free helpline near you", display: "findahelpline.com", url: "https://findahelpline.com", note: "", blurb: "An international directory of free, verified helplines, run by ThroughLine." }],
+    urgentMentalHealth: [{ label: "Find a free helpline near you", display: "findahelpline.com", url: "https://findahelpline.com", note: "", blurb: "An international directory of free, verified helplines, run by ThroughLine." }],
+    substances: [{ label: "Find a free helpline near you", display: "findahelpline.com", url: "https://findahelpline.com", note: "", blurb: "An international directory of free, verified helplines, run by ThroughLine." }],
+    youth: [{ label: "Find a free helpline near you", display: "findahelpline.com", url: "https://findahelpline.com", note: "", blurb: "An international directory of free, verified helplines, run by ThroughLine." }],
   },
 };
 

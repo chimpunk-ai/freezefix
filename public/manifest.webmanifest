@@ -1,12 +1,12 @@
 {
   "name": "FreezeFix",
   "short_name": "FreezeFix",
-  "description": "An AI mate for when you're frozen. 18+.",
+  "description": "The mate for when a smoke leaves you frozen. One safe next step in under 60 seconds. Adults 18+.",
   "start_url": "/app",
   "scope": "/",
   "display": "standalone",
-  "background_color": "#1a1033",
-  "theme_color": "#1a1033",
+  "background_color": "#0e1a16",
+  "theme_color": "#0e1a16",
   "orientation": "portrait",
   "icons": [
     { "src": "/icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" },
