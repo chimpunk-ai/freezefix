@@ -1,0 +1,123 @@
+name: Build and test
+
+# What this does, in plain words:
+# When someone pushes to a branch that isn't main (or opens a PR into main),
+# this job spins up a clean Ubuntu machine, installs the exact Node version
+# from .nvmrc, installs the npm dependencies, generates package-lock.json
+# the first time (and commits it back to the branch), then runs typecheck,
+# lint, and the safety-check tests. Green ✓ on the PR means everything
+# worked and it's safe to merge. Red ✗ means something failed — click the
+# failed job to see which step and why.
+#
+# This workflow does NOT deploy, publish, or touch Cloudflare, Supabase,
+# Paddle, DNS, or any secret.
+
+on:
+  push:
+    branches-ignore:
+      - main
+  pull_request:
+    branches:
+      - main
+
+permissions:
+  contents: write
+  pull-requests: write
+
+concurrency:
+  group: build-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out the branch
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.head_ref || github.ref_name }}
+          token: ${{ secrets.GITHUB_TOKEN }}
+          persist-credentials: true
+
+      - name: Set up Node (version from .nvmrc)
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          # Note: no `cache: npm` here. setup-node@v4 errors out when the cache
+          # key file (package-lock.json) is missing, which is exactly the state
+          # of the very first run that generates the lockfile. We can turn the
+          # npm cache back on in a follow-up once the lockfile is committed.
+
+      - name: Install dependencies (generates/updates lockfile as needed)
+        run: |
+          # Strict install first (reproducible). If the lockfile is missing or
+          # out of sync with package.json — for example because this commit
+          # added or bumped a dep — fall back to a regular install, which
+          # updates the lockfile. The commit-back step below picks up the
+          # change so the branch stays in sync.
+          if [ -f package-lock.json ] && npm ci --no-audit --no-fund; then
+            echo "::notice::Installed from existing package-lock.json (npm ci)"
+          else
+            echo "::warning::Lockfile missing or out of sync; running npm install to regenerate it"
+            npm install --no-audit --no-fund
+          fi
+
+      - name: Commit a newly generated lockfile back to this branch
+        # Only on `push` events — pull_request events run in a detached state
+        # and shouldn't try to push back to the source branch.
+        if: github.event_name == 'push'
+        run: |
+          if [ -n "$(git status --porcelain package-lock.json)" ]; then
+            git config user.name "github-actions[bot]"
+            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+            git add package-lock.json
+            git commit -m "chore(ci): generate package-lock.json"
+            git push
+            echo "::notice::Generated and pushed package-lock.json. A new workflow run will start on that commit and run the checks."
+            exit 0
+          fi
+
+      - name: Type check
+        run: npm run typecheck
+
+      - name: Lint
+        id: lint
+        # Output is captured and also surfaced on the PR / step summary so a
+        # failure is actionable without having to fetch the raw log blobs.
+        run: |
+          set +e
+          npm run lint 2>&1 | tee lint-output.txt
+          code=$?
+          echo "exit_code=$code" >> "$GITHUB_OUTPUT"
+          exit $code
+
+      - name: Surface lint output on the PR
+        if: always() && github.event_name == 'pull_request'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          {
+            echo "### Lint output (non-blocking)"
+            echo ""
+            echo '```'
+            # Keep the comment small; ESLint can be verbose.
+            head -c 60000 lint-output.txt || true
+            echo '```'
+            echo ""
+            echo "_Exit code: ${{ steps.lint.outputs.exit_code }}_"
+          } > comment.md
+          gh pr comment "${{ github.event.pull_request.number }}" --body-file comment.md
+
+      - name: Lint output to step summary
+        if: always()
+        run: |
+          {
+            echo "## Lint output"
+            echo ""
+            echo '```'
+            head -c 60000 lint-output.txt || true
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Safety-check tests (red-team keyword set)
+        run: npm run test:risk

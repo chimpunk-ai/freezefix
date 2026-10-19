@@ -37,10 +37,19 @@ Add these in **Cloudflare dashboard → Workers → freezefix → Settings → V
 ## Commands
 
 ```bash
-npm install
+npm install          # first time, or after package.json changes
 npm run dev          # local at http://localhost:3000
 npm run test:risk    # safety check tests
+npm run typecheck    # TypeScript check
+npm run lint         # ESLint (requires eslint config to be present)
 npm run preview      # run the Cloudflare build locally
 ```
 
 Deploys happen automatically from GitHub through Cloudflare Workers Builds (build command `npx opennextjs-cloudflare build`, deploy command `npx opennextjs-cloudflare deploy`).
+
+## Build reproducibility
+
+- Package manager: **npm** (requires Node `>=20.9.0`; see `.nvmrc` for the version used in development).
+- Dependencies in `package.json` are **pinned to caret ranges** against the current compatible releases, so every install resolves to the same major/minor family.
+- A lockfile (`package-lock.json`) is required for byte-for-byte reproducible installs. **Run `npm install` once locally and commit the resulting `package-lock.json`** — it is intentionally not generated here when the registry cannot be reached.
+- Once `package-lock.json` is committed, prefer `npm ci` in any CI / Cloudflare Workers Builds install step so the lockfile is respected and installs stay deterministic.
