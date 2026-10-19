@@ -42,8 +42,10 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version-file: .nvmrc
-          # Cache is only effective once a lockfile exists; harmless before.
-          cache: npm
+          # Note: no `cache: npm` here. setup-node@v4 errors out when the cache
+          # key file (package-lock.json) is missing, which is exactly the state
+          # of the very first run that generates the lockfile. We can turn the
+          # npm cache back on in a follow-up once the lockfile is committed.
 
       - name: Install dependencies (generates lockfile the first time)
         run: |
