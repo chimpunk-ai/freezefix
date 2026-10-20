@@ -389,8 +389,8 @@ export default function Chat({
           <p className="mb-2 rounded-xl bg-chip px-4 py-3 text-sm text-ink-soft">{note}</p>
         ))}
 
-      {/* Opener chips */}
-      {chips.length > 0 && !busy && (
+      {/* Opener chips — only before the first exchange */}
+      {chips.length > 0 && !busy && !hasExchange && (
         <div className="mb-2 flex flex-wrap gap-2">
           {chips.map((c) => (
             <button
@@ -404,8 +404,8 @@ export default function Chat({
         </div>
       )}
 
-      {/* Follow-up action chips after Fix has replied */}
-      {!busy && hasExchange && chips.length === 0 && (
+      {/* Follow-up action buttons — always shown after Fix has replied */}
+      {!busy && hasExchange && (
         <div className="mb-2 flex flex-wrap gap-2">
           <button onClick={() => send("I'll try that")} className="ff-chip rounded-full border border-frost/40 bg-frost/10 px-3.5 py-1.5 text-sm font-medium text-frost">
             Try it

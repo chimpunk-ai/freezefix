@@ -178,7 +178,7 @@ export async function POST(req: Request) {
             messages,
             stream: true,
           }),
-          signal: AbortSignal.timeout(30000),
+          signal: AbortSignal.timeout(45000),
         });
         if (!upstream.ok || !upstream.body) {
           // Surface the provider's own reason: it is the difference between a bad key,
@@ -240,7 +240,7 @@ export async function POST(req: Request) {
 
             // Wait for the verdict before letting a single character through.
             if (!verdict) {
-              const m = /RISK:\s*([0-4])[\s\S]*?FLAG:\s*(\w+)/.exec(buf);
+              const m = /RISK:\s*([0-4])[\s\S]*?FLAG:\s*(\w+)/i.exec(buf);
               if (!m) continue;
               const flag = VALID_FLAGS.includes(m[2] as HelpScreen) ? (m[2] as HelpScreen) : null;
               const flagLevel: RiskLevel =
@@ -266,15 +266,15 @@ export async function POST(req: Request) {
 
             // Verdict is in and safe: stream whatever follows REPLY:.
             if (!replyStarted) {
-              const i = buf.indexOf("REPLY:");
-              if (i === -1) continue;
+              const replyMatch = /REPLY:/i.exec(buf);
+              if (!replyMatch) continue;
               replyStarted = true;
               // The space after "REPLY:" is part of the label, not the reply.
-              tail = buf.slice(i + 6).replace(/^[ \t]+/, "");
+              tail = buf.slice(replyMatch.index + 6).replace(/^[ \t]+/, "");
             } else {
               tail += evt.delta.text;
             }
-            const stop = tail.search(/\n\s*(CHIPS|REMEMBER)\s*:/);
+            const stop = tail.search(/\n\s*(CHIPS|REMEMBER)\s*:/i);
             // A marker arrives a few characters at a time, so the end of the text so far may
             // be the start of one. Hold anything that could still turn into CHIPS: or
             // REMEMBER: until the next piece settles it, or the stray letters reach the screen.
@@ -294,8 +294,8 @@ export async function POST(req: Request) {
         // The words are right there and the safety verdict has already been applied, so take
         // everything after the FLAG line rather than showing an empty bubble.
         if (verdict && !replyStarted) {
-          const after = /FLAG:\s*\w+[ \t]*\n?([\s\S]*)/.exec(buf)?.[1] ?? "";
-          const salvaged = after.split(/\n\s*(?:CHIPS|REMEMBER)\s*:/)[0].replace(/^\s*REPLY:\s*/, "").trim();
+          const after = /FLAG:\s*\w+[ \t]*\n?([\s\S]*)/i.exec(buf)?.[1] ?? "";
+          const salvaged = after.split(/\n\s*(?:CHIPS|REMEMBER)\s*:/i)[0].replace(/^\s*REPLY:\s*/i, "").trim();
           if (salvaged) {
             send({ delta: salvaged });
             replyStarted = true;
@@ -367,8 +367,9 @@ function holdBack(tail: string): string {
   const nl = tail.lastIndexOf("\n");
   if (nl === -1) return tail;
   const after = tail.slice(nl + 1).trimStart();
+  const upper = after.toUpperCase();
   const couldBeMarker = ["CHIPS:", "REMEMBER:"].some(
-    (marker) => after.length < marker.length && marker.startsWith(after)
+    (marker) => upper.length < marker.length && marker.startsWith(upper)
   );
   return couldBeMarker ? tail.slice(0, nl) : tail;
 }
