@@ -7,6 +7,7 @@ import { loadMemory, remember, noteVisit } from "@/lib/memory";
 import type { HelpScreen as HelpScreenId, RiskLevel } from "@/lib/risk";
 import { MOMENTS, type MomentId } from "@/lib/prompt";
 import { NdjsonReader } from "@/lib/ndjson";
+import { errorText } from "@/lib/chat-errors";
 
 // The buddy chat. Replies stream in, but the server holds every character back until the
 // safety verdict has landed, so nothing unsafe can reach the screen.
@@ -113,8 +114,8 @@ export default function Chat({
       });
 
       if (!res.ok || !res.body) {
-        const data = (await res.json().catch(() => ({}))) as { error?: string };
-        setNote(errorText(data.error));
+        const data = (await res.json().catch(() => ({}))) as { error?: string; detail?: string };
+        setNote(errorText(data.error, data.detail));
         setBusy(false);
         return;
       }
@@ -215,10 +216,11 @@ export default function Chat({
           </div>
         ))}
         {busy && turns[turns.length - 1]?.role === "user" && (
-          <div className="flex max-w-[85%] self-start gap-1.5 rounded-[1.4rem] rounded-bl-md bg-card px-4 py-4">
-            <span className="h-2 w-2 animate-bounce rounded-full bg-ink-faint [animation-delay:-0.3s]" />
-            <span className="h-2 w-2 animate-bounce rounded-full bg-ink-faint [animation-delay:-0.15s]" />
-            <span className="h-2 w-2 animate-bounce rounded-full bg-ink-faint" />
+          <div className="ff-bubble flex max-w-[85%] items-center gap-2 self-start rounded-[1.4rem] rounded-bl-md bg-card px-4 py-3" role="status" aria-live="polite">
+            <span className="h-2 w-2 animate-bounce rounded-full bg-accent [animation-delay:-0.3s]" />
+            <span className="h-2 w-2 animate-bounce rounded-full bg-accent [animation-delay:-0.15s]" />
+            <span className="h-2 w-2 animate-bounce rounded-full bg-accent" />
+            <span className="ml-1 text-sm text-ink-soft">Fix is thinking…</span>
           </div>
         )}
         <div ref={bottom} />
@@ -252,6 +254,33 @@ export default function Chat({
               {c}
             </button>
           ))}
+        </div>
+      )}
+
+      {/* Follow-up actions after Fix has replied at least once */}
+      {!busy && turns.length >= 3 && turns[turns.length - 1]?.role === "assistant" && (
+        <div className="mb-2 flex flex-wrap gap-2">
+          <button onClick={() => send("I'll try that")} className="ff-chip rounded-full border border-accent/40 bg-accent/10 px-3.5 py-1.5 text-sm font-medium text-accent">
+            Try it
+          </button>
+          <button onClick={() => send("give me another idea")} className="ff-chip rounded-full border border-line bg-chip px-3.5 py-1.5 text-sm text-ink">
+            Another idea
+          </button>
+          <button onClick={() => send("help me draft a message for this")} className="ff-chip rounded-full border border-line bg-chip px-3.5 py-1.5 text-sm text-ink">
+            Draft a message
+          </button>
+          <button onClick={() => send("can you clarify that?")} className="ff-chip rounded-full border border-line bg-chip px-3.5 py-1.5 text-sm text-ink">
+            Clarify
+          </button>
+          <button
+            onClick={() => {
+              noteVisit("done");
+              onHelped();
+            }}
+            className="ff-chip rounded-full border border-line bg-chip px-3.5 py-1.5 text-sm text-ink-soft"
+          >
+            I&apos;m done for now
+          </button>
         </div>
       )}
 
@@ -297,33 +326,14 @@ export default function Chat({
 
       {image && <p className="pb-1 text-xs text-ink-faint">Image ready. Hit send.</p>}
 
-      {turns.length > 2 && (
-        <div className="flex gap-2 pb-1 pt-1.5">
-          <button onClick={onTrusted} className="flex-1 rounded-2xl border border-line px-3 py-2.5 text-sm text-ink-soft">
-            Text someone
-          </button>
-          <button
-            onClick={() => {
-              noteVisit("lighter");
-              onHelped();
-            }}
-            className="flex-1 rounded-2xl border border-line px-3 py-2.5 text-sm text-ink-soft"
-          >
-            I'm done
+      {/* "Text someone" kept as a subtle link after a few turns */}
+      {turns.length > 4 && !busy && (
+        <div className="flex justify-center pb-1 pt-0.5">
+          <button onClick={onTrusted} className="text-xs text-ink-faint underline underline-offset-2 hover:text-ink-soft">
+            Text someone instead
           </button>
         </div>
       )}
     </section>
   );
-}
-
-function errorText(code?: string): string {
-  const map: Record<string, string> = {
-    ai_off: "Chat isn't switched on yet.",
-    not_usable: "Can't use that one. A chat screenshot or a photo of the place, nothing with people in it.",
-    screenshot_limit: "That's today's images. Keep typing though.",
-    screenshot_off: "Images aren't switched on yet.",
-    bad_image: "Couldn't read that image.",
-  };
-  return map[code ?? ""] ?? "That didn't come through. Try again.";
 }

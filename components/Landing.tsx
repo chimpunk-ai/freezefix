@@ -11,6 +11,15 @@ import FactCard from "@/components/FactCard";
 import Suggest from "@/components/Suggest";
 import { LoopArt, StartArt, RoomArt } from "@/components/Art";
 
+const SOUND_FAMILIAR = [
+  { emoji: "😶‍🌫️", text: "I smoked and now everything feels a bit overwhelming." },
+  { emoji: "🔁", text: "I keep replaying what I said yesterday." },
+  { emoji: "👥", text: "I feel uncomfortable around people right now." },
+  { emoji: "🧊", text: "I can't get myself to start this task." },
+  { emoji: "💬", text: "I need to reply to someone but I'm overthinking it." },
+  { emoji: "🌀", text: "I have too much on my mind and don't know where to start." },
+];
+
 // The public front door. Everything here is honest: no invented reviews, no download counts,
 // no testimonials. The only "proof" offered is the product itself, playing in a phone frame.
 
@@ -113,40 +122,23 @@ export default function Landing() {
         <ChatDemo />
       </section>
 
-      {/* The cause. This is the whole reason the product exists and it goes above the features. */}
+      {/* Sound familiar? — quick-hit scenario cards that link straight to the app */}
       <section className="ff-rise py-12">
-        <div className="rounded-[2rem] border border-line bg-card p-7 sm:p-10">
-          <h2 className="text-3xl font-extrabold leading-tight text-ink sm:text-4xl">
-            You&apos;re fine. You&apos;re not broken.
-            <br />
-            And you can do even better.
-          </h2>
-          <div className="mt-5 flex flex-col gap-4 text-lg leading-relaxed text-ink-soft">
-            <p>
-              Loads of people smoke. Most of them are completely normal people with jobs and coursework and group chats
-              they&apos;re behind on.
-            </p>
-            <p>
-              And sometimes it goes the other way: you go quiet, you get in your head, everyone seems to be looking at
-              you, and the thing you were meant to do stops being possible. That doesn&apos;t make you weak, weird, or
-              less of a man.
-            </p>
-            <p className="text-ink">
-              Nobody here is going to question you, lecture you, or suggest you get help you didn&apos;t ask for.
-            </p>
-          </div>
-          <div className="mt-7 grid gap-4 sm:grid-cols-3">
-            {[
-              { art: <RoomArt className="w-full" />, t: "Paranoid around people" },
-              { art: <LoopArt className="w-full" />, t: "Stuck on the same thought" },
-              { art: <StartArt className="w-full" />, t: "Can't start the thing" },
-            ].map((c) => (
-              <div key={c.t} className="flex flex-col gap-3">
-                {c.art}
-                <p className="text-base font-medium text-ink-soft">{c.t}</p>
-              </div>
-            ))}
-          </div>
+        <h2 className="text-3xl font-extrabold text-ink sm:text-4xl">Sound familiar?</h2>
+        <p className="mt-2 max-w-[48ch] text-lg text-ink-soft">
+          Tap one. Fix already knows where you&apos;re at.
+        </p>
+        <div className="mt-6 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
+          {SOUND_FAMILIAR.map((s) => (
+            <Link
+              key={s.text}
+              href="/app"
+              className="flex items-start gap-3 rounded-[1.75rem] border border-line bg-card p-5 transition hover:border-accent active:scale-[0.97]"
+            >
+              <span className="mt-0.5 text-2xl" aria-hidden="true">{s.emoji}</span>
+              <span className="text-base leading-snug text-ink">{s.text}</span>
+            </Link>
+          ))}
         </div>
       </section>
 
