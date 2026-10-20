@@ -31,7 +31,7 @@ export const SCENARIOS: Scenario[] = [
     moment: "alone",
     label: "Everything's overwhelming",
     blurb: "After a smoke, too much at once",
-    emoji: "😶‍🌫️",
+    emoji: "🍃",
     context:
       "They smoked and now everything feels overwhelming. This is very common — cannabis can amplify sensations and thoughts. Reassure them it passes, ground them in the present.",
     opener: "",
@@ -42,7 +42,7 @@ export const SCENARIOS: Scenario[] = [
     moment: "people",
     label: "Everyone's too loud",
     blurb: "At pres and it's a lot",
-    emoji: "🔊",
+    emoji: "🎧",
     context:
       "They're at a pre-drinks or a party. The room is loud and busy and they're struggling to be in it. Likely overstimulated rather than in danger.",
     opener: "Loud ones are rough. Can you get somewhere quieter?",
@@ -54,7 +54,7 @@ export const SCENARIOS: Scenario[] = [
     moment: "people",
     label: "I feel out of place",
     blurb: "Everyone else seems fine",
-    emoji: "👀",
+    emoji: "👤",
     context:
       "They're somewhere social and feel like they don't fit. Probably comparing their insides to everyone else's outsides.",
     opener: "Everyone else got the manual, apparently. Where are you?",
@@ -65,7 +65,7 @@ export const SCENARIOS: Scenario[] = [
     moment: "people",
     label: "I said something stupid",
     blurb: "Still replaying it",
-    emoji: "🫠",
+    emoji: "💭",
     context:
       "They said something they're now replaying. Classic spotlight effect. Do not tell them nobody noticed as the first move, acknowledge the replay first.",
     opener: "The replay loop. How long's it been going?",
@@ -76,7 +76,7 @@ export const SCENARIOS: Scenario[] = [
     moment: "alone",
     label: "Same thought, hours",
     blurb: "It won't switch off",
-    emoji: "🌀",
+    emoji: "🧠",
     context: "They're alone and stuck on a loop. Rumination rather than acute crisis.",
     opener: "On your own with it is the worst version. What's the loop?",
     chips: ["something i said", "tomorrow", "everything at once"],
@@ -86,7 +86,7 @@ export const SCENARIOS: Scenario[] = [
     moment: "reply",
     label: "Can't reply to someone",
     blurb: "It's been sat there",
-    emoji: "💬",
+    emoji: "💌",
     context:
       "They have a message they can't answer. The gap has made it worse. Offer to draft actual words fairly early.",
     opener: "The longer it sits the bigger it gets. Who is it?",
@@ -97,7 +97,7 @@ export const SCENARIOS: Scenario[] = [
     moment: "task",
     label: "Can't start the thing",
     blurb: "Been staring at it",
-    emoji: "🧱",
+    emoji: "⏳",
     context:
       "They can't begin a task. This is a stuck start, not laziness. Aim for the smallest possible first action.",
     opener: "Staring at it is the hard part, weirdly. What's the thing?",
@@ -108,7 +108,7 @@ export const SCENARIOS: Scenario[] = [
     moment: "alone",
     label: "I just want to talk",
     blurb: "Nothing specific",
-    emoji: "🌙",
+    emoji: "✨",
     context:
       "No particular problem. They want company or a chat. Do not hunt for a problem to solve, and do not offer a move unless they ask.",
     opener: "Go on then. What's up?",
@@ -119,7 +119,7 @@ export const SCENARIOS: Scenario[] = [
     moment: "alone",
     label: "Something good happened",
     blurb: "Let me tell you",
-    emoji: "🎉",
+    emoji: "🌟",
     context:
       "Something went well and they want to tell someone. There is no problem to solve here. Be properly pleased, ask about it, and let them tell the story. Do not offer a move, do not turn it into a lesson.",
     opener: "Go on then. What happened?",
@@ -141,7 +141,7 @@ export const SCENARIOS: Scenario[] = [
     moment: "task",
     label: "Help me plan tomorrow",
     blurb: "Make it smaller",
-    emoji: "🗓️",
+    emoji: "🌅",
     context:
       "They want tomorrow broken down. Aim for one to three small things, in their words, and offer a reminder at the end.",
     opener: "Alright. What's tomorrow got in it?",

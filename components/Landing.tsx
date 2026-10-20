@@ -11,49 +11,49 @@ import SiteFooter from "@/components/SiteFooter";
 const SITUATIONS = [
   {
     id: "overwhelmed",
-    icon: "🌫️",
+    icon: "🍃",
     title: "Stuck after a smoke",
     subtitle: "Everything feels too much right now",
   },
   {
     id: "loop",
-    icon: "🔁",
+    icon: "💭",
     title: "Overthinking",
-    subtitle: "Same thought on repeat, can't switch off",
+    subtitle: "Same thought on repeat, can’t switch off",
   },
   {
     id: "awkward",
-    icon: "👥",
+    icon: "👤",
     title: "Social discomfort",
     subtitle: "Everyone else seems fine but you",
   },
   {
     id: "start",
-    icon: "📋",
+    icon: "⏳",
     title: "Can’t start a task",
-    subtitle: "Been staring at it, can't begin",
+    subtitle: "Been staring at it, can’t begin",
   },
   {
     id: "reply",
-    icon: "💬",
+    icon: "💌",
     title: "Can’t reply",
     subtitle: "The message has been sitting there",
   },
   {
     id: "tomorrow",
-    icon: "🌙",
+    icon: "🌅",
     title: "Too much for tomorrow",
     subtitle: "Need to make it smaller",
   },
 ];
 
 const SOUND_FAMILIAR = [
-  { emoji: "😶‍🌫️", text: "I smoked and now everything feels a bit overwhelming.", scenario: "overwhelmed" },
-  { emoji: "🔁", text: "I keep replaying what I said yesterday.", scenario: "said" },
-  { emoji: "👥", text: "I feel uncomfortable around people right now.", scenario: "awkward" },
-  { emoji: "🧊", text: "I can’t get myself to start this task.", scenario: "start" },
-  { emoji: "💬", text: "I need to reply to someone but I’m overthinking it.", scenario: "reply" },
-  { emoji: "🌀", text: "I have too much on my mind and don’t know where to start.", scenario: "loop" },
+  { emoji: "🍃", text: "I smoked and now everything feels a bit overwhelming.", scenario: "overwhelmed" },
+  { emoji: "💭", text: "I keep replaying what I said yesterday.", scenario: "said" },
+  { emoji: "👤", text: "I feel uncomfortable around people right now.", scenario: "awkward" },
+  { emoji: "⏳", text: "I can’t get myself to start this task.", scenario: "start" },
+  { emoji: "💌", text: "I need to reply to someone but I’m overthinking it.", scenario: "reply" },
+  { emoji: "🧠", text: "I have too much on my mind and don’t know where to start.", scenario: "loop" },
 ];
 
 const STEPS = [
@@ -155,16 +155,16 @@ export default function Landing() {
                 key={s.id}
                 onClick={() => setSelected(selected === s.id ? null : s.id)}
                 aria-pressed={selected === s.id}
-                className={`flex items-start gap-3 rounded-2xl border p-4 text-left transition active:scale-[0.97] ${
+                className={`flex items-center gap-3.5 rounded-2xl border px-4 py-3.5 text-left transition active:scale-[0.97] ${
                   selected === s.id
                     ? "border-frost bg-frost/10 ring-1 ring-frost/30"
                     : "border-line bg-card hover:border-ink-faint"
                 }`}
               >
-                <span className="mt-0.5 text-xl" aria-hidden="true">{s.icon}</span>
+                <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-chip text-xl" aria-hidden="true">{s.icon}</span>
                 <div className="flex flex-col gap-0.5">
-                  <span className="text-base font-semibold leading-snug text-ink">{s.title}</span>
-                  <span className="text-sm leading-snug text-ink-soft">{s.subtitle}</span>
+                  <span className="text-[0.95rem] font-semibold leading-snug text-ink">{s.title}</span>
+                  <span className="text-[0.8rem] leading-snug text-ink-soft">{s.subtitle}</span>
                 </div>
               </button>
             ))}
@@ -240,12 +240,12 @@ export default function Landing() {
       </div>
 
       {/* How it works */}
-      <section id="how" className="scroll-mt-6 py-12">
+      <section id="how" className="scroll-mt-6 py-14">
         <h2 className="text-3xl font-extrabold text-ink sm:text-4xl">How it works</h2>
-        <div className="mt-7 grid gap-4 sm:grid-cols-3">
+        <div className="mt-8 grid gap-4 sm:grid-cols-3">
           {STEPS.map((s) => (
             <div key={s.n} className="rounded-[1.75rem] border border-line bg-card p-6">
-              <span className="text-sm font-bold tracking-widest text-accent">{s.n}</span>
+              <span className="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-accent/15 text-sm font-bold text-accent">{s.n}</span>
               <h3 className="mt-3 text-xl font-bold leading-tight text-ink">{s.title}</h3>
               <p className="mt-2 text-base leading-relaxed text-ink-soft">{s.body}</p>
             </div>
@@ -254,7 +254,7 @@ export default function Landing() {
       </section>
 
       {/* Sound familiar? */}
-      <section className="ff-rise py-12">
+      <section className="ff-rise py-14">
         <h2 className="text-3xl font-extrabold text-ink sm:text-4xl">Sound familiar?</h2>
         <p className="mt-2 max-w-[48ch] text-lg text-ink-soft">
           Tap one. Fix already knows where you&apos;re at.
@@ -264,17 +264,17 @@ export default function Landing() {
             <Link
               key={s.text}
               href={`/app?s=${s.scenario}&msg=${encodeURIComponent(s.text)}`}
-              className="flex items-start gap-3 rounded-[1.75rem] border border-line bg-card p-5 transition hover:border-accent active:scale-[0.97]"
+              className="flex items-center gap-3.5 rounded-[1.75rem] border border-line bg-card px-5 py-4 transition hover:border-accent active:scale-[0.97]"
             >
-              <span className="mt-0.5 text-2xl" aria-hidden="true">{s.emoji}</span>
-              <span className="text-base leading-snug text-ink">{s.text}</span>
+              <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-chip text-xl" aria-hidden="true">{s.emoji}</span>
+              <span className="text-[0.95rem] leading-snug text-ink">{s.text}</span>
             </Link>
           ))}
         </div>
       </section>
 
       {/* Is this normal? */}
-      <section className="py-12">
+      <section className="py-14">
         <h2 className="text-3xl font-extrabold text-ink sm:text-4xl">Is this normal?</h2>
         <p className="mt-2 max-w-[48ch] text-lg text-ink-soft">
           Things people who smoke think that aren&apos;t true. Tap to flip.
@@ -285,7 +285,7 @@ export default function Landing() {
       </section>
 
       {/* Honest limits */}
-      <section className="py-12">
+      <section className="py-14">
         <h2 className="text-3xl font-extrabold text-ink sm:text-4xl">
           Supportive software,
           <br />
@@ -302,7 +302,7 @@ export default function Landing() {
       </section>
 
       {/* Feedback */}
-      <section className="py-12">
+      <section className="py-14">
         <Suggest compact />
       </section>
 

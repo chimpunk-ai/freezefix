@@ -16,7 +16,7 @@ export const DEMOS: DemoScript[] = [
   {
     id: "task",
     title: "Can't start",
-    emoji: "🧱",
+    emoji: "⏳",
     start: "a",
     nodes: {
       a: {
@@ -56,7 +56,7 @@ export const DEMOS: DemoScript[] = [
   {
     id: "reply",
     title: "Can't reply",
-    emoji: "💬",
+    emoji: "💌",
     start: "a",
     nodes: {
       a: {
@@ -93,7 +93,7 @@ export const DEMOS: DemoScript[] = [
   {
     id: "people",
     title: "At a party",
-    emoji: "🔊",
+    emoji: "🎧",
     start: "a",
     nodes: {
       a: {
