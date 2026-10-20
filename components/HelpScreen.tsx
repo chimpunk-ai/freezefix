@@ -195,12 +195,22 @@ export function ContactButton({ contact, big = false }: { contact: Contact; big?
             {contact.label}
             {contact.note ? ` · ${contact.note}` : ""}
           </span>
+          {contact.blurb && (
+            <span className="mt-1 max-w-[28ch] text-xs leading-snug opacity-70">
+              {contact.blurb}
+            </span>
+          )}
         </>
       ) : (
         <>
-          <span className="flex flex-col">
+          <span className="flex min-w-0 flex-col">
             <span className="font-medium">{contact.label}</span>
             {contact.note && <span className="text-xs text-ink-faint">{contact.note}</span>}
+            {contact.blurb && (
+              <span className="mt-0.5 text-xs leading-snug text-ink-faint">
+                {contact.blurb}
+              </span>
+            )}
           </span>
           <span className="shrink-0 rounded-full bg-chip px-3 py-1 text-sm font-semibold">
             {verb} {contact.display.replace(/^(Call or text|Text|Call) /, "")}
