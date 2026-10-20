@@ -169,6 +169,7 @@ export default function FreezeFixApp() {
   const [image, setImage] = useState<string | null>(null);
   const [inputNote, setInputNote] = useState<string | null>(null);
   const [consentTicked, setConsentTicked] = useState(false);
+  const [adultTicked, setAdultTicked] = useState(false);
   const [paywallFrom, setPaywallFrom] = useState<"feedback" | "session">("session");
   const [settingsNote, setSettingsNote] = useState<string | null>(null);
   const [wins, setWins] = useState(0);
@@ -461,9 +462,9 @@ export default function FreezeFixApp() {
         {step !== "loading-app" && !(step === "help" && help?.screen === "emergency") && (
           <button
             onClick={() => showHelp("emergency", step === "blocked" ? null : step === "help" ? help?.returnTo ?? "home" : step)}
-            className="rounded-full bg-chip px-4 py-2 text-sm font-semibold text-ink"
+            className="rounded-full border border-line px-4 py-2 text-sm font-semibold text-ink-soft hover:text-ink"
           >
-            Emergency
+            Get help
           </button>
         )}
       </header>
@@ -939,45 +940,88 @@ export default function FreezeFixApp() {
         )}
 
         {step === "consent" && (
-          <Screen title="Real quick">
-            <div className="flex flex-col gap-4 text-lg text-ink-soft">
-              <p>
-                No judgment here. We&apos;re not going to tell you to stop, that&apos;s your call. We just can&apos;t help
-                properly without knowing what&apos;s going on.
-              </p>
-              <p>
-                So whatever you tell us, how you&apos;re feeling, what you&apos;ve had, goes to our AI to work out your
-                moves. That counts as health info, so the law says we have to ask.
-              </p>
-              <ul className="list-disc space-y-1 pl-5 text-base">
-                <li>Only used to find your moves and get you help if you need it</li>
-                <li>Never sold, never ads. Our AI provider processes it to write the reply, and keeps it 30 days</li>
-                <li>We don&apos;t keep what you type. No account, no name, nothing tied to you</li>
-                <li>What Fix remembers about you and the people in your life stays on this phone</li>
-              </ul>
-              <label className="mt-1 flex cursor-pointer items-start gap-3 rounded-2xl border border-line bg-card p-4 text-base text-ink">
+          <Screen title="Before you start">
+            {/* Shield icon */}
+            <div className="mb-2 flex justify-center">
+              <div className="flex h-14 w-14 items-center justify-center rounded-full bg-frost/15">
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" className="text-frost" aria-hidden="true">
+                  <path d="M12 2L4 6v5c0 5.25 3.4 10.2 8 11.5 4.6-1.3 8-6.25 8-11.5V6L12 2z" stroke="currentColor" strokeWidth="2" fill="none" />
+                  <path d="M9 12l2 2 4-4" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" fill="none" />
+                </svg>
+              </div>
+            </div>
+            <p className="mb-4 text-center text-base text-ink-soft">A few honest things</p>
+
+            <div className="flex flex-col gap-3">
+              {/* Disclosure points */}
+              <div className="flex items-start gap-3 rounded-2xl border border-line bg-card p-4">
+                <span className="mt-0.5 text-lg text-frost" aria-hidden="true">🔒</span>
+                <div>
+                  <p className="text-base font-medium text-ink">No account needed</p>
+                  <p className="text-sm text-ink-soft">Nothing tied to your name or email. What Fix learns stays on this device.</p>
+                </div>
+              </div>
+              <div className="flex items-start gap-3 rounded-2xl border border-line bg-card p-4">
+                <span className="mt-0.5 text-lg text-frost" aria-hidden="true">🤖</span>
+                <div>
+                  <p className="text-base font-medium text-ink">AI processing</p>
+                  <p className="text-sm text-ink-soft">What you type is sent to our AI provider to generate a reply. The provider keeps it up to 30 days.</p>
+                </div>
+              </div>
+              <div className="flex items-start gap-3 rounded-2xl border border-line bg-card p-4">
+                <span className="mt-0.5 text-lg text-frost" aria-hidden="true">📊</span>
+                <div>
+                  <p className="text-base font-medium text-ink">Minimal analytics</p>
+                  <p className="text-sm text-ink-soft">We track basic usage, never your conversations or personal details.</p>
+                </div>
+              </div>
+              <div className="flex items-start gap-3 rounded-2xl border border-line bg-card p-4">
+                <span className="mt-0.5 text-lg text-frost" aria-hidden="true">💚</span>
+                <div>
+                  <p className="text-base font-medium text-ink">Not a therapist</p>
+                  <p className="text-sm text-ink-soft">Fix is supportive software, not medical advice. In a crisis, use{" "}
+                    <a href="/help" className="text-frost underline underline-offset-2">Get help</a>.
+                  </p>
+                </div>
+              </div>
+
+              {/* Checkboxes */}
+              <label className="mt-2 flex cursor-pointer items-start gap-3 rounded-2xl border border-line bg-card p-4 text-base text-ink">
+                <input
+                  type="checkbox"
+                  checked={adultTicked}
+                  onChange={(e) => setAdultTicked(e.target.checked)}
+                  className="mt-1 h-5 w-5 shrink-0 accent-[var(--color-frost)]"
+                />
+                <span>I confirm I am 18 or older</span>
+              </label>
+              <label className="flex cursor-pointer items-start gap-3 rounded-2xl border border-line bg-card p-4 text-base text-ink">
                 <input
                   type="checkbox"
                   checked={consentTicked}
                   onChange={(e) => setConsentTicked(e.target.checked)}
-                  className="mt-1 h-5 w-5 shrink-0 accent-[var(--color-accent)]"
+                  className="mt-1 h-5 w-5 shrink-0 accent-[var(--color-frost)]"
                 />
-                <span>Yeah, use what I share to help me out.</span>
+                <span>I understand Fix uses AI to process what I share</span>
               </label>
-              <a href="/privacy" target="_blank" className="text-base text-accent underline underline-offset-4">
-                The long legal version
+
+              <a href="/privacy" target="_blank" className="text-center text-sm text-ink-soft underline underline-offset-4">
+                Full privacy policy
               </a>
             </div>
             <div className="mt-6 flex flex-col gap-3">
               <button
-                disabled={!consentTicked}
+                disabled={!consentTicked || !adultTicked}
                 onClick={() => {
                   set("local", K_CONSENT, new Date().toISOString().slice(0, 10));
+                  // Also mark adult since they checked the box
+                  set("local", K_ADULT, "yes");
+                  set("local", K_ADULT_DATE, new Date().toISOString().slice(0, 10));
                   setStep(get("local", K_ONBOARDED) ? afterConsent() : "onboarding");
                 }}
-                className="w-full rounded-[1.75rem] bg-accent px-5 py-5 text-xl font-bold text-accent-ink transition disabled:opacity-40"
+                className="w-full rounded-[1.75rem] bg-frost px-5 py-5 text-xl font-bold text-bg transition disabled:opacity-40"
               >
-                Let&apos;s go
+                Continue privately
               </button>
               <GhostButton onClick={() => setStep("consent-declined")}>Not now</GhostButton>
             </div>

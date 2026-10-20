@@ -48,6 +48,103 @@ const FIRST_CHIPS: Record<MomentId, string[]> = {
   reply: ["dunno what to say", "been hours", "left on read"],
 };
 
+// Grounding exercise steps
+const GROUNDING_STEPS = [
+  { instruction: "Take a slow breath in for 4 seconds", duration: 4 },
+  { instruction: "Hold it gently for 4 seconds", duration: 4 },
+  { instruction: "Breathe out slowly for 6 seconds", duration: 6 },
+  { instruction: "Name 3 things you can see right now", duration: 10 },
+  { instruction: "Name 2 things you can hear", duration: 8 },
+  { instruction: "Name 1 thing you can feel", duration: 6 },
+];
+
+function GroundingSection() {
+  const [open, setOpen] = useState(false);
+  const [activeStep, setActiveStep] = useState(-1);
+  const [timer, setTimer] = useState(0);
+  const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
+  function startGrounding() {
+    setActiveStep(0);
+    setTimer(GROUNDING_STEPS[0].duration);
+  }
+
+  useEffect(() => {
+    if (activeStep < 0 || activeStep >= GROUNDING_STEPS.length) return;
+    intervalRef.current = setInterval(() => {
+      setTimer((t) => {
+        if (t <= 1) {
+          const next = activeStep + 1;
+          if (next >= GROUNDING_STEPS.length) {
+            setActiveStep(-1);
+            return 0;
+          }
+          setActiveStep(next);
+          return GROUNDING_STEPS[next].duration;
+        }
+        return t - 1;
+      });
+    }, 1000);
+    return () => {
+      if (intervalRef.current) clearInterval(intervalRef.current);
+    };
+  }, [activeStep]);
+
+  if (!open) {
+    return (
+      <button
+        onClick={() => setOpen(true)}
+        className="mb-2 flex w-full items-center gap-2 rounded-2xl border border-line bg-card/50 px-4 py-3 text-sm text-ink-soft transition hover:border-ink-faint"
+      >
+        <span className="text-base" aria-hidden="true">{"🫁"}</span>
+        <span className="font-medium">60-second grounding</span>
+        <svg width="12" height="12" viewBox="0 0 12 12" fill="none" className="ml-auto text-ink-faint" aria-hidden="true">
+          <path d="M3 4.5L6 7.5L9 4.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+        </svg>
+      </button>
+    );
+  }
+
+  return (
+    <div className="mb-2 rounded-2xl border border-line bg-card/50 px-4 py-4">
+      <div className="mb-3 flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          <span className="text-base" aria-hidden="true">{"🫁"}</span>
+          <span className="text-sm font-medium text-ink">60-second grounding</span>
+        </div>
+        <button
+          onClick={() => { setOpen(false); setActiveStep(-1); }}
+          className="text-xs text-ink-faint hover:text-ink-soft"
+          aria-label="Close grounding"
+        >
+          {"✕"}
+        </button>
+      </div>
+
+      {activeStep < 0 ? (
+        <button
+          onClick={startGrounding}
+          className="w-full rounded-xl bg-frost/15 px-4 py-3 text-sm font-medium text-frost transition hover:bg-frost/20"
+        >
+          Start grounding exercise
+        </button>
+      ) : (
+        <div className="flex flex-col items-center gap-2 py-2">
+          <p className="text-center text-base font-medium text-ink">
+            {GROUNDING_STEPS[activeStep].instruction}
+          </p>
+          <div className="flex items-center gap-2">
+            <span className="text-2xl font-bold tabular-nums text-frost">{timer}</span>
+            <span className="text-xs text-ink-faint">
+              {activeStep + 1}/{GROUNDING_STEPS.length}
+            </span>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
 export default function Chat({
   moment,
   region,
@@ -121,8 +218,6 @@ export default function Chat({
           scenario,
           message: clean,
           image: img || undefined,
-          // The opener is included: Fix wrote it, so it needs to know what it already asked
-          // rather than opening with the same question twice.
           history,
           memory: loadMemory() ?? undefined,
           groundingOnly,
@@ -141,7 +236,7 @@ export default function Chat({
       const reader = res.body.getReader();
       const decoder = new TextDecoder();
       const nd = new NdjsonReader();
-      let open = false; // has the assistant bubble been created yet
+      let open = false;
 
       const handle = (evt: Record<string, unknown>) => {
         if (evt.route) {
@@ -196,8 +291,6 @@ export default function Chat({
       }
       if (!open && !stop) throw new Error("empty");
     } catch {
-      // Nothing reached the screen, so a second attempt can't duplicate half a reply.
-      // One silent go, then hand it to them rather than leaving a dead end.
       if (attempt === 0) {
         setBusy(false);
         return send(raw, img, 1);
@@ -211,50 +304,69 @@ export default function Chat({
 
   const scenarioData = scenario ? SCENARIOS.find((s) => s.id === scenario) : null;
   const situationLabel = scenarioData?.label;
+  // Show follow-up actions after Fix has replied at least once
+  const hasExchange = turns.length >= 2 && turns[turns.length - 1]?.role === "assistant";
 
   return (
     <section className="flex min-h-0 flex-1 flex-col">
       {/* Chat header — Fix identity + situation context */}
-      <div className="mb-3 flex items-center gap-3">
-        <div className="flex h-9 w-9 items-center justify-center rounded-full bg-accent/20">
-          <span className="text-sm font-bold text-accent">F</span>
-        </div>
-        <div className="flex flex-col">
-          <div className="flex items-center gap-1.5">
-            <span className="text-base font-bold text-ink">Fix</span>
-            <span className="h-2 w-2 rounded-full bg-green-500" />
+      <div className="mb-3 flex items-center justify-between">
+        <div className="flex items-center gap-3">
+          <div className="flex h-9 w-9 items-center justify-center rounded-full bg-frost/20">
+            <span className="text-sm font-bold text-frost">F</span>
           </div>
-          {situationLabel && (
-            <span className="text-[11px] font-semibold uppercase tracking-wider text-ink-faint">
-              {situationLabel}
-            </span>
-          )}
+          <div className="flex flex-col">
+            <div className="flex items-center gap-1.5">
+              <span className="text-base font-bold text-ink">Fix</span>
+              <span className="h-2 w-2 rounded-full bg-green-500" />
+            </div>
+            {situationLabel && (
+              <span className="text-[11px] font-semibold uppercase tracking-wider text-ink-faint">
+                {situationLabel}
+              </span>
+            )}
+          </div>
         </div>
+        {/* Start fresh */}
+        <button
+          onClick={() => {
+            noteVisit("fresh");
+            window.location.href = "/app";
+          }}
+          className="rounded-full border border-line px-3 py-1.5 text-xs text-ink-soft hover:text-ink"
+        >
+          Start fresh
+        </button>
       </div>
       <p className="mb-2 text-xs text-ink-faint">Fix is an AI, not a therapist</p>
 
-      <div className="flex flex-1 flex-col gap-2.5 overflow-y-auto pb-2">
-        {turns.map((t, i) => (
-          <div
-            key={i}
-            className={
-              t.role === "assistant"
-                ? "ff-bubble max-w-[85%] self-start rounded-[1.4rem] rounded-bl-md bg-card px-4 py-3 text-lg leading-relaxed text-ink"
-                : "ff-bubble max-w-[85%] self-end rounded-[1.4rem] rounded-br-md bg-accent px-4 py-3 text-lg leading-relaxed text-accent-ink"
-            }
-          >
-            {/* The caret only follows the reply that is still arriving. */}
-            <span className={busy && t.role === "assistant" && i === turns.length - 1 ? "ff-caret" : undefined}>
+      {/* Messages */}
+      <div className="flex flex-1 flex-col gap-3 overflow-y-auto pb-2">
+        {turns.map((t, i) =>
+          t.role === "user" ? (
+            <div
+              key={i}
+              className="ff-bubble max-w-[80%] self-end rounded-[1.4rem] rounded-br-md bg-frost/20 px-4 py-3 text-base leading-relaxed text-ink"
+            >
               {t.text}
-            </span>
-          </div>
-        ))}
+            </div>
+          ) : (
+            <div
+              key={i}
+              className="ff-bubble max-w-[88%] self-start rounded-2xl rounded-bl-md bg-card/60 px-4 py-3 text-[1.05rem] leading-[1.6] text-ink"
+            >
+              <span className={busy && i === turns.length - 1 ? "ff-caret" : undefined}>
+                {t.text}
+              </span>
+            </div>
+          )
+        )}
         {busy && turns[turns.length - 1]?.role === "user" && (
-          <div className="ff-bubble flex max-w-[85%] items-center gap-2 self-start rounded-[1.4rem] rounded-bl-md bg-card px-4 py-3" role="status" aria-live="polite">
-            <span className="h-2 w-2 animate-bounce rounded-full bg-accent [animation-delay:-0.3s]" />
-            <span className="h-2 w-2 animate-bounce rounded-full bg-accent [animation-delay:-0.15s]" />
-            <span className="h-2 w-2 animate-bounce rounded-full bg-accent" />
-            <span className="ml-1 text-sm text-ink-soft">Fix is thinking…</span>
+          <div className="ff-bubble flex max-w-[88%] items-center gap-2 self-start rounded-2xl rounded-bl-md bg-card/60 px-4 py-3" role="status" aria-live="polite">
+            <span className="h-2 w-2 animate-bounce rounded-full bg-frost [animation-delay:-0.3s]" />
+            <span className="h-2 w-2 animate-bounce rounded-full bg-frost [animation-delay:-0.15s]" />
+            <span className="h-2 w-2 animate-bounce rounded-full bg-frost" />
+            <span className="ml-1 text-sm text-ink-soft">{`Fix is thinking…`}</span>
           </div>
         )}
         <div ref={bottom} />
@@ -277,6 +389,7 @@ export default function Chat({
           <p className="mb-2 rounded-xl bg-chip px-4 py-3 text-sm text-ink-soft">{note}</p>
         ))}
 
+      {/* Opener chips */}
       {chips.length > 0 && !busy && (
         <div className="mb-2 flex flex-wrap gap-2">
           {chips.map((c) => (
@@ -291,10 +404,10 @@ export default function Chat({
         </div>
       )}
 
-      {/* Follow-up actions after Fix has replied at least once */}
-      {!busy && turns.length >= 3 && turns[turns.length - 1]?.role === "assistant" && (
+      {/* Follow-up action chips after Fix has replied */}
+      {!busy && hasExchange && chips.length === 0 && (
         <div className="mb-2 flex flex-wrap gap-2">
-          <button onClick={() => send("I'll try that")} className="ff-chip rounded-full border border-accent/40 bg-accent/10 px-3.5 py-1.5 text-sm font-medium text-accent">
+          <button onClick={() => send("I'll try that")} className="ff-chip rounded-full border border-frost/40 bg-frost/10 px-3.5 py-1.5 text-sm font-medium text-frost">
             Try it
           </button>
           <button onClick={() => send("give me another idea")} className="ff-chip rounded-full border border-line bg-chip px-3.5 py-1.5 text-sm text-ink">
@@ -318,6 +431,9 @@ export default function Chat({
         </div>
       )}
 
+      {/* Grounding exercise */}
+      <GroundingSection />
+
       {showAttach && (
         <div className="mb-2 flex flex-col gap-2">
           {features.voice && <VoiceRecorder onText={(t) => send(t)} onLimit={(m) => setNote(m)} />}
@@ -325,6 +441,7 @@ export default function Chat({
         </div>
       )}
 
+      {/* Composer */}
       <div className="flex items-end gap-2 pb-1">
         {(features.voice || features.screenshot) && (
           <button
@@ -345,22 +462,21 @@ export default function Chat({
             }
           }}
           rows={1}
-          placeholder="say whatever"
-          className="max-h-32 min-h-[52px] flex-1 resize-none rounded-[1.4rem] border border-line bg-card px-4 py-3.5 text-lg text-ink placeholder:text-ink-faint focus:border-accent focus:outline-none"
+          placeholder="Tell Fix more, or reply..."
+          className="max-h-32 min-h-[52px] flex-1 resize-none rounded-[1.4rem] border border-line bg-card px-4 py-3.5 text-base text-ink placeholder:text-ink-faint focus:border-frost focus:outline-none"
         />
         <button
           onClick={() => send(text, image)}
           disabled={busy || (!text.trim() && !image)}
           aria-label="Send"
-          className="shrink-0 rounded-full bg-accent px-5 py-3.5 text-lg font-bold text-accent-ink transition active:scale-95 disabled:opacity-40"
+          className="shrink-0 rounded-full bg-frost px-5 py-3.5 text-lg font-bold text-bg transition active:scale-95 disabled:opacity-40"
         >
-          ↑
+          {"↑"}
         </button>
       </div>
 
       {image && <p className="pb-1 text-xs text-ink-faint">Image ready. Hit send.</p>}
 
-      {/* "Text someone" kept as a subtle link after a few turns */}
       {turns.length > 4 && !busy && (
         <div className="flex justify-center pb-1 pt-0.5">
           <button onClick={onTrusted} className="text-xs text-ink-faint underline underline-offset-2 hover:text-ink-soft">
