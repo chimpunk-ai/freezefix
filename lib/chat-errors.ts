@@ -1,5 +1,6 @@
 export const CHAT_ERROR_MESSAGES: Record<string, string> = {
   ai_off: "Chat isn't switched on yet.",
+  ai_unavailable: "Fix couldn't connect right now. Give it a sec and try again.",
   not_usable: "Can't use that one. A chat screenshot or a photo of the place, nothing with people in it.",
   screenshot_limit: "That's today's images. Keep typing though.",
   screenshot_off: "Images aren't switched on yet.",

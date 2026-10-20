@@ -8,6 +8,7 @@ import type { HelpScreen as HelpScreenId, RiskLevel } from "@/lib/risk";
 import { MOMENTS, type MomentId } from "@/lib/prompt";
 import { NdjsonReader } from "@/lib/ndjson";
 import { errorText } from "@/lib/chat-errors";
+import { SCENARIOS } from "@/lib/scenarios";
 
 // The buddy chat. Replies stream in, but the server holds every character back until the
 // safety verdict has landed, so nothing unsafe can reach the screen.
@@ -25,6 +26,8 @@ type Props = {
   scenario?: string;
   /** Taps shown under the opener, before they've said anything. */
   openerChips?: string[];
+  /** When set, this message is auto-sent as the user's first message on mount. */
+  initialMessage?: string;
   onRoute: (r: { level: RiskLevel; screen: HelpScreenId; underage: boolean }) => void;
   onPaywall: () => void;
   onTrusted: () => void;
@@ -54,13 +57,18 @@ export default function Chat({
   opener,
   scenario,
   openerChips,
+  initialMessage,
   onRoute,
   onPaywall,
   onTrusted,
   onHelped,
 }: Props) {
-  const [turns, setTurns] = useState<Turn[]>([{ role: "assistant", text: opener || OPENERS[moment] }]);
-  const [chips, setChips] = useState<string[]>(openerChips ?? FIRST_CHIPS[moment]);
+  // When an initialMessage is provided (from a Sound Familiar card), start with no opener —
+  // the user's message appears immediately and Fix starts responding.
+  const [turns, setTurns] = useState<Turn[]>(
+    initialMessage ? [] : [{ role: "assistant", text: opener || OPENERS[moment] }]
+  );
+  const [chips, setChips] = useState<string[]>(initialMessage ? [] : (openerChips ?? FIRST_CHIPS[moment]));
   const [text, setText] = useState("");
   const [image, setImage] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
@@ -69,6 +77,16 @@ export default function Chat({
   // Held when a reply never arrived, so the message is never lost.
   const [pending, setPending] = useState<{ text: string; image: string | null } | null>(null);
   const bottom = useRef<HTMLDivElement | null>(null);
+  const autoSent = useRef(false);
+
+  // Auto-send the initial message from a Sound Familiar card tap.
+  useEffect(() => {
+    if (initialMessage && !autoSent.current) {
+      autoSent.current = true;
+      send(initialMessage);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   useEffect(() => {
     bottom.current?.scrollIntoView({ behavior: "smooth", block: "end" });
@@ -191,13 +209,29 @@ export default function Chat({
     }
   }
 
+  const scenarioData = scenario ? SCENARIOS.find((s) => s.id === scenario) : null;
+  const situationLabel = scenarioData?.label;
+
   return (
     <section className="flex min-h-0 flex-1 flex-col">
-      <p className="mb-2 text-xs text-ink-faint">
-        {/* Only name the situation when they actually chose one. The label used to show
-            whatever the code had defaulted to, which read as the app mishearing them. */}
-        {scenario ? `${MOMENTS[moment]} · ` : ""}Fix is an AI, not a therapist
-      </p>
+      {/* Chat header — Fix identity + situation context */}
+      <div className="mb-3 flex items-center gap-3">
+        <div className="flex h-9 w-9 items-center justify-center rounded-full bg-accent/20">
+          <span className="text-sm font-bold text-accent">F</span>
+        </div>
+        <div className="flex flex-col">
+          <div className="flex items-center gap-1.5">
+            <span className="text-base font-bold text-ink">Fix</span>
+            <span className="h-2 w-2 rounded-full bg-green-500" />
+          </div>
+          {situationLabel && (
+            <span className="text-[11px] font-semibold uppercase tracking-wider text-ink-faint">
+              {situationLabel}
+            </span>
+          )}
+        </div>
+      </div>
+      <p className="mb-2 text-xs text-ink-faint">Fix is an AI, not a therapist</p>
 
       <div className="flex flex-1 flex-col gap-2.5 overflow-y-auto pb-2">
         {turns.map((t, i) => (

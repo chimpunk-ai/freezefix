@@ -138,6 +138,8 @@ export default function FreezeFixApp() {
   const [homeScenarios, setHomeScenarios] = useState<Scenario[]>([]);
   const [checkIn, setCheckIn] = useState("");
   const [winText, setWinText] = useState("");
+  /** Text from a "Sound familiar?" card, auto-sent as the first user message. */
+  const [autoMessage, setAutoMessage] = useState<string | null>(null);
 
   function saveWin() {
     if (winText.trim()) addWin(winText, MOMENTS[moment]);
@@ -204,17 +206,22 @@ export default function FreezeFixApp() {
     setMemOn(memoryOn());
     setCheckIn(checkInLine());
 
-    // A scenario card on the landing page hands over as /app?s=<id>. Unknown ids are
-    // ignored rather than trusted, and the parameter is cleaned off the URL afterwards so a
-    // shared link doesn't carry someone's situation around with it.
+    // A scenario card on the landing page hands over as /app?s=<id>&msg=<text>.
+    // Unknown ids are ignored rather than trusted, and the parameters are cleaned off the
+    // URL afterwards so a shared link doesn't carry someone's situation around with it.
     let wanted: Scenario | null = null;
+    let msgParam: string | null = null;
     try {
-      const id = new URLSearchParams(window.location.search).get("s");
+      const params = new URLSearchParams(window.location.search);
+      const id = params.get("s");
+      msgParam = params.get("msg");
       wanted = (id && SCENARIOS.find((x) => x.id === id)) || null;
-      if (id) window.history.replaceState({}, "", window.location.pathname);
+      if (id || msgParam) window.history.replaceState({}, "", window.location.pathname);
     } catch {
       wanted = null;
     }
+    // When a Sound Familiar card passes its text, auto-send it as the first user message.
+    if (msgParam && wanted) setAutoMessage(msgParam);
 
     let recent: string[] = [];
     try {
@@ -529,53 +536,16 @@ export default function FreezeFixApp() {
               I&apos;m frozen
             </button>
 
-            {/* Works with no AI, no signal and no account, so it sits next to the big button. */}
-            <div className="flex gap-3">
-              <button
-                onClick={() => {
-                  buzz();
-                  setStep("breathe");
-                }}
-                className="flex-1 rounded-2xl border border-line bg-card px-4 py-3.5 text-base font-medium text-ink transition active:scale-[0.97]"
-              >
-                Just breathe · 1 min
-              </button>
-              <button
-                onClick={() => {
-                  buzz();
-                  setStep("wins");
-                }}
-                className="flex-1 rounded-2xl border border-line bg-card px-4 py-3.5 text-base font-medium text-ink transition active:scale-[0.97]"
-              >
-                Your wins
-              </button>
-            </div>
-
-            <div className="flex flex-col gap-3">
-              <p className="text-sm text-ink-faint">Or start where you are</p>
-              <div className="ff-stagger grid grid-cols-2 gap-3">
-                {homeScenarios.map((s) => (
-                  <button
-                    key={s.id}
-                    onClick={() => {
-                      buzz();
-                      resetFlow();
-                      setScenario(s);
-                      setMoment(s.moment);
-                      noteScenario(s.id);
-                      setStep(get("local", K_CONSENT) ? (features.ai ? "chat" : "words") : "consent");
-                    }}
-                    className="flex min-h-[8.5rem] flex-col justify-between rounded-[1.75rem] border border-line bg-card p-4 text-left transition active:scale-[0.97]"
-                  >
-                    <span className="text-3xl" aria-hidden="true">{s.emoji}</span>
-                    <span>
-                      <span className="block text-base font-semibold leading-tight text-ink">{s.label}</span>
-                      <span className="mt-0.5 block text-sm leading-snug text-ink-faint">{s.blurb}</span>
-                    </span>
-                  </button>
-                ))}
-              </div>
-            </div>
+            {/* Works with no AI, no signal and no account. */}
+            <button
+              onClick={() => {
+                buzz();
+                setStep("breathe");
+              }}
+              className="w-full rounded-2xl border border-line bg-card px-4 py-3.5 text-base font-medium text-ink transition active:scale-[0.97]"
+            >
+              Just breathe · 1 min
+            </button>
 
             <FactCard />
 
@@ -830,8 +800,9 @@ export default function FreezeFixApp() {
             acknowledged={acked}
             features={features}
             scenario={scenario?.id}
-            opener={scenario?.opener}
-            openerChips={scenario?.chips}
+            opener={autoMessage ? "" : (scenario?.opener || undefined)}
+            openerChips={autoMessage ? [] : (scenario?.chips || undefined)}
+            initialMessage={autoMessage ?? undefined}
             onRoute={(r) => route({ level: r.level, screen: r.screen, underage: r.underage })}
             onPaywall={() => {
               setPaywallFrom("session");

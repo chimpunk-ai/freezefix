@@ -27,6 +27,17 @@ export type Scenario = {
 
 export const SCENARIOS: Scenario[] = [
   {
+    id: "overwhelmed",
+    moment: "alone",
+    label: "Everything's overwhelming",
+    blurb: "After a smoke, too much at once",
+    emoji: "😶‍🌫️",
+    context:
+      "They smoked and now everything feels overwhelming. This is very common — cannabis can amplify sensations and thoughts. Reassure them it passes, ground them in the present.",
+    opener: "",
+    chips: [],
+  },
+  {
     id: "pres",
     moment: "people",
     label: "Everyone's too loud",
