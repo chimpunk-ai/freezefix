@@ -3,6 +3,8 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import ChatDemo from "@/components/ChatDemo";
+import FactCard from "@/components/FactCard";
+import Suggest from "@/components/Suggest";
 import SiteFooter from "@/components/SiteFooter";
 
 const SOUND_FAMILIAR = [
@@ -140,6 +142,17 @@ export default function Landing() {
         </div>
       </section>
 
+      {/* Is this normal? — rotating myth-busting facts */}
+      <section className="py-12">
+        <h2 className="text-3xl font-extrabold text-ink sm:text-4xl">Is this normal?</h2>
+        <p className="mt-2 max-w-[48ch] text-lg text-ink-soft">
+          Things people who smoke think that aren&apos;t true. Tap to flip.
+        </p>
+        <div className="mt-6">
+          <FactCard everyMs={8000} />
+        </div>
+      </section>
+
       {/* Honest limits */}
       <section className="py-12">
         <h2 className="text-3xl font-extrabold text-ink sm:text-4xl">
@@ -155,6 +168,11 @@ export default function Landing() {
           </Link>{" "}
           at the top any time. And it will never tell you it&apos;s fine to drive after a smoke.
         </p>
+      </section>
+
+      {/* Feedback */}
+      <section className="py-12">
+        <Suggest compact />
       </section>
 
       <SiteFooter />
