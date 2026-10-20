@@ -252,12 +252,14 @@ export default function FreezeFixApp() {
         setStep("home");
       }
     } else {
-      // The 18+ gate comes first, always. The scenario is held until they're through it.
+      // First-time visitor: the consent screen doubles as the 18+ gate (it has both the
+      // age checkbox and the AI-consent checkbox). The old separate "gate" step is kept
+      // only as a fallback for edge cases.
       if (wanted) {
         setScenario(wanted);
         setMoment(wanted.moment);
       }
-      setStep("gate");
+      setStep("consent");
     }
   }, []);
 
@@ -1024,6 +1026,12 @@ export default function FreezeFixApp() {
                 Continue privately
               </button>
               <GhostButton onClick={() => setStep("consent-declined")}>Not now</GhostButton>
+              <button
+                onClick={blockDevice}
+                className="self-center py-2 text-sm text-ink-faint underline underline-offset-4"
+              >
+                I&apos;m under 18
+              </button>
             </div>
           </Screen>
         )}
@@ -1036,7 +1044,14 @@ export default function FreezeFixApp() {
             </p>
             <div className="mt-6 flex flex-col gap-3">
               <BigButton onClick={() => setStep("consent")}>I&apos;ve changed my mind</BigButton>
-              <GhostButton onClick={() => setStep("home")}>Back to home</GhostButton>
+              <GhostButton onClick={() => {
+                // If they haven't confirmed age yet, send them to the landing page instead
+                if (get("local", K_ADULT) !== "yes") {
+                  window.location.href = "/";
+                  return;
+                }
+                setStep("home");
+              }}>Back</GhostButton>
             </div>
           </Screen>
         )}
@@ -1122,7 +1137,7 @@ export default function FreezeFixApp() {
           <Screen title="Done. It's all gone.">
             <p className="text-lg text-ink-soft">Everything on this device is cleared. Take care of yourself.</p>
             <div className="mt-6">
-              <BigButton onClick={() => setStep("gate")}>Start fresh</BigButton>
+              <BigButton onClick={() => setStep("consent")}>Start fresh</BigButton>
             </div>
           </Screen>
         )}
