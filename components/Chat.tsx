@@ -174,6 +174,7 @@ export default function Chat({
   // Held when a reply never arrived, so the message is never lost.
   const [pending, setPending] = useState<{ text: string; image: string | null } | null>(null);
   const bottom = useRef<HTMLDivElement | null>(null);
+  const textareaRef = useRef<HTMLTextAreaElement | null>(null);
   const autoSent = useRef(false);
 
   // Auto-send the initial message from a Sound Familiar card tap.
@@ -189,6 +190,14 @@ export default function Chat({
     bottom.current?.scrollIntoView({ behavior: "smooth", block: "end" });
   }, [turns, busy]);
 
+  // Auto-grow the textarea to fit its content, up to the CSS max-height.
+  function autoResize() {
+    const el = textareaRef.current;
+    if (!el) return;
+    el.style.height = "auto";
+    el.style.height = `${el.scrollHeight}px`;
+  }
+
   async function send(raw: string, img?: string | null, attempt = 0) {
     const clean = raw.trim();
     if ((!clean && !img) || busy) return;
@@ -203,6 +212,8 @@ export default function Chat({
     setShowAttach(false);
     setNote(null);
     setBusy(true);
+    // Reset the auto-grown textarea back to one row.
+    if (textareaRef.current) textareaRef.current.style.height = "auto";
     try {
       navigator.vibrate?.(8);
     } catch {
@@ -374,22 +385,24 @@ export default function Chat({
         <div ref={bottom} />
       </div>
 
-      {note &&
-        (pending ? (
-          <button
-            onClick={() => {
-              const p = pending;
-              setNote(null);
-              setPending(null);
-              send(p.text, p.image);
-            }}
-            className="mb-2 w-full rounded-xl bg-chip px-4 py-3 text-left text-sm text-ink"
-          >
-            {note} <span className="font-semibold underline underline-offset-2">Tap to resend</span>
-          </button>
-        ) : (
-          <p className="mb-2 rounded-xl bg-chip px-4 py-3 text-sm text-ink-soft">{note}</p>
-        ))}
+      <div role="status" aria-live="polite">
+        {note &&
+          (pending ? (
+            <button
+              onClick={() => {
+                const p = pending;
+                setNote(null);
+                setPending(null);
+                send(p.text, p.image);
+              }}
+              className="mb-2 w-full rounded-xl bg-chip px-4 py-3 text-left text-sm text-ink"
+            >
+              {note} <span className="font-semibold underline underline-offset-2">Tap to resend</span>
+            </button>
+          ) : (
+            <p className="mb-2 rounded-xl bg-chip px-4 py-3 text-sm text-ink-soft">{note}</p>
+          ))}
+      </div>
 
       {/* Opener chips — only before the first exchange */}
       {chips.length > 0 && !busy && !hasExchange && (
@@ -455,8 +468,12 @@ export default function Chat({
           </button>
         )}
         <textarea
+          ref={textareaRef}
           value={text}
-          onChange={(e) => setText(e.target.value.slice(0, 800))}
+          onChange={(e) => {
+            setText(e.target.value.slice(0, 800));
+            autoResize();
+          }}
           onKeyDown={(e) => {
             if (e.key === "Enter" && !e.shiftKey) {
               e.preventDefault();
