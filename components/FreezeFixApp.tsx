@@ -1099,7 +1099,7 @@ export default function FreezeFixApp() {
         {step === "name" && (
           <Screen title="What should Fix call you?">
             <p className="text-lg text-ink-soft">
-              Just a first name or nickname — whatever feels right. This stays on your device.
+              Just a first name or nickname — whatever feels right.
             </p>
             <div className="mt-4 flex flex-col gap-4">
               <input
@@ -1120,7 +1120,7 @@ export default function FreezeFixApp() {
                     fetch("/api/signup", {
                       method: "POST",
                       headers: { "Content-Type": "application/json" },
-                      body: JSON.stringify({ ts: new Date().toISOString() }),
+                      body: JSON.stringify({ name: n }),
                     }).catch(() => {});
                     setStep(afterName());
                   }
@@ -1137,7 +1137,7 @@ export default function FreezeFixApp() {
                   fetch("/api/signup", {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ ts: new Date().toISOString() }),
+                    body: JSON.stringify({ name: n }),
                   }).catch(() => {});
                   setStep(afterName());
                 }}
