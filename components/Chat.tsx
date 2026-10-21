@@ -407,7 +407,7 @@ export default function Chat({
       {/* Follow-up action buttons — always shown after Fix has replied */}
       {!busy && hasExchange && (
         <div className="mb-2 flex flex-wrap gap-2">
-          <button onClick={() => send("I'll try that")} className="ff-chip rounded-full border border-frost/40 bg-frost/10 px-3.5 py-1.5 text-sm font-medium text-frost">
+          <button onClick={() => send("I'll try that")} className="ff-chip rounded-full border border-line bg-chip px-3.5 py-1.5 text-sm text-ink">
             Try it
           </button>
           <button onClick={() => send("give me another idea")} className="ff-chip rounded-full border border-line bg-chip px-3.5 py-1.5 text-sm text-ink">

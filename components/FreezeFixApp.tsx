@@ -977,98 +977,91 @@ export default function FreezeFixApp() {
         )}
 
         {step === "consent" && (
-          <Screen title="Before you start">
-            {/* Shield icon */}
-            <div className="mb-2 flex justify-center">
-              <div className="flex h-14 w-14 items-center justify-center rounded-full bg-frost/15">
-                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" className="text-frost" aria-hidden="true">
-                  <path d="M12 2L4 6v5c0 5.25 3.4 10.2 8 11.5 4.6-1.3 8-6.25 8-11.5V6L12 2z" stroke="currentColor" strokeWidth="2" fill="none" />
-                  <path d="M9 12l2 2 4-4" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" fill="none" />
+          <section className="flex flex-1 flex-col">
+            {/* Minimal premium header */}
+            <div className="flex flex-col items-center gap-3 pt-6 pb-2">
+              <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-frost/10">
+                <svg width="30" height="30" viewBox="0 0 24 24" fill="none" className="text-frost" aria-hidden="true">
+                  <path d="M12 2L4 6v5c0 5.25 3.4 10.2 8 11.5 4.6-1.3 8-6.25 8-11.5V6L12 2z" stroke="currentColor" strokeWidth="1.8" fill="none" />
+                  <path d="M9 12l2 2 4-4" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" fill="none" />
                 </svg>
               </div>
+              <h1 className="text-center text-3xl font-extrabold leading-tight text-ink">Private by design</h1>
+              <p className="max-w-[28ch] text-center text-base leading-relaxed text-ink-soft">
+                No account. No sign-up. Everything stays on your device.
+              </p>
             </div>
-            <p className="mb-4 text-center text-base text-ink-soft">A few honest things</p>
 
-            <div className="flex flex-col gap-3">
-              {/* Disclosure points */}
-              <div className="flex items-start gap-3 rounded-2xl border border-line bg-card p-4">
-                <span className="mt-0.5 text-lg text-frost" aria-hidden="true">🔒</span>
-                <div>
-                  <p className="text-base font-medium text-ink">No account needed</p>
-                  <p className="text-sm text-ink-soft">Nothing tied to your name or email. What Fix learns stays on this device.</p>
-                </div>
+            {/* Clean disclosure strip */}
+            <div className="mt-6 rounded-2xl border border-line bg-card">
+              <div className="flex items-center gap-3 border-b border-line px-5 py-4">
+                <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-frost/10 text-sm text-frost" aria-hidden="true">AI</span>
+                <p className="text-[0.92rem] leading-snug text-ink">What you type is processed by AI to reply, then discarded</p>
               </div>
-              <div className="flex items-start gap-3 rounded-2xl border border-line bg-card p-4">
-                <span className="mt-0.5 text-lg text-frost" aria-hidden="true">🤖</span>
-                <div>
-                  <p className="text-base font-medium text-ink">AI processing</p>
-                  <p className="text-sm text-ink-soft">What you type is sent to our AI provider to generate a reply. The provider keeps it up to 30 days.</p>
-                </div>
+              <div className="flex items-center gap-3 border-b border-line px-5 py-4">
+                <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-frost/10 text-sm text-frost" aria-hidden="true">18+</span>
+                <p className="text-[0.92rem] leading-snug text-ink">Adults only — supportive software, not therapy</p>
               </div>
-              <div className="flex items-start gap-3 rounded-2xl border border-line bg-card p-4">
-                <span className="mt-0.5 text-lg text-frost" aria-hidden="true">📊</span>
-                <div>
-                  <p className="text-base font-medium text-ink">Minimal analytics</p>
-                  <p className="text-sm text-ink-soft">We track basic usage, never your conversations or personal details.</p>
-                </div>
+              <div className="flex items-center gap-3 px-5 py-4">
+                <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-frost/10 text-sm text-frost" aria-hidden="true">
+                  <svg width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden="true"><rect x="3" y="6.5" width="10" height="7" rx="1.5" stroke="currentColor" strokeWidth="1.5" fill="none" /><path d="M5.5 6.5V5a2.5 2.5 0 015 0v1.5" stroke="currentColor" strokeWidth="1.5" fill="none" /></svg>
+                </span>
+                <p className="text-[0.92rem] leading-snug text-ink">No conversations stored, no personal data collected</p>
               </div>
-              <div className="flex items-start gap-3 rounded-2xl border border-line bg-card p-4">
-                <span className="mt-0.5 text-lg text-frost" aria-hidden="true">💚</span>
-                <div>
-                  <p className="text-base font-medium text-ink">Not a therapist</p>
-                  <p className="text-sm text-ink-soft">Fix is supportive software, not medical advice. In a crisis, use{" "}
-                    <a href="/help" className="text-frost underline underline-offset-2">Get help</a>.
-                  </p>
-                </div>
-              </div>
+            </div>
 
-              {/* Checkboxes */}
-              <label className="mt-2 flex cursor-pointer items-start gap-3 rounded-2xl border border-line bg-card p-4 text-base text-ink">
+            {/* Compact checkboxes */}
+            <div className="mt-5 flex flex-col gap-2.5">
+              <label className="flex cursor-pointer items-center gap-3 rounded-xl px-2 py-2 text-[0.95rem] text-ink transition active:bg-chip/50">
                 <input
                   type="checkbox"
                   checked={adultTicked}
                   onChange={(e) => setAdultTicked(e.target.checked)}
-                  className="mt-1 h-5 w-5 shrink-0 accent-[var(--color-frost)]"
+                  className="h-[1.15rem] w-[1.15rem] shrink-0 rounded accent-[var(--color-frost)]"
                 />
-                <span>I confirm I am 18 or older</span>
+                <span>I&apos;m 18 or older</span>
               </label>
-              <label className="flex cursor-pointer items-start gap-3 rounded-2xl border border-line bg-card p-4 text-base text-ink">
+              <label className="flex cursor-pointer items-center gap-3 rounded-xl px-2 py-2 text-[0.95rem] text-ink transition active:bg-chip/50">
                 <input
                   type="checkbox"
                   checked={consentTicked}
                   onChange={(e) => setConsentTicked(e.target.checked)}
-                  className="mt-1 h-5 w-5 shrink-0 accent-[var(--color-frost)]"
+                  className="h-[1.15rem] w-[1.15rem] shrink-0 rounded accent-[var(--color-frost)]"
                 />
-                <span>I understand Fix uses AI to process what I share</span>
+                <span>I understand Fix uses AI</span>
               </label>
-
-              <a href="/privacy" target="_blank" className="text-center text-sm text-ink-soft underline underline-offset-4">
-                Full privacy policy
-              </a>
             </div>
-            <div className="mt-6 flex flex-col gap-3">
+
+            {/* CTA */}
+            <div className="mt-8 flex flex-col gap-3">
               <button
                 disabled={!consentTicked || !adultTicked}
                 onClick={() => {
                   set("local", K_CONSENT, new Date().toISOString().slice(0, 10));
-                  // Also mark adult since they checked the box
                   set("local", K_ADULT, "yes");
                   set("local", K_ADULT_DATE, new Date().toISOString().slice(0, 10));
                   setStep(get("local", K_ONBOARDED) ? afterConsent() : "onboarding");
                 }}
-                className="w-full rounded-[1.75rem] bg-frost px-5 py-5 text-xl font-bold text-bg transition disabled:opacity-40"
+                className="w-full rounded-[2rem] bg-accent px-5 py-5 text-xl font-bold text-accent-ink shadow-[0_14px_32px_-14px_rgba(227,182,116,0.6)] transition disabled:opacity-30 disabled:shadow-none active:scale-[0.98]"
               >
-                Continue privately
+                Get started
               </button>
-              <GhostButton onClick={() => setStep("consent-declined")}>Not now</GhostButton>
-              <button
-                onClick={blockDevice}
-                className="self-center py-2 text-sm text-ink-faint underline underline-offset-4"
-              >
-                I&apos;m under 18
-              </button>
+              <div className="flex items-center justify-center gap-4 pt-1">
+                <a href="/privacy" target="_blank" className="text-sm text-ink-faint underline underline-offset-4">Privacy</a>
+                <span className="text-ink-faint/40">·</span>
+                <button onClick={() => setStep("consent-declined")} className="text-sm text-ink-faint underline underline-offset-4">Not now</button>
+                <span className="text-ink-faint/40">·</span>
+                <button onClick={blockDevice} className="text-sm text-ink-faint underline underline-offset-4">Under 18</button>
+              </div>
             </div>
-          </Screen>
+
+            {/* Crisis access always visible */}
+            <p className="mt-auto pt-6 text-center text-xs leading-relaxed text-ink-faint">
+              In crisis?{" "}
+              <a href="/help" className="font-medium text-frost underline underline-offset-2">Get help</a>{" "}
+              is always free, no sign-up needed.
+            </p>
+          </section>
         )}
 
         {step === "consent-declined" && (
