@@ -93,8 +93,8 @@ export const viewport: Viewport = {
   // Both dark and light theme-color values so the browser chrome adapts.
   // The inline script below picks the right one before first paint.
   themeColor: [
-    { media: "(prefers-color-scheme: dark)", color: "#0e1a16" },
-    { media: "(prefers-color-scheme: light)", color: "#f5f7f4" },
+    { media: "(prefers-color-scheme: dark)", color: "#141218" },
+    { media: "(prefers-color-scheme: light)", color: "#faf8f5" },
   ],
   viewportFit: "cover",
 };
@@ -147,7 +147,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             Sets data-theme on <html> and updates the theme-color meta tag. */}
         <script
           dangerouslySetInnerHTML={{
-            __html: `(function(){try{var t=localStorage.getItem("ff_theme");if(t==="light"||t==="dark"){document.documentElement.setAttribute("data-theme",t);var m=document.querySelector('meta[name="theme-color"]');if(m)m.setAttribute("content",t==="light"?"#f5f7f4":"#0e1a16")}}catch(e){}})()`,
+            __html: `(function(){try{var t=localStorage.getItem("ff_theme");if(t==="light"||t==="dark"){document.documentElement.setAttribute("data-theme",t);var m=document.querySelector('meta[name="theme-color"]');if(m)m.setAttribute("content",t==="light"?"#faf8f5":"#141218")}}catch(e){}})()`,
           }}
         />
         <script

@@ -331,7 +331,7 @@ export default function Chat({
           <div className="flex flex-col">
             <div className="flex items-center gap-1.5">
               <span className="text-base font-bold text-ink">Fix</span>
-              <span className="h-2 w-2 rounded-full bg-green-500" />
+              <span className="h-2 w-2 rounded-full bg-accent" />
             </div>
             {situationLabel && (
               <span className="text-[11px] font-semibold uppercase tracking-wider text-ink-faint">

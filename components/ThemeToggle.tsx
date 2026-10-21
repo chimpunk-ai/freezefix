@@ -30,7 +30,7 @@ export function applyTheme(pref: ThemePref) {
   const isDark =
     pref === "dark" || (pref === "system" && window.matchMedia("(prefers-color-scheme: dark)").matches);
   const meta = document.querySelector('meta[name="theme-color"]');
-  if (meta) meta.setAttribute("content", isDark ? "#0e1a16" : "#f5f7f4");
+  if (meta) meta.setAttribute("content", isDark ? "#141218" : "#faf8f5");
 }
 
 function saveTheme(pref: ThemePref) {

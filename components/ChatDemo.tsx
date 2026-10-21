@@ -77,7 +77,7 @@ export default function ChatDemo() {
         Try it &middot; example conversation, not a real person
       </p>
 
-      <div className="mx-auto w-full max-w-[21rem] rounded-[2.5rem] border border-line bg-[rgba(10,4,28,0.55)] p-3 shadow-2xl backdrop-blur">
+      <div className="mx-auto w-full max-w-[21rem] rounded-[2.5rem] border border-line bg-[rgba(20,18,24,0.55)] p-3 shadow-2xl backdrop-blur">
         <div className="mb-2 flex items-center justify-between px-2">
           <span className="text-sm font-semibold text-ink">freezefix</span>
           <span className="text-[0.65rem] text-ink-faint">{demo.title}</span>

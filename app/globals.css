@@ -1,22 +1,22 @@
 @import "tailwindcss";
 
-/* FreezeFix "Grove" theme (2026-10-20 redesign).
-   Deep pine night, soft moss, one warm amber for every main action.
-   Rich greens and warm neutrals; no clinical blues, no purple-led palette,
-   no cannabis-leaf shorthand. Calm for 2am. No alarm reds. */
+/* FreezeFix "Ember" theme (2026-10-21 redesign).
+   Warm charcoal night, soft amber/gold accents, clean neutrals.
+   No greens, no clinical blues, no cannabis-leaf shorthand.
+   Calm and modern, works at 2am. No alarm reds. */
 @theme {
-  --color-bg: #0e1a16;              /* deep pine night */
-  --color-card: rgba(239, 236, 227, 0.07);
-  --color-chip: rgba(239, 236, 227, 0.11);
-  --color-line: rgba(239, 236, 227, 0.18);
-  --color-ink: #eff0ea;             /* warm off-white */
-  --color-ink-soft: #c0cfc4;        /* muted sage */
-  --color-ink-faint: #8f9a92;       /* muted stone */
-  --color-accent: #e3b674;          /* warm amber */
-  --color-accent-ink: #2b1a0a;      /* deep warm brown for text on amber */
-  --color-glow: #f0cf7a;            /* honey glow */
-  --color-frost: #9fd2b6;           /* soft moss accent */
-  --color-teal: #5aa89a;            /* muted sage-teal */
+  --color-bg: #141218;              /* warm charcoal */
+  --color-card: rgba(255, 248, 240, 0.06);
+  --color-chip: rgba(255, 248, 240, 0.10);
+  --color-line: rgba(255, 248, 240, 0.14);
+  --color-ink: #f0ece6;             /* warm cream */
+  --color-ink-soft: #b5ada3;        /* muted warm grey */
+  --color-ink-faint: #7d776f;       /* soft stone */
+  --color-accent: #e8a84c;          /* warm amber-gold */
+  --color-accent-ink: #1c1408;      /* deep brown for text on amber */
+  --color-glow: #f2c563;            /* honey highlight */
+  --color-frost: #d4956a;           /* warm terracotta — primary interactive */
+  --color-teal: #c07b4f;            /* deeper terracotta for emphasis */
   --font-sans: var(--font-body), ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
   --font-display: var(--font-body), ui-sans-serif, system-ui, sans-serif;
 }
@@ -26,33 +26,33 @@
    or when the user explicitly chose light. */
 @media (prefers-color-scheme: light) {
   :root:not([data-theme="dark"]) {
-    --color-bg: #f5f7f4;
-    --color-card: rgba(23, 53, 45, 0.06);
-    --color-chip: rgba(23, 53, 45, 0.09);
-    --color-line: rgba(23, 53, 45, 0.14);
-    --color-ink: #17352d;
-    --color-ink-soft: #53665e;
-    --color-ink-faint: #7a8d85;
-    --color-accent: #b8872e;
-    --color-accent-ink: #2b1a0a;
-    --color-glow: #d4a33a;
-    --color-frost: #176b55;
-    --color-teal: #1a8a78;
+    --color-bg: #faf8f5;
+    --color-card: rgba(40, 32, 24, 0.05);
+    --color-chip: rgba(40, 32, 24, 0.07);
+    --color-line: rgba(40, 32, 24, 0.12);
+    --color-ink: #1c1814;
+    --color-ink-soft: #5c544a;
+    --color-ink-faint: #8a837a;
+    --color-accent: #c4841f;
+    --color-accent-ink: #1c1408;
+    --color-glow: #daa23c;
+    --color-frost: #b06b3a;
+    --color-teal: #9a5b2e;
   }
 }
 :root[data-theme="light"] {
-  --color-bg: #f5f7f4;
-  --color-card: rgba(23, 53, 45, 0.06);
-  --color-chip: rgba(23, 53, 45, 0.09);
-  --color-line: rgba(23, 53, 45, 0.14);
-  --color-ink: #17352d;
-  --color-ink-soft: #53665e;
-  --color-ink-faint: #7a8d85;
-  --color-accent: #b8872e;
-  --color-accent-ink: #2b1a0a;
-  --color-glow: #d4a33a;
-  --color-frost: #176b55;
-  --color-teal: #1a8a78;
+  --color-bg: #faf8f5;
+  --color-card: rgba(40, 32, 24, 0.05);
+  --color-chip: rgba(40, 32, 24, 0.07);
+  --color-line: rgba(40, 32, 24, 0.12);
+  --color-ink: #1c1814;
+  --color-ink-soft: #5c544a;
+  --color-ink-faint: #8a837a;
+  --color-accent: #c4841f;
+  --color-accent-ink: #1c1408;
+  --color-glow: #daa23c;
+  --color-frost: #b06b3a;
+  --color-teal: #9a5b2e;
 }
 
 html,
@@ -64,35 +64,35 @@ body {
 body {
   -webkit-font-smoothing: antialiased;
   -webkit-tap-highlight-color: transparent;
-  /* Night light through pine: soft moss orbs and a low warm amber glow at the horizon. */
+  /* Warm glow: soft amber orbs and a low golden gradient at the horizon. */
   background-image:
-    radial-gradient(60% 40% at 20% 10%, rgba(90, 168, 154, 0.28), transparent 70%),
-    radial-gradient(50% 35% at 90% 25%, rgba(159, 210, 182, 0.22), transparent 70%),
-    radial-gradient(70% 40% at 50% 105%, rgba(227, 182, 116, 0.22), transparent 70%);
+    radial-gradient(60% 40% at 20% 10%, rgba(212, 149, 106, 0.18), transparent 70%),
+    radial-gradient(50% 35% at 90% 25%, rgba(232, 168, 76, 0.14), transparent 70%),
+    radial-gradient(70% 40% at 50% 105%, rgba(242, 197, 99, 0.16), transparent 70%);
   background-attachment: fixed;
 }
 
-/* Light-mode body gradients — softer, with green-tinted warmth on a bright base. */
+/* Light-mode body gradients — subtle warmth on a cream base. */
 @media (prefers-color-scheme: light) {
   :root:not([data-theme="dark"]) body {
     background-image:
-      radial-gradient(60% 40% at 20% 10%, rgba(23, 107, 85, 0.08), transparent 70%),
-      radial-gradient(50% 35% at 90% 25%, rgba(216, 240, 225, 0.35), transparent 70%),
-      radial-gradient(70% 40% at 50% 105%, rgba(184, 135, 46, 0.07), transparent 70%);
+      radial-gradient(60% 40% at 20% 10%, rgba(176, 107, 58, 0.06), transparent 70%),
+      radial-gradient(50% 35% at 90% 25%, rgba(255, 237, 210, 0.30), transparent 70%),
+      radial-gradient(70% 40% at 50% 105%, rgba(196, 132, 31, 0.06), transparent 70%);
   }
 }
 :root[data-theme="light"] body {
   background-image:
-    radial-gradient(60% 40% at 20% 10%, rgba(23, 107, 85, 0.08), transparent 70%),
-    radial-gradient(50% 35% at 90% 25%, rgba(216, 240, 225, 0.35), transparent 70%),
-    radial-gradient(70% 40% at 50% 105%, rgba(184, 135, 46, 0.07), transparent 70%);
+    radial-gradient(60% 40% at 20% 10%, rgba(176, 107, 58, 0.06), transparent 70%),
+    radial-gradient(50% 35% at 90% 25%, rgba(255, 237, 210, 0.30), transparent 70%),
+    radial-gradient(70% 40% at 50% 105%, rgba(196, 132, 31, 0.06), transparent 70%);
 }
 /* Force dark gradients back when user explicitly picks dark */
 :root[data-theme="dark"] body {
   background-image:
-    radial-gradient(60% 40% at 20% 10%, rgba(90, 168, 154, 0.28), transparent 70%),
-    radial-gradient(50% 35% at 90% 25%, rgba(159, 210, 182, 0.22), transparent 70%),
-    radial-gradient(70% 40% at 50% 105%, rgba(227, 182, 116, 0.22), transparent 70%);
+    radial-gradient(60% 40% at 20% 10%, rgba(212, 149, 106, 0.18), transparent 70%),
+    radial-gradient(50% 35% at 90% 25%, rgba(232, 168, 76, 0.14), transparent 70%),
+    radial-gradient(70% 40% at 50% 105%, rgba(242, 197, 99, 0.16), transparent 70%);
 }
 
 h1,
@@ -129,16 +129,16 @@ a {
 }
 
 /* The signature moment: the ice block that thaws when you press it.
-   Cool morning sage, warms to amber on tap. */
+   Cool morning stone, warms to amber on tap. */
 .ice {
   position: relative;
   isolation: isolate;
-  background: linear-gradient(160deg, #e8ede1 0%, #c3d2c3 50%, #92aa96 100%);
-  color: #1a2920;
+  background: linear-gradient(160deg, #e8e2d8 0%, #d1c8ba 50%, #a89888 100%);
+  color: #1c1814;
   box-shadow:
     inset 0 2px 0 rgba(255, 255, 255, 0.6),
-    inset 0 -10px 24px rgba(14, 26, 22, 0.18),
-    0 18px 44px -12px rgba(14, 26, 22, 0.6);
+    inset 0 -10px 24px rgba(20, 18, 24, 0.18),
+    0 18px 44px -12px rgba(20, 18, 24, 0.6);
   transition: transform 160ms ease;
 }
 .ice::after {
@@ -146,7 +146,7 @@ a {
   position: absolute;
   inset: 0;
   border-radius: inherit;
-  background: linear-gradient(160deg, #f0d08a 0%, #e3b674 55%, #c99652 100%);
+  background: linear-gradient(160deg, #f2c563 0%, #e8a84c 55%, #c4841f 100%);
   opacity: 0;
   z-index: -1;
   transition: opacity 420ms ease;
@@ -156,8 +156,8 @@ a {
 }
 .ice.thawing {
   background: transparent;
-  color: #2b1a0a;
-  box-shadow: 0 18px 50px -10px rgba(227, 182, 116, 0.65);
+  color: #1c1408;
+  box-shadow: 0 18px 50px -10px rgba(232, 168, 76, 0.65);
 }
 .ice.thawing::after {
   opacity: 1;
@@ -171,7 +171,7 @@ a {
 }
 .reward {
   animation: rise 700ms cubic-bezier(0.2, 0.9, 0.3, 1.2) both;
-  text-shadow: 0 0 32px rgba(240, 207, 122, 0.55);
+  text-shadow: 0 0 32px rgba(242, 197, 99, 0.55);
 }
 
 /* Light-mode ice: keep the same form but adjust shadow for a light canvas. */
@@ -179,21 +179,21 @@ a {
   :root:not([data-theme="dark"]) .ice {
     box-shadow:
       inset 0 2px 0 rgba(255, 255, 255, 0.8),
-      inset 0 -10px 24px rgba(14, 26, 22, 0.08),
-      0 12px 32px -8px rgba(14, 26, 22, 0.18);
+      inset 0 -10px 24px rgba(20, 18, 24, 0.08),
+      0 12px 32px -8px rgba(20, 18, 24, 0.18);
   }
   :root:not([data-theme="dark"]) .ice.thawing {
-    box-shadow: 0 12px 36px -8px rgba(184, 135, 46, 0.45);
+    box-shadow: 0 12px 36px -8px rgba(196, 132, 31, 0.45);
   }
 }
 :root[data-theme="light"] .ice {
   box-shadow:
     inset 0 2px 0 rgba(255, 255, 255, 0.8),
-    inset 0 -10px 24px rgba(14, 26, 22, 0.08),
-    0 12px 32px -8px rgba(14, 26, 22, 0.18);
+    inset 0 -10px 24px rgba(20, 18, 24, 0.08),
+    0 12px 32px -8px rgba(20, 18, 24, 0.18);
 }
 :root[data-theme="light"] .ice.thawing {
-  box-shadow: 0 12px 36px -8px rgba(184, 135, 46, 0.45);
+  box-shadow: 0 12px 36px -8px rgba(196, 132, 31, 0.45);
 }
 
 @media (prefers-reduced-motion: reduce) {

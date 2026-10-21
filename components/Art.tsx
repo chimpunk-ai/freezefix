@@ -7,16 +7,16 @@
 // Everything here is abstract and calm. All of it respects reduced motion, because the
 // audience is sometimes having a bad time with a racing heart.
 //
-// Colours below are drawn from the Grove palette in globals.css. Kept as literals here
+// Colours below are drawn from the Ember palette in globals.css. Kept as literals here
 // (rather than CSS vars) only because SVG attributes need literal values at parse time.
 
-const SOFT = "rgba(239,236,227,0.1)";   // card tint
-const FAINT = "rgba(239,236,227,0.18)"; // line tint
-const DIM = "rgba(239,236,227,0.22)";   // ink dim
-const INK = "#eff0ea";
-const AMBER = "#e3b674";                // accent
-const MOSS = "#9fd2b6";                 // frost
-const TEAL = "#5aa89a";                 // sage-teal
+const SOFT = "rgba(255,248,240,0.08)";   // card tint
+const FAINT = "rgba(255,248,240,0.14)"; // line tint
+const DIM = "rgba(255,248,240,0.18)";   // ink dim
+const INK = "#f0ece6";
+const AMBER = "#e8a84c";                // accent
+const MOSS = "#d4956a";                 // frost (terracotta)
+const TEAL = "#c07b4f";                 // deeper terracotta
 
 /** The loop that won't stop: a line that goes round and round and never lands. */
 export function LoopArt({ className = "" }: { className?: string }) {
