@@ -985,8 +985,8 @@ export default function FreezeFixApp() {
                 </svg>
               </div>
               <h1 className="text-center text-3xl font-extrabold leading-tight text-ink">Private by design</h1>
-              <p className="max-w-[28ch] text-center text-base leading-relaxed text-ink-soft">
-                No account. No sign-up. Everything stays on your device.
+              <p className="max-w-[30ch] text-center text-base leading-relaxed text-ink-soft">
+                No account. No sign-up. Your notes stay on your device.
               </p>
             </div>
 
@@ -994,7 +994,7 @@ export default function FreezeFixApp() {
             <div className="mt-6 rounded-2xl border border-line bg-card">
               <div className="flex items-center gap-3 border-b border-line px-5 py-4">
                 <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-frost/10 text-sm text-frost" aria-hidden="true">AI</span>
-                <p className="text-[0.92rem] leading-snug text-ink">What you type is processed by AI to reply, then discarded</p>
+                <p className="text-[0.92rem] leading-snug text-ink">What you type is sent to AI to reply &mdash; not stored by us</p>
               </div>
               <div className="flex items-center gap-3 border-b border-line px-5 py-4">
                 <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-frost/10 text-sm text-frost" aria-hidden="true">18+</span>
@@ -1004,7 +1004,7 @@ export default function FreezeFixApp() {
                 <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-frost/10 text-sm text-frost" aria-hidden="true">
                   <svg width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden="true"><rect x="3" y="6.5" width="10" height="7" rx="1.5" stroke="currentColor" strokeWidth="1.5" fill="none" /><path d="M5.5 6.5V5a2.5 2.5 0 015 0v1.5" stroke="currentColor" strokeWidth="1.5" fill="none" /></svg>
                 </span>
-                <p className="text-[0.92rem] leading-snug text-ink">No conversations stored, no personal data collected</p>
+                <p className="text-[0.92rem] leading-snug text-ink">No conversations saved &mdash; no personal data collected</p>
               </div>
             </div>
 

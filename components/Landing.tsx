@@ -223,7 +223,7 @@ export default function Landing() {
                 <rect x="3" y="6.5" width="10" height="7" rx="1.5" stroke="currentColor" strokeWidth="1.5" fill="none" />
                 <path d="M5.5 6.5V5a2.5 2.5 0 015 0v1.5" stroke="currentColor" strokeWidth="1.5" fill="none" />
               </svg>
-              AI processes, doesn&apos;t store
+              Not stored by us
             </span>
           </div>
         </div>
