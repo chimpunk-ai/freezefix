@@ -18,7 +18,7 @@ import FactCard from "@/components/FactCard";
 import Suggest from "@/components/Suggest";
 import ThemeToggle from "@/components/ThemeToggle";
 
-import { greeting, readableMemory, memoryOn, setMemoryOn, forgetAll, noteVisit, type MemoryLine } from "@/lib/memory";
+import { greeting, readableMemory, memoryOn, setMemoryOn, forgetAll, noteVisit, setNameInMemory, type MemoryLine } from "@/lib/memory";
 import { SAFETY_BUTTONS, keywordCheck, type HelpScreen as HelpScreenId, type RiskLevel, type RiskResult } from "@/lib/risk";
 import { MOMENTS, type MomentId } from "@/lib/prompt";
 import { detectRegion } from "@/lib/country";
@@ -214,7 +214,8 @@ export default function FreezeFixApp() {
     setSessionLevel((Number(get("session", K_LEVEL)) || 0) as RiskLevel);
     setMixed(get("session", K_MIXED) === "1");
     setWins(Number(get("local", K_WINS)) || 0);
-    const savedName = get("local", K_NAME) || "";
+    const rawName = get("local", K_NAME) || "";
+    const savedName = rawName === "__skipped" ? "" : rawName;
     setUserName(savedName);
     setHello(greeting(savedName));
     setMemOn(memoryOn());
@@ -602,7 +603,7 @@ export default function FreezeFixApp() {
                 </button>
               )}
               <p className="mx-auto max-w-[30ch] text-center text-sm leading-relaxed text-ink-faint">
-                No account, no name. What it learns about you stays on this phone, not on our servers.
+                No account needed. What it learns about you stays on this phone, not on our servers.
               </p>
               <button onClick={() => setStep("settings")} className="self-center min-h-[44px] px-2 text-sm text-ink-soft underline underline-offset-4">
                 Privacy &amp; settings
@@ -1114,6 +1115,7 @@ export default function FreezeFixApp() {
                     const n = nameInput.trim();
                     set("local", K_NAME, n);
                     setUserName(n);
+                    setNameInMemory(n);
                     setHello(greeting(n));
                     fetch("/api/signup", {
                       method: "POST",
@@ -1130,6 +1132,7 @@ export default function FreezeFixApp() {
                   const n = nameInput.trim();
                   set("local", K_NAME, n);
                   setUserName(n);
+                  setNameInMemory(n);
                   setHello(greeting(n));
                   fetch("/api/signup", {
                     method: "POST",

@@ -54,6 +54,12 @@ export function forgetAll() {
   }
 }
 
+// Sets the user's display name in the memory object so the AI can greet them by name.
+export function setNameInMemory(name: string) {
+  const m = loadMemory() ?? {};
+  saveMemory({ ...m, name });
+}
+
 // Adds one thing Fix suggested keeping, newest last, oldest dropped.
 export function remember(line: string) {
   const m = loadMemory() ?? {};
