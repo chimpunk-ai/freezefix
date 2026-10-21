@@ -603,7 +603,7 @@ export default function FreezeFixApp() {
                 </button>
               )}
               <p className="mx-auto max-w-[30ch] text-center text-sm leading-relaxed text-ink-faint">
-                No account needed. What it learns about you stays on this phone, not on our servers.
+                No account needed. Your notes and memory stay on this device.
               </p>
               <button onClick={() => setStep("settings")} className="self-center min-h-[44px] px-2 text-sm text-ink-soft underline underline-offset-4">
                 Privacy &amp; settings
@@ -1018,7 +1018,7 @@ export default function FreezeFixApp() {
                 <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-frost/10 text-sm text-frost" aria-hidden="true">
                   <svg width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden="true"><rect x="3" y="6.5" width="10" height="7" rx="1.5" stroke="currentColor" strokeWidth="1.5" fill="none" /><path d="M5.5 6.5V5a2.5 2.5 0 015 0v1.5" stroke="currentColor" strokeWidth="1.5" fill="none" /></svg>
                 </span>
-                <p className="text-[0.92rem] leading-snug text-ink">No conversations saved &mdash; no personal data collected</p>
+                <p className="text-[0.92rem] leading-snug text-ink">No conversations saved &mdash; your notes stay on your device</p>
               </div>
             </div>
 
@@ -1297,11 +1297,12 @@ function Screen({ title, subtitle, children }: { title: string; subtitle?: strin
   );
 }
 
-function BigButton({ onClick, children }: { onClick: () => void; children: React.ReactNode }) {
+function BigButton({ onClick, disabled, children }: { onClick: () => void; disabled?: boolean; children: React.ReactNode }) {
   return (
     <button
       onClick={onClick}
-      className="w-full rounded-[1.75rem] bg-accent px-5 py-5 text-xl font-bold text-accent-ink shadow-[0_14px_36px_-14px_rgba(227,182,116,0.6)] transition active:scale-[0.98]"
+      disabled={disabled}
+      className="w-full rounded-[1.75rem] bg-accent px-5 py-5 text-xl font-bold text-accent-ink shadow-[0_14px_36px_-14px_rgba(227,182,116,0.6)] transition disabled:opacity-30 disabled:shadow-none active:scale-[0.98]"
     >
       {children}
     </button>
