@@ -21,6 +21,40 @@
   --font-display: var(--font-body), ui-sans-serif, system-ui, sans-serif;
 }
 
+/* ── Light theme overrides ───────────────────────────────────────────────────
+   Applied when the OS prefers light AND the user hasn't forced dark,
+   or when the user explicitly chose light. */
+@media (prefers-color-scheme: light) {
+  :root:not([data-theme="dark"]) {
+    --color-bg: #f5f7f4;
+    --color-card: rgba(23, 53, 45, 0.06);
+    --color-chip: rgba(23, 53, 45, 0.09);
+    --color-line: rgba(23, 53, 45, 0.14);
+    --color-ink: #17352d;
+    --color-ink-soft: #53665e;
+    --color-ink-faint: #7a8d85;
+    --color-accent: #b8872e;
+    --color-accent-ink: #2b1a0a;
+    --color-glow: #d4a33a;
+    --color-frost: #176b55;
+    --color-teal: #1a8a78;
+  }
+}
+:root[data-theme="light"] {
+  --color-bg: #f5f7f4;
+  --color-card: rgba(23, 53, 45, 0.06);
+  --color-chip: rgba(23, 53, 45, 0.09);
+  --color-line: rgba(23, 53, 45, 0.14);
+  --color-ink: #17352d;
+  --color-ink-soft: #53665e;
+  --color-ink-faint: #7a8d85;
+  --color-accent: #b8872e;
+  --color-accent-ink: #fff8ed;
+  --color-glow: #d4a33a;
+  --color-frost: #176b55;
+  --color-teal: #1a8a78;
+}
+
 html,
 body {
   background: var(--color-bg);
@@ -36,6 +70,29 @@ body {
     radial-gradient(50% 35% at 90% 25%, rgba(159, 210, 182, 0.22), transparent 70%),
     radial-gradient(70% 40% at 50% 105%, rgba(227, 182, 116, 0.22), transparent 70%);
   background-attachment: fixed;
+}
+
+/* Light-mode body gradients — softer, with green-tinted warmth on a bright base. */
+@media (prefers-color-scheme: light) {
+  :root:not([data-theme="dark"]) body {
+    background-image:
+      radial-gradient(60% 40% at 20% 10%, rgba(23, 107, 85, 0.08), transparent 70%),
+      radial-gradient(50% 35% at 90% 25%, rgba(216, 240, 225, 0.35), transparent 70%),
+      radial-gradient(70% 40% at 50% 105%, rgba(184, 135, 46, 0.07), transparent 70%);
+  }
+}
+:root[data-theme="light"] body {
+  background-image:
+    radial-gradient(60% 40% at 20% 10%, rgba(23, 107, 85, 0.08), transparent 70%),
+    radial-gradient(50% 35% at 90% 25%, rgba(216, 240, 225, 0.35), transparent 70%),
+    radial-gradient(70% 40% at 50% 105%, rgba(184, 135, 46, 0.07), transparent 70%);
+}
+/* Force dark gradients back when user explicitly picks dark */
+:root[data-theme="dark"] body {
+  background-image:
+    radial-gradient(60% 40% at 20% 10%, rgba(90, 168, 154, 0.28), transparent 70%),
+    radial-gradient(50% 35% at 90% 25%, rgba(159, 210, 182, 0.22), transparent 70%),
+    radial-gradient(70% 40% at 50% 105%, rgba(227, 182, 116, 0.22), transparent 70%);
 }
 
 h1,
@@ -59,6 +116,16 @@ a {
   outline: 2px solid var(--color-accent);
   outline-offset: 3px;
   border-radius: 6px;
+}
+
+/* Light-mode focus ring uses the darker accent for contrast. */
+@media (prefers-color-scheme: light) {
+  :root:not([data-theme="dark"]) :focus-visible {
+    outline-color: var(--color-frost);
+  }
+}
+:root[data-theme="light"] :focus-visible {
+  outline-color: var(--color-frost);
 }
 
 /* The signature moment: the ice block that thaws when you press it.
@@ -105,6 +172,28 @@ a {
 .reward {
   animation: rise 700ms cubic-bezier(0.2, 0.9, 0.3, 1.2) both;
   text-shadow: 0 0 32px rgba(240, 207, 122, 0.55);
+}
+
+/* Light-mode ice: keep the same form but adjust shadow for a light canvas. */
+@media (prefers-color-scheme: light) {
+  :root:not([data-theme="dark"]) .ice {
+    box-shadow:
+      inset 0 2px 0 rgba(255, 255, 255, 0.8),
+      inset 0 -10px 24px rgba(14, 26, 22, 0.08),
+      0 12px 32px -8px rgba(14, 26, 22, 0.18);
+  }
+  :root:not([data-theme="dark"]) .ice.thawing {
+    box-shadow: 0 12px 36px -8px rgba(184, 135, 46, 0.45);
+  }
+}
+:root[data-theme="light"] .ice {
+  box-shadow:
+    inset 0 2px 0 rgba(255, 255, 255, 0.8),
+    inset 0 -10px 24px rgba(14, 26, 22, 0.08),
+    0 12px 32px -8px rgba(14, 26, 22, 0.18);
+}
+:root[data-theme="light"] .ice.thawing {
+  box-shadow: 0 12px 36px -8px rgba(184, 135, 46, 0.45);
 }
 
 @media (prefers-reduced-motion: reduce) {

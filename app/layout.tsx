@@ -90,7 +90,12 @@ export const metadata: Metadata = {
 export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
-  themeColor: "#0e1a16",
+  // Both dark and light theme-color values so the browser chrome adapts.
+  // The inline script below picks the right one before first paint.
+  themeColor: [
+    { media: "(prefers-color-scheme: dark)", color: "#0e1a16" },
+    { media: "(prefers-color-scheme: light)", color: "#f5f7f4" },
+  ],
   viewportFit: "cover",
 };
 
@@ -138,6 +143,13 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="en" className={bodyFont.variable}>
       <head>
+        {/* Prevent flash of wrong theme: read localStorage before first paint.
+            Sets data-theme on <html> and updates the theme-color meta tag. */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `(function(){try{var t=localStorage.getItem("ff_theme");if(t==="light"||t==="dark"){document.documentElement.setAttribute("data-theme",t);var m=document.querySelector('meta[name="theme-color"]');if(m)m.setAttribute("content",t==="light"?"#f5f7f4":"#0e1a16")}}catch(e){}})()`,
+          }}
+        />
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}

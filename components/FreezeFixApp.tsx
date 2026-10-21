@@ -16,6 +16,7 @@ import InstallPrompt from "@/components/InstallPrompt";
 import { addWin } from "@/lib/wins";
 import FactCard from "@/components/FactCard";
 import Suggest from "@/components/Suggest";
+import ThemeToggle from "@/components/ThemeToggle";
 
 import { greeting, readableMemory, memoryOn, setMemoryOn, forgetAll, noteVisit, type MemoryLine } from "@/lib/memory";
 import { SAFETY_BUTTONS, keywordCheck, type HelpScreen as HelpScreenId, type RiskLevel, type RiskResult } from "@/lib/risk";
@@ -1088,6 +1089,7 @@ export default function FreezeFixApp() {
               <div className="rounded-2xl border border-line bg-card p-4 text-base text-ink-soft">
                 Your notes stay on your phone. What you type goes to our AI to get your moves and isn&apos;t stored.
               </div>
+              <ThemeToggle />
               {get("local", K_CONSENT) ? (
                 <GhostButton
                   onClick={() => {
