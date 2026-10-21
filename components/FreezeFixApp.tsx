@@ -71,7 +71,7 @@ const K_VISITS = "ff_visits"; // used only to rotate the fact on the home screen
 const K_RECENT = "ff_recent_scenarios"; // scenario cards they actually use, most recent first
 const K_ONBOARDED = "ff_onboarded"; // the four questions have been asked once
 
-const MOMENT_EMOJI: Record<MomentId, string> = { people: "👀", alone: "🌀", task: "🧱", reply: "💬" };
+const MOMENT_EMOJI: Record<MomentId, string> = { people: "👤", alone: "🍃", task: "⏳", reply: "💌" };
 
 // One-tap phrases so nobody has to type when they're frozen (lazy-friendly).
 const QUICK_PICKS: Record<MomentId, string[]> = {
@@ -550,11 +550,46 @@ export default function FreezeFixApp() {
               Just breathe · 1 min
             </button>
 
+            {/* Quick-start scenario cards — personalised by recent use */}
+            {homeScenarios.length > 0 && (
+              <div className="flex flex-col gap-2">
+                <p className="text-sm font-medium text-ink-soft">Or pick what fits</p>
+                <div className="grid grid-cols-2 gap-2">
+                  {homeScenarios.slice(0, 6).map((s) => (
+                    <button
+                      key={s.id}
+                      onClick={() => {
+                        buzz();
+                        resetFlow();
+                        setScenario(s);
+                        setMoment(s.moment);
+                        noteScenario(s.id);
+                        setStep(get("local", K_CONSENT) ? (get("local", K_ONBOARDED) ? (features.ai ? "chat" : "words") : "onboarding") : "consent");
+                      }}
+                      className="flex items-center gap-2.5 rounded-2xl border border-line bg-card px-3 py-3 text-left transition active:scale-[0.97]"
+                    >
+                      <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-chip text-lg" aria-hidden="true">{s.emoji}</span>
+                      <span className="text-[0.82rem] font-medium leading-snug text-ink">{s.label}</span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+
             <FactCard />
 
             <Suggest compact onRoute={(r) => route({ level: r.level, screen: r.screen, underage: r.underage })} />
 
             <div className="mt-auto flex flex-col gap-4 pt-2">
+              {wins > 0 && (
+                <button
+                  onClick={() => setStep("wins")}
+                  className="flex items-center justify-between rounded-2xl border border-line bg-card px-4 py-3 transition active:scale-[0.97]"
+                >
+                  <span className="text-sm font-medium text-ink-soft">Your wins</span>
+                  <span className="rounded-full bg-accent/15 px-3 py-1 text-sm font-bold text-accent">{wins}</span>
+                </button>
+              )}
               <p className="mx-auto max-w-[30ch] text-center text-sm leading-relaxed text-ink-faint">
                 No account, no name. What it learns about you stays on this phone, not on our servers.
               </p>
