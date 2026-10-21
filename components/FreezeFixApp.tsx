@@ -465,7 +465,7 @@ export default function FreezeFixApp() {
         {step !== "loading-app" && !(step === "help" && help?.screen === "emergency") && (
           <button
             onClick={() => showHelp("emergency", step === "blocked" ? null : step === "help" ? help?.returnTo ?? "home" : step)}
-            className="rounded-full border border-line px-4 py-2 text-sm font-semibold text-ink-soft hover:text-ink"
+            className="rounded-full border border-line px-4 py-2.5 text-sm font-semibold text-ink-soft hover:text-ink min-h-[44px] min-w-[44px]"
           >
             Get help
           </button>
@@ -592,7 +592,7 @@ export default function FreezeFixApp() {
               <p className="mx-auto max-w-[30ch] text-center text-sm leading-relaxed text-ink-faint">
                 No account, no name. What it learns about you stays on this phone, not on our servers.
               </p>
-              <button onClick={() => setStep("settings")} className="self-center text-sm text-ink-soft underline underline-offset-4">
+              <button onClick={() => setStep("settings")} className="self-center min-h-[44px] px-2 text-sm text-ink-soft underline underline-offset-4">
                 Privacy &amp; settings
               </button>
               <SiteFooter />
@@ -654,7 +654,7 @@ export default function FreezeFixApp() {
                     buzz();
                     setText((t) => (t.trim() ? `${t.trim()}, ${q}` : q).slice(0, 400));
                   }}
-                  className="rounded-full bg-chip px-4 py-2 text-base text-ink transition active:scale-95"
+                  className="rounded-full bg-chip px-4 py-2.5 min-h-[44px] text-base text-ink transition active:scale-95"
                 >
                   {q}
                 </button>
@@ -675,7 +675,7 @@ export default function FreezeFixApp() {
               <div className="mt-3 rounded-2xl border border-line bg-card p-3">
                 <div className="mb-1 flex items-center justify-between text-xs text-ink-faint">
                   <span>Your voice note</span>
-                  <button onClick={() => setVoiceText("")} className="underline">
+                  <button onClick={() => setVoiceText("")} className="underline min-h-[44px] min-w-[44px] px-1">
                     Remove
                   </button>
                 </div>
@@ -696,7 +696,7 @@ export default function FreezeFixApp() {
               <BigButton onClick={() => getMoves()}>Get my moves</BigButton>
               <button
                 onClick={() => setStep("check")}
-                className="self-center py-1 text-sm text-ink-faint underline underline-offset-4"
+                className="self-center min-h-[44px] px-2 py-1 text-sm text-ink-faint underline underline-offset-4"
               >
                 Something feels wrong with my body
               </button>
@@ -712,8 +712,8 @@ export default function FreezeFixApp() {
         )}
 
         {step === "thinking" && (
-          <div className="flex flex-1 flex-col items-center justify-center gap-4 text-center">
-            <div className="h-12 w-12 animate-spin rounded-full border-4 border-line border-t-accent" />
+          <div className="flex flex-1 flex-col items-center justify-center gap-4 text-center" role="status" aria-live="polite">
+            <div className="h-12 w-12 animate-spin rounded-full border-4 border-line border-t-accent" aria-hidden="true" />
             <p className="text-lg text-ink-soft">Breathe out slowly while I think…</p>
           </div>
         )}
@@ -941,7 +941,7 @@ export default function FreezeFixApp() {
                   Forget all of it
                 </GhostButton>
               )}
-              <button onClick={() => setStep("settings")} className="self-center py-2 text-sm text-ink-faint underline underline-offset-4">
+              <button onClick={() => setStep("settings")} className="self-center min-h-[44px] px-2 text-sm text-ink-faint underline underline-offset-4">
                 Back
               </button>
             </div>
@@ -1011,21 +1011,21 @@ export default function FreezeFixApp() {
 
             {/* Compact checkboxes */}
             <div className="mt-5 flex flex-col gap-2.5">
-              <label className="flex cursor-pointer items-center gap-3 rounded-xl px-2 py-2 text-[0.95rem] text-ink transition active:bg-chip/50">
+              <label className="flex min-h-[44px] cursor-pointer items-center gap-3 rounded-xl px-2 py-2.5 text-[0.95rem] text-ink transition active:bg-chip/50">
                 <input
                   type="checkbox"
                   checked={adultTicked}
                   onChange={(e) => setAdultTicked(e.target.checked)}
-                  className="h-[1.15rem] w-[1.15rem] shrink-0 rounded accent-[var(--color-frost)]"
+                  className="h-5 w-5 shrink-0 rounded accent-[var(--color-frost)]"
                 />
                 <span>I&apos;m 18 or older</span>
               </label>
-              <label className="flex cursor-pointer items-center gap-3 rounded-xl px-2 py-2 text-[0.95rem] text-ink transition active:bg-chip/50">
+              <label className="flex min-h-[44px] cursor-pointer items-center gap-3 rounded-xl px-2 py-2.5 text-[0.95rem] text-ink transition active:bg-chip/50">
                 <input
                   type="checkbox"
                   checked={consentTicked}
                   onChange={(e) => setConsentTicked(e.target.checked)}
-                  className="h-[1.15rem] w-[1.15rem] shrink-0 rounded accent-[var(--color-frost)]"
+                  className="h-5 w-5 shrink-0 rounded accent-[var(--color-frost)]"
                 />
                 <span>I understand Fix uses AI</span>
               </label>
@@ -1138,7 +1138,7 @@ export default function FreezeFixApp() {
                 <a href="/terms" className="underline underline-offset-4">Terms</a>
                 <a href="/refunds" className="underline underline-offset-4">Refunds</a>
               </div>
-              <button onClick={() => setStep("home")} className="mt-4 self-center text-sm text-ink-faint underline underline-offset-4">
+              <button onClick={() => setStep("home")} className="mt-4 self-center min-h-[44px] px-2 text-sm text-ink-faint underline underline-offset-4">
                 Back
               </button>
             </div>
@@ -1221,7 +1221,7 @@ function BigButton({ onClick, children }: { onClick: () => void; children: React
   return (
     <button
       onClick={onClick}
-      className="w-full rounded-[1.75rem] bg-accent px-5 py-5 text-xl font-bold text-accent-ink shadow-[0_14px_36px_-14px_rgba(255,159,110,0.8)] transition active:scale-[0.98]"
+      className="w-full rounded-[1.75rem] bg-accent px-5 py-5 text-xl font-bold text-accent-ink shadow-[0_14px_36px_-14px_rgba(227,182,116,0.6)] transition active:scale-[0.98]"
     >
       {children}
     </button>
@@ -1230,7 +1230,7 @@ function BigButton({ onClick, children }: { onClick: () => void; children: React
 
 function GhostButton({ onClick, children }: { onClick: () => void; children: React.ReactNode }) {
   return (
-    <button onClick={onClick} className="w-full rounded-3xl border border-line px-5 py-4 text-lg font-medium text-ink-soft">
+    <button onClick={onClick} className="w-full min-h-[44px] rounded-3xl border border-line px-5 py-4 text-lg font-medium text-ink-soft">
       {children}
     </button>
   );

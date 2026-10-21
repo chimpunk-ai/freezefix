@@ -229,7 +229,7 @@ export function CountrySwitcher({ region, onChange }: { region: string; onChange
       <select
         value={current}
         onChange={(e) => onChange(e.target.value)}
-        className="rounded-lg border border-line bg-card px-2 py-1 text-ink"
+        className="min-h-[44px] rounded-lg border border-line bg-card px-2 py-1 text-ink"
       >
         {VERIFIED_COUNTRIES.map((c) => (
           <option key={c} value={c}>

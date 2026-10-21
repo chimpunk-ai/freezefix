@@ -346,7 +346,7 @@ export default function Chat({
             noteVisit("fresh");
             window.location.href = "/app";
           }}
-          className="rounded-full border border-line px-3 py-1.5 text-xs text-ink-soft hover:text-ink"
+          className="rounded-full border border-line px-3 py-2.5 min-h-[44px] text-xs text-ink-soft hover:text-ink"
         >
           Start fresh
         </button>
@@ -411,7 +411,7 @@ export default function Chat({
             <button
               key={c}
               onClick={() => send(c)}
-              className="ff-chip rounded-full bg-chip px-4 py-2 text-base text-ink"
+              className="ff-chip rounded-full bg-chip px-4 py-2.5 min-h-[44px] text-base text-ink"
             >
               {c}
             </button>
@@ -422,16 +422,16 @@ export default function Chat({
       {/* Follow-up action buttons — always shown after Fix has replied */}
       {!busy && hasExchange && (
         <div className="mb-2 flex flex-wrap gap-2">
-          <button onClick={() => send("I'll try that")} className="ff-chip rounded-full border border-frost/40 bg-frost/15 px-3.5 py-1.5 text-sm font-semibold text-frost">
+          <button onClick={() => send("I'll try that")} className="ff-chip rounded-full border border-frost/40 bg-frost/15 px-3.5 py-2.5 min-h-[44px] text-sm font-semibold text-frost">
             Try it
           </button>
-          <button onClick={() => send("give me another idea")} className="ff-chip rounded-full border border-line bg-chip px-3.5 py-1.5 text-sm text-ink">
+          <button onClick={() => send("give me another idea")} className="ff-chip rounded-full border border-line bg-chip px-3.5 py-2.5 min-h-[44px] text-sm text-ink">
             Another idea
           </button>
-          <button onClick={() => send("help me draft a message for this")} className="ff-chip rounded-full border border-line bg-chip px-3.5 py-1.5 text-sm text-ink">
+          <button onClick={() => send("help me draft a message for this")} className="ff-chip rounded-full border border-line bg-chip px-3.5 py-2.5 min-h-[44px] text-sm text-ink">
             Draft a message
           </button>
-          <button onClick={() => send("can you clarify that?")} className="ff-chip rounded-full border border-line bg-chip px-3.5 py-1.5 text-sm text-ink">
+          <button onClick={() => send("can you clarify that?")} className="ff-chip rounded-full border border-line bg-chip px-3.5 py-2.5 min-h-[44px] text-sm text-ink">
             Clarify
           </button>
           <button
@@ -439,7 +439,7 @@ export default function Chat({
               noteVisit("done");
               onHelped();
             }}
-            className="ff-chip rounded-full border border-line bg-chip px-3.5 py-1.5 text-sm text-ink-soft"
+            className="ff-chip rounded-full border border-line bg-chip px-3.5 py-2.5 min-h-[44px] text-sm text-ink-soft"
           >
             I&apos;m done for now
           </button>
@@ -498,7 +498,7 @@ export default function Chat({
 
       {turns.length > 4 && !busy && (
         <div className="flex justify-center pb-1 pt-0.5">
-          <button onClick={onTrusted} className="text-xs text-ink-faint underline underline-offset-2 hover:text-ink-soft">
+          <button onClick={onTrusted} className="min-h-[44px] px-2 text-xs text-ink-faint underline underline-offset-2 hover:text-ink-soft">
             Text someone instead
           </button>
         </div>

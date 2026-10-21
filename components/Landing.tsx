@@ -110,17 +110,17 @@ export default function Landing() {
       <header className="flex items-center justify-between py-5">
         <span className="text-lg font-extrabold tracking-tight text-ink">freezefix</span>
         <nav className="flex items-center gap-3 text-sm text-ink-soft sm:gap-5">
-          <a href="/privacy" className="hidden hover:text-ink sm:block">
+          <a href="/privacy" className="hidden min-h-[44px] items-center hover:text-ink sm:flex">
             Privacy
           </a>
           <Link
             href="/help"
-            className="rounded-full border border-line px-3 py-1.5 text-ink-soft hover:text-ink"
+            className="flex min-h-[44px] items-center rounded-full border border-line px-3 py-1.5 text-ink-soft hover:text-ink"
           >
             Get help
           </Link>
           {returning && (
-            <Link href="/app" className="rounded-full bg-chip px-4 py-2 text-ink hover:bg-chip/80">
+            <Link href="/app" className="flex min-h-[44px] items-center rounded-full bg-chip px-4 py-2 text-ink hover:bg-chip/80">
               Open
             </Link>
           )}
