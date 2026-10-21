@@ -252,6 +252,8 @@ export default function Chat({
           return true;
         }
         if (evt.error) {
+          // Preserve the user's message so "Tap to resend" appears instead of a dead end.
+          setPending({ text: raw, image: img ?? null });
           setNote(errorText(String(evt.error)));
           return true;
         }
@@ -407,7 +409,7 @@ export default function Chat({
       {/* Follow-up action buttons — always shown after Fix has replied */}
       {!busy && hasExchange && (
         <div className="mb-2 flex flex-wrap gap-2">
-          <button onClick={() => send("I'll try that")} className="ff-chip rounded-full border border-line bg-chip px-3.5 py-1.5 text-sm text-ink">
+          <button onClick={() => send("I'll try that")} className="ff-chip rounded-full border border-frost/40 bg-frost/15 px-3.5 py-1.5 text-sm font-semibold text-frost">
             Try it
           </button>
           <button onClick={() => send("give me another idea")} className="ff-chip rounded-full border border-line bg-chip px-3.5 py-1.5 text-sm text-ink">

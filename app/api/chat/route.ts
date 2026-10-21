@@ -188,7 +188,22 @@ export async function POST(req: Request) {
             noThinking = true;
             continue;
           }
-          send({ error: "ai_unavailable", status: upstream.status, detail: detail.slice(0, 300) });
+          // Retry once on transient upstream errors (429, 502–504, 529) before giving up.
+          // These are almost always the provider being momentarily overloaded; a second
+          // attempt a beat later usually succeeds.
+          const retryable = [429, 502, 503, 504, 529].includes(upstream.status);
+          if (retryable && attempt === 0) {
+            // Honour Retry-After when the provider sends one, capped at 10s so we don't
+            // block the worker for unreasonably long.
+            const ra = upstream.headers.get("retry-after");
+            const wait = ra ? Math.min(Number(ra) * 1000 || 2000, 10000) : 1500;
+            await new Promise((r) => setTimeout(r, wait));
+            continue;
+          }
+          const errorCode = upstream.status === 429 ? "too_many_requests"
+            : upstream.status >= 500 ? "server_error"
+            : "ai_unavailable";
+          send({ error: errorCode, status: upstream.status, detail: detail.slice(0, 300) });
           controller.close();
           return;
         }

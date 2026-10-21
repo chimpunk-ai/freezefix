@@ -247,7 +247,7 @@ export default function FreezeFixApp() {
         setScenario(wanted);
         setMoment(wanted.moment);
         noteScenario(wanted.id);
-        setStep(!get("local", K_CONSENT) ? "consent" : !get("local", K_ONBOARDED) ? "onboarding" : "chat");
+        setStep(!get("local", K_CONSENT) ? "consent" : "chat");
       } else {
         setStep("home");
       }
@@ -490,11 +490,9 @@ export default function FreezeFixApp() {
                     setStep(
                       !get("local", K_CONSENT)
                         ? "consent"
-                        : !get("local", K_ONBOARDED)
-                          ? "onboarding"
-                          : features.ai
-                            ? "chat"
-                            : "words"
+                        : features.ai
+                          ? "chat"
+                          : "words"
                     );
                   } else {
                     setStep("home");
@@ -564,7 +562,7 @@ export default function FreezeFixApp() {
                         setScenario(s);
                         setMoment(s.moment);
                         noteScenario(s.id);
-                        setStep(get("local", K_CONSENT) ? (get("local", K_ONBOARDED) ? (features.ai ? "chat" : "words") : "onboarding") : "consent");
+                        setStep(get("local", K_CONSENT) ? (features.ai ? "chat" : "words") : "consent");
                       }}
                       className="flex items-center gap-2.5 rounded-2xl border border-line bg-card px-3 py-3 text-left transition active:scale-[0.97]"
                     >
@@ -1040,7 +1038,7 @@ export default function FreezeFixApp() {
                   set("local", K_CONSENT, new Date().toISOString().slice(0, 10));
                   set("local", K_ADULT, "yes");
                   set("local", K_ADULT_DATE, new Date().toISOString().slice(0, 10));
-                  setStep(get("local", K_ONBOARDED) ? afterConsent() : "onboarding");
+                  setStep(afterConsent());
                 }}
                 className="w-full rounded-[2rem] bg-accent px-5 py-5 text-xl font-bold text-accent-ink shadow-[0_14px_32px_-14px_rgba(227,182,116,0.6)] transition disabled:opacity-30 disabled:shadow-none active:scale-[0.98]"
               >
