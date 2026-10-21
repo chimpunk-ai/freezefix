@@ -136,7 +136,7 @@ export default function Landing() {
           </p>
 
           {/* Hero headline */}
-          <h1 className="text-[2.5rem] font-extrabold leading-[1.05] text-ink sm:text-[3.5rem]">
+          <h1 className="text-[clamp(2rem,7vw,2.5rem)] font-extrabold leading-[1.05] text-ink sm:text-[3.5rem]">
             When your mind feels stuck,{" "}
             <em className="not-italic text-frost" style={{ fontStyle: "italic" }}>
               find your next move

@@ -116,9 +116,10 @@ export function noteVisit(mood?: string) {
   saveMemory({ ...(m ?? {}), lastSeen: new Date().toISOString().slice(0, 10), lastMood: mood });
 }
 
-export function greeting(): string {
+export function greeting(name?: string): string {
   const m = loadMemory();
+  const displayName = name || m?.name;
   const hour = new Date().getHours();
   const part = hour < 5 ? "Late one" : hour < 12 ? "Morning" : hour < 18 ? "Afternoon" : "Evening";
-  return m?.name ? `${part}, ${m.name}.` : `${part}.`;
+  return displayName ? `${part}, ${displayName}.` : `${part}.`;
 }

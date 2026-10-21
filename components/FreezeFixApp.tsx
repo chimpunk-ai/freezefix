@@ -53,7 +53,8 @@ type Step =
   | "breathe"
   | "wins"
   | "savewin"
-  | "memory";
+  | "memory"
+  | "name";
 
 // Browser storage keys. Nothing here leaves the phone.
 const K_ADULT = "ff_adult"; // "yes" once the 18+ gate is passed
@@ -71,6 +72,7 @@ const K_WINS = "ff_wins"; // how many times a move helped (stays on the phone)
 const K_VISITS = "ff_visits"; // used only to rotate the fact on the home screen
 const K_RECENT = "ff_recent_scenarios"; // scenario cards they actually use, most recent first
 const K_ONBOARDED = "ff_onboarded"; // the four questions have been asked once
+const K_NAME = "ff_name"; // what they want to be called (stays on the phone)
 
 const MOMENT_EMOJI: Record<MomentId, string> = { people: "👤", alone: "🍃", task: "⏳", reply: "💌" };
 
@@ -141,6 +143,8 @@ export default function FreezeFixApp() {
   const [winText, setWinText] = useState("");
   /** Text from a "Sound familiar?" card, auto-sent as the first user message. */
   const [autoMessage, setAutoMessage] = useState<string | null>(null);
+  const [userName, setUserName] = useState("");
+  const [nameInput, setNameInput] = useState("");
 
   function saveWin() {
     if (winText.trim()) addWin(winText, MOMENTS[moment]);
@@ -148,9 +152,15 @@ export default function FreezeFixApp() {
     setStep("wins");
   }
 
-  // Where consent and onboarding hand off to: straight into the chat when they came from a
-  // scenario card, otherwise the "what's going on" picker.
+  // Where consent and onboarding hand off to: name step first if they haven't given one,
+  // then straight into the chat when they came from a scenario card, otherwise the picker.
   function afterConsent(): Step {
+    if (!get("local", K_NAME)) return "name";
+    if (scenario) return features.ai ? "chat" : "words";
+    return "moment";
+  }
+
+  function afterName(): Step {
     if (scenario) return features.ai ? "chat" : "words";
     return "moment";
   }
@@ -204,7 +214,9 @@ export default function FreezeFixApp() {
     setSessionLevel((Number(get("session", K_LEVEL)) || 0) as RiskLevel);
     setMixed(get("session", K_MIXED) === "1");
     setWins(Number(get("local", K_WINS)) || 0);
-    setHello(greeting());
+    const savedName = get("local", K_NAME) || "";
+    setUserName(savedName);
+    setHello(greeting(savedName));
     setMemOn(memoryOn());
     setCheckIn(checkInLine());
 
@@ -515,7 +527,7 @@ export default function FreezeFixApp() {
           <div className="flex flex-1 flex-col gap-6">
             <div className="flex flex-col gap-1 pt-3">
               <p className="text-lg text-ink-soft">{hello || "Hey."}</p>
-              <h1 className="text-[2.6rem] font-extrabold leading-[1.05] text-ink">{checkIn || "Frozen?"}</h1>
+              <h1 className="text-[clamp(2rem,8vw,2.6rem)] font-extrabold leading-[1.05] text-ink">{checkIn || "Frozen?"}</h1>
             </div>
 
             {/* Always reachable, whatever else is on the screen. */}
@@ -1083,6 +1095,71 @@ export default function FreezeFixApp() {
           </Screen>
         )}
 
+        {step === "name" && (
+          <Screen title="What should Fix call you?">
+            <p className="text-lg text-ink-soft">
+              Just a first name or nickname — whatever feels right. This stays on your device.
+            </p>
+            <div className="mt-4 flex flex-col gap-4">
+              <input
+                type="text"
+                autoFocus
+                maxLength={40}
+                value={nameInput}
+                onChange={(e) => setNameInput(e.target.value.slice(0, 40))}
+                placeholder="Your name"
+                className="w-full rounded-2xl border border-line bg-card px-5 py-4 text-lg text-ink placeholder:text-ink-faint focus:border-frost focus:outline-none"
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" && nameInput.trim()) {
+                    const n = nameInput.trim();
+                    set("local", K_NAME, n);
+                    setUserName(n);
+                    setHello(greeting(n));
+                    fetch("/api/signup", {
+                      method: "POST",
+                      headers: { "Content-Type": "application/json" },
+                      body: JSON.stringify({ ts: new Date().toISOString() }),
+                    }).catch(() => {});
+                    setStep(afterName());
+                  }
+                }}
+              />
+              <BigButton
+                disabled={!nameInput.trim()}
+                onClick={() => {
+                  const n = nameInput.trim();
+                  set("local", K_NAME, n);
+                  setUserName(n);
+                  setHello(greeting(n));
+                  fetch("/api/signup", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ ts: new Date().toISOString() }),
+                  }).catch(() => {});
+                  setStep(afterName());
+                }}
+              >
+                Continue
+              </BigButton>
+              <button
+                onClick={() => {
+                  set("local", K_NAME, "__skipped");
+                  setStep(afterName());
+                }}
+                className="text-sm text-ink-faint underline underline-offset-4"
+              >
+                Skip for now
+              </button>
+            </div>
+
+            <p className="mt-auto pt-6 text-center text-xs leading-relaxed text-ink-faint">
+              In crisis?{" "}
+              <a href="/help" className="font-medium text-frost underline underline-offset-2">Get help</a>{" "}
+              is always free, no sign-up needed.
+            </p>
+          </Screen>
+        )}
+
         {step === "settings" && (
           <Screen title="Privacy & settings">
             <div className="flex flex-col gap-3">
@@ -1210,7 +1287,7 @@ export default function FreezeFixApp() {
 function Screen({ title, subtitle, children }: { title: string; subtitle?: string; children: React.ReactNode }) {
   return (
     <section className="flex flex-col">
-      <h1 className="text-[2.6rem] font-extrabold leading-[0.95] text-ink">{title}</h1>
+      <h1 className="text-[clamp(2rem,8vw,2.6rem)] font-extrabold leading-[0.95] text-ink">{title}</h1>
       {subtitle && <p className="mt-2 text-lg text-ink-soft">{subtitle}</p>}
       <div className="mt-6">{children}</div>
     </section>

@@ -2,7 +2,7 @@
 // we record only a kind, a number, the moment, the country and a timestamp.
 // NEVER the user's words. Does nothing until Supabase keys are set.
 
-export type EventKind = "risk" | "helped" | "session";
+export type EventKind = "risk" | "helped" | "session" | "signup";
 
 export async function logEvent(e: {
   kind: EventKind;
