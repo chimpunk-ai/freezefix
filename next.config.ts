@@ -15,9 +15,6 @@ const nextConfig: NextConfig = {
       },
     ];
   },
-  // No redirects() here on purpose: the OpenNext Cloudflare adapter's build has been
-  // fragile when prerender encounters top-level redirect config. The AppNav's "Fix" tab
-  // links directly to /app instead, which is where the chat flow lives today.
 };
 
 export default nextConfig;
