@@ -33,30 +33,36 @@ const FEATURES = [
 /* The four-step sample conversation shown on the right-hand card.
  * Labelled "EXAMPLE / Not a live conversation" so there's no implication
  * that an AI reply is actually happening on the landing page. */
-const EXAMPLE_STEPS = [
+type ExampleStep = {
+  index: string;
+  label: string;
+  body: string | null;
+  speaker: "user" | "fix" | "none";
+};
+const EXAMPLE_STEPS: ExampleStep[] = [
   {
     index: "1",
     label: "Choose a situation",
     body: "I'm having a craving",
-    isUser: true,
+    speaker: "user",
   },
   {
     index: "2",
     label: "A few words",
     body: "I planned not to smoke tonight but I really want to.",
-    isUser: true,
+    speaker: "user",
   },
   {
     index: "3",
     label: "One small suggestion",
     body: "“A craving can feel urgent. You don’t have to decide your whole future right now. Would you rather create a ten-minute pause, change your setting, or write down what’s pulling you toward it?”",
-    isUser: false,
+    speaker: "fix",
   },
   {
     index: "4",
     label: "You choose — try it, another idea, or leave",
     body: null,
-    isUser: false,
+    speaker: "none",
   },
 ];
 
@@ -205,10 +211,10 @@ export default function Landing() {
                   <span className="text-xs text-ink-soft">
                     {step.index} &middot; {step.label}
                   </span>
-                  {step.body ? (
+                  {step.body !== null ? (
                     <span
                       className={
-                        step.isUser
+                        step.speaker === "user"
                           ? "self-start rounded-xl bg-chip px-3.5 py-2 text-sm text-ink"
                           : "self-start rounded-xl border border-line bg-bg/40 px-3.5 py-2.5 text-sm leading-relaxed text-ink"
                       }
