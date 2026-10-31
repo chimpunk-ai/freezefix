@@ -2,83 +2,66 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import ChatDemo from "@/components/ChatDemo";
-import FactCard from "@/components/FactCard";
-import Suggest from "@/components/Suggest";
 import SiteFooter from "@/components/SiteFooter";
 
-// The six situation cards from the prototype, each mapping to an existing scenario.
-const SITUATIONS = [
+/* Landing page — "Grove" rebuild (2026-10-31).
+ *
+ * Structure follows the approved reference prototype:
+ *   /welcome : header (logo + Get help now) → hero (kicker + serif headline + body +
+ *   mint CTA "Open Fix" + "How privacy works" link) → example card marked
+ *   "EXAMPLE / Not a live conversation" → three honest-feature cards.
+ *
+ * The route "/app" is still accountless in this phase. Phase 3 adds the
+ * Supabase + Google sign-in guard; nothing about the chat / safety flow changes here.
+ */
+
+const FEATURES = [
   {
-    id: "overwhelmed",
-    icon: "🍃",
-    title: "Stuck after a smoke",
-    subtitle: "Everything feels too much right now",
+    title: "No judgment",
+    body: "Reflect, reduce, pause, or just get through tonight.",
   },
   {
-    id: "loop",
-    icon: "💭",
-    title: "Overthinking",
-    subtitle: "Same thought on repeat, can’t switch off",
+    title: "You choose your goal",
+    body: "No streaks. Skip anything.",
   },
   {
-    id: "awkward",
-    icon: "👤",
-    title: "Social discomfort",
-    subtitle: "Everyone else seems fine but you",
-  },
-  {
-    id: "start",
-    icon: "⏳",
-    title: "Can’t start a task",
-    subtitle: "Been staring at it, can’t begin",
-  },
-  {
-    id: "reply",
-    icon: "💌",
-    title: "Can’t reply",
-    subtitle: "The message has been sitting there",
-  },
-  {
-    id: "tomorrow",
-    icon: "🌅",
-    title: "Too much for tomorrow",
-    subtitle: "Need to make it smaller",
+    title: "Not medical or emergency care",
+    body: "Fix is an AI tool and can be wrong.",
   },
 ];
 
-const SOUND_FAMILIAR = [
-  { emoji: "🍃", text: "I smoked and now everything feels a bit overwhelming.", scenario: "overwhelmed" },
-  { emoji: "💭", text: "I keep replaying what I said yesterday.", scenario: "said" },
-  { emoji: "👤", text: "I feel uncomfortable around people right now.", scenario: "awkward" },
-  { emoji: "⏳", text: "I can’t get myself to start this task.", scenario: "start" },
-  { emoji: "💌", text: "I need to reply to someone but I’m overthinking it.", scenario: "reply" },
-  { emoji: "🧠", text: "I have too much on my mind and don’t know where to start.", scenario: "loop" },
-];
-
-const STEPS = [
+/* The four-step sample conversation shown on the right-hand card.
+ * Labelled "EXAMPLE / Not a live conversation" so there's no implication
+ * that an AI reply is actually happening on the landing page. */
+const EXAMPLE_STEPS = [
   {
-    n: "01",
-    title: "Say what’s happening",
-    body: "Pick a situation or type it messily. You don’t need to describe it perfectly.",
+    index: "1",
+    label: "Choose a situation",
+    body: "I'm having a craving",
+    isUser: true,
   },
   {
-    n: "02",
-    title: "Get one small step",
-    body: "Fix replies briefly with a single action you can usually try in a minute or two.",
+    index: "2",
+    label: "A few words",
+    body: "I planned not to smoke tonight but I really want to.",
+    isUser: true,
   },
   {
-    n: "03",
-    title: "Leave whenever",
-    body: "Try it, ask for another idea, draft a message — or close the tab. No streaks, no guilt.",
+    index: "3",
+    label: "One small suggestion",
+    body: "“A craving can feel urgent. You don’t have to decide your whole future right now. Would you rather create a ten-minute pause, change your setting, or write down what’s pulling you toward it?”",
+    isUser: false,
+  },
+  {
+    index: "4",
+    label: "You choose — try it, another idea, or leave",
+    body: null,
+    isUser: false,
   },
 ];
 
 export default function Landing() {
   const [returning, setReturning] = useState(false);
-  const [selected, setSelected] = useState<string | null>(null);
-  const [freeText, setFreeText] = useState("");
-
   useEffect(() => {
     try {
       setReturning(window.localStorage.getItem("ff_adult") === "yes");
@@ -87,223 +70,157 @@ export default function Landing() {
     }
   }, []);
 
-  // Build the CTA link based on selection + optional free text
-  function ctaHref(): string {
-    if (selected) {
-      const parts = [`/app?s=${selected}`];
-      const msg = freeText.trim() || SITUATIONS.find((s) => s.id === selected)?.subtitle || "";
-      if (msg) parts.push(`msg=${encodeURIComponent(msg)}`);
-      return parts.join("&");
-    }
-    if (freeText.trim()) {
-      // Free text only, no card selected — use "talk" scenario as general entry
-      return `/app?s=talk&msg=${encodeURIComponent(freeText.trim())}`;
-    }
-    return "/app";
-  }
-
-  const canGo = selected || freeText.trim();
-
   return (
     <main className="mx-auto w-full max-w-6xl px-5 pb-16">
-      {/* Header */}
+      {/* ── Header ─────────────────────────────────────────────────────── */}
       <header className="flex items-center justify-between py-5">
-        <span className="text-lg font-extrabold tracking-tight text-ink">freezefix</span>
-        <nav className="flex items-center gap-3 text-sm text-ink-soft sm:gap-5">
-          <a href="/privacy" className="hidden min-h-[44px] items-center hover:text-ink sm:flex">
-            Privacy
-          </a>
+        <Link href="/" aria-label="GetFreezeFix home" className="flex items-center gap-2.5">
+          <span
+            aria-hidden="true"
+            className="flex h-9 w-9 items-center justify-center rounded-full bg-accent font-serif text-lg italic text-accent-ink"
+            style={{ fontFamily: "var(--font-display)" }}
+          >
+            f
+          </span>
+          <span className="font-serif text-xl text-ink" style={{ fontFamily: "var(--font-display)" }}>
+            Fix
+          </span>
+        </Link>
+        <nav className="flex items-center gap-3 text-sm">
           <Link
             href="/help"
-            className="flex min-h-[44px] items-center rounded-full border border-line px-3 py-1.5 text-ink-soft hover:text-ink"
+            className="flex min-h-[44px] items-center gap-2 rounded-full border border-frost/60 px-4 py-2 text-frost transition hover:border-frost hover:bg-frost/10"
           >
-            Get help
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
+              <circle cx="12" cy="12" r="9" />
+              <circle cx="12" cy="12" r="3" />
+              <path d="M12 3v2M12 19v2M3 12h2M19 12h2M5.6 5.6l1.4 1.4M17 17l1.4 1.4M5.6 18.4l1.4-1.4M17 7l1.4-1.4" />
+            </svg>
+            Get help now
           </Link>
           {returning && (
-            <Link href="/app" className="flex min-h-[44px] items-center rounded-full bg-chip px-4 py-2 text-ink hover:bg-chip/80">
+            <Link
+              href="/app"
+              className="hidden min-h-[44px] items-center rounded-full bg-chip px-4 py-2 text-ink hover:bg-chip/80 sm:flex"
+            >
               Open
             </Link>
           )}
         </nav>
       </header>
 
-      {/* Hero section with situation cards + chat demo */}
-      <section className="grid items-start gap-10 py-8 md:py-14 lg:grid-cols-[1fr_auto]">
+      {/* ── Hero ───────────────────────────────────────────────────────── */}
+      <section className="grid items-start gap-10 py-8 md:py-14 lg:grid-cols-[1.1fr_1fr]">
         <div className="flex flex-col gap-6">
-          {/* Kicker */}
-          <p className="text-xs font-semibold uppercase tracking-[0.2em] text-frost">
-            A private companion for stuck moments
+          <p className="font-mono text-xs uppercase tracking-[0.22em] text-ink-soft">
+            GetFreezeFix &middot; for adults 18+
           </p>
 
-          {/* Hero headline */}
-          <h1 className="text-[clamp(2rem,7vw,2.5rem)] font-extrabold leading-[1.05] text-ink sm:text-[3.5rem]">
-            When your mind feels stuck,{" "}
-            <em className="italic text-frost">
-              find your next move
-            </em>
+          <h1
+            className="text-[clamp(2.4rem,7vw,4rem)] leading-[1.05] text-ink"
+            style={{ fontFamily: "var(--font-display)", fontWeight: 400, letterSpacing: "-0.015em" }}
+          >
+            More control,
+            <br />
+            one moment at a time.
           </h1>
 
           <p className="max-w-[46ch] text-lg leading-relaxed text-ink-soft">
-            Pick a situation. Fix gives you one small, doable next step — not a lecture, not a plan.
-            Just the bit that actually helps right now.
+            A private companion for adults who want to understand their cannabis habits and find a next
+            step that feels right for them.
           </p>
 
-          {/* Six situation cards — 3×2 grid */}
-          <div className="mt-2 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
-            {SITUATIONS.map((s) => (
-              <button
-                key={s.id}
-                onClick={() => setSelected(selected === s.id ? null : s.id)}
-                aria-pressed={selected === s.id}
-                className={`flex items-center gap-3.5 rounded-2xl border px-4 py-3.5 text-left transition active:scale-[0.97] ${
-                  selected === s.id
-                    ? "border-frost bg-frost/10 ring-1 ring-frost/30"
-                    : "border-line bg-card hover:border-ink-faint"
-                }`}
-              >
-                <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-chip text-xl" aria-hidden="true">{s.icon}</span>
-                <div className="flex flex-col gap-0.5">
-                  <span className="text-[0.95rem] font-semibold leading-snug text-ink">{s.title}</span>
-                  <span className="text-[0.8rem] leading-snug text-ink-soft">{s.subtitle}</span>
-                </div>
-              </button>
+          <div className="mt-2 flex flex-wrap items-center gap-5">
+            <Link
+              href="/app"
+              className="group flex min-h-[52px] items-center gap-3 rounded-full bg-accent px-7 py-3 text-lg font-medium text-accent-ink shadow-[0_14px_32px_-14px_rgba(175,215,182,0.55)] transition active:scale-[0.98]"
+            >
+              Open Fix
+              <span aria-hidden="true" className="transition group-hover:translate-x-0.5">
+                &rarr;
+              </span>
+            </Link>
+            <Link
+              href="/privacy"
+              className="min-h-[44px] text-base text-ink-soft underline-offset-4 hover:text-ink hover:underline"
+            >
+              How privacy works
+            </Link>
+          </div>
+
+          {/* Three honest-feature list — stacked on mobile, 3-col on desktop */}
+          <ul className="mt-6 grid grid-cols-1 gap-6 border-t border-line pt-6 sm:grid-cols-3">
+            {FEATURES.map((f) => (
+              <li key={f.title} className="flex flex-col gap-1">
+                <span className="text-sm font-semibold text-ink">{f.title}</span>
+                <span className="text-sm leading-snug text-ink-soft">{f.body}</span>
+              </li>
             ))}
-          </div>
-
-          {/* Free text input */}
-          <div className="mt-1">
-            <label htmlFor="free-text" className="mb-2 block text-sm text-ink-soft">
-              Or just say what&apos;s on your mind, in your own words...
-            </label>
-            <textarea
-              id="free-text"
-              value={freeText}
-              onChange={(e) => setFreeText(e.target.value.slice(0, 400))}
-              rows={2}
-              placeholder="e.g. smoked an hour ago and can’t stop thinking about what I said at dinner..."
-              className="w-full resize-none rounded-2xl border border-line bg-card px-4 py-3.5 text-base text-ink placeholder:text-ink-faint focus:border-frost focus:outline-none"
-            />
-          </div>
-
-          {/* CTA button */}
-          <div className="flex flex-col items-start gap-2">
-            <Link
-              href={ctaHref()}
-              aria-disabled={!canGo}
-              className={`rounded-[1.6rem] px-8 py-4 text-lg font-bold transition active:scale-[0.98] ${
-                canGo
-                  ? "bg-accent text-accent-ink shadow-[0_14px_32px_-14px_rgba(227,182,116,0.6)]"
-                  : "pointer-events-none bg-accent/40 text-accent-ink/60"
-              }`}
-            >
-              Find my next move &rarr;
-            </Link>
-            <span className="text-xs font-medium uppercase tracking-widest text-ink-faint">
-              Private &middot; No account
-            </span>
-          </div>
-
-          {/* Privacy reassurance row */}
-          <div className="mt-2 flex flex-wrap items-center gap-x-6 gap-y-2 text-sm text-ink-soft">
-            <span className="flex items-center gap-1.5">
-              <svg width="16" height="16" viewBox="0 0 16 16" fill="none" className="text-frost" aria-hidden="true">
-                <path d="M8 1.5L3 4v3.5c0 3.2 2.1 6.2 5 7 2.9-.8 5-3.8 5-7V4L8 1.5z" stroke="currentColor" strokeWidth="1.5" fill="none" />
-              </svg>
-              18+ only
-            </span>
-            <span className="flex items-center gap-1.5">
-              <svg width="16" height="16" viewBox="0 0 16 16" fill="none" className="text-frost" aria-hidden="true">
-                <circle cx="8" cy="8" r="6.5" stroke="currentColor" strokeWidth="1.5" fill="none" />
-                <path d="M5.5 8.5l2 2 3-4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" fill="none" />
-              </svg>
-              No account needed
-            </span>
-            <span className="flex items-center gap-1.5">
-              <svg width="16" height="16" viewBox="0 0 16 16" fill="none" className="text-frost" aria-hidden="true">
-                <rect x="3" y="6.5" width="10" height="7" rx="1.5" stroke="currentColor" strokeWidth="1.5" fill="none" />
-                <path d="M5.5 6.5V5a2.5 2.5 0 015 0v1.5" stroke="currentColor" strokeWidth="1.5" fill="none" />
-              </svg>
-              Not stored by us
-            </span>
-          </div>
+          </ul>
         </div>
 
-        {/* Chat demo on the right (desktop), below on mobile */}
-        <div className="hidden lg:block lg:w-[22rem] lg:pt-8">
-          <ChatDemo />
-        </div>
-      </section>
+        {/* ── Right-hand: example card ─────────────────────────────────── */}
+        <aside aria-labelledby="example-heading" className="w-full">
+          {/* A lightweight SVG hero placeholder — a warm sage/mint sunrise.
+              Replaces the prototype's photo with licensed-free art until a
+              hero photo is signed off. */}
+          <div className="relative overflow-hidden rounded-[1.75rem] border border-line bg-card">
+            <svg viewBox="0 0 480 300" className="h-56 w-full" aria-hidden="true" preserveAspectRatio="xMidYMid slice">
+              <defs>
+                <linearGradient id="skyGrad" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stopColor="#1E3A2F" />
+                  <stop offset="60%" stopColor="#2C5A47" />
+                  <stop offset="100%" stopColor="#AFD7B6" />
+                </linearGradient>
+                <radialGradient id="sun" cx="0.72" cy="0.68" r="0.35">
+                  <stop offset="0%" stopColor="#F2E7C6" stopOpacity="0.95" />
+                  <stop offset="100%" stopColor="#AFD7B6" stopOpacity="0" />
+                </radialGradient>
+              </defs>
+              <rect width="480" height="300" fill="url(#skyGrad)" />
+              <rect width="480" height="300" fill="url(#sun)" />
+              {/* Soft rolling hills */}
+              <path d="M0 230 Q 120 180, 240 215 T 480 205 L480 300 L0 300 Z" fill="#0F2A20" opacity="0.75" />
+              <path d="M0 258 Q 140 220, 280 248 T 480 240 L480 300 L0 300 Z" fill="#0A1C15" opacity="0.9" />
+            </svg>
+            <span className="pointer-events-none absolute left-4 top-4 rounded-full bg-black/35 px-3 py-1 text-[11px] uppercase tracking-wider text-ink/85 backdrop-blur">
+              Illustration
+            </span>
+          </div>
 
-      {/* Mobile chat demo — shown below the hero on small screens */}
-      <div className="lg:hidden">
-        <ChatDemo />
-      </div>
-
-      {/* How it works */}
-      <section id="how" className="scroll-mt-6 py-14">
-        <h2 className="text-3xl font-extrabold text-ink sm:text-4xl">How it works</h2>
-        <div className="mt-8 grid gap-4 sm:grid-cols-3">
-          {STEPS.map((s) => (
-            <div key={s.n} className="rounded-[1.75rem] border border-line bg-card p-6">
-              <span className="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-accent/15 text-sm font-bold text-accent">{s.n}</span>
-              <h3 className="mt-3 text-xl font-bold leading-tight text-ink">{s.title}</h3>
-              <p className="mt-2 text-base leading-relaxed text-ink-soft">{s.body}</p>
+          <section
+            aria-labelledby="example-heading"
+            className="mt-4 rounded-[1.75rem] border border-line bg-card p-5 sm:p-6"
+          >
+            <div className="mb-4 flex items-center justify-between gap-3">
+              <h2 id="example-heading" className="font-mono text-xs uppercase tracking-[0.22em] text-ink-soft">
+                Example
+              </h2>
+              <span className="text-xs text-ink-faint">Not a live conversation</span>
             </div>
-          ))}
-        </div>
-      </section>
 
-      {/* Sound familiar? */}
-      <section className="ff-rise py-14">
-        <h2 className="text-3xl font-extrabold text-ink sm:text-4xl">Sound familiar?</h2>
-        <p className="mt-2 max-w-[48ch] text-lg text-ink-soft">
-          Tap one. Fix already knows where you&apos;re at.
-        </p>
-        <div className="mt-6 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
-          {SOUND_FAMILIAR.map((s) => (
-            <Link
-              key={s.text}
-              href={`/app?s=${s.scenario}&msg=${encodeURIComponent(s.text)}`}
-              className="flex items-center gap-3.5 rounded-[1.75rem] border border-line bg-card px-5 py-4 transition hover:border-accent active:scale-[0.97]"
-            >
-              <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-chip text-xl" aria-hidden="true">{s.emoji}</span>
-              <span className="text-[0.95rem] leading-snug text-ink">{s.text}</span>
-            </Link>
-          ))}
-        </div>
-      </section>
-
-      {/* Is this normal? */}
-      <section className="py-14">
-        <h2 className="text-3xl font-extrabold text-ink sm:text-4xl">Is this normal?</h2>
-        <p className="mt-2 max-w-[48ch] text-lg text-ink-soft">
-          Things people who smoke think that aren&apos;t true. Tap to flip.
-        </p>
-        <div className="mt-6">
-          <FactCard everyMs={8000} />
-        </div>
-      </section>
-
-      {/* Honest limits */}
-      <section className="py-14">
-        <h2 className="text-3xl font-extrabold text-ink sm:text-4xl">
-          Supportive software,
-          <br />
-          honest about its limits.
-        </h2>
-        <p className="mt-4 max-w-[52ch] text-lg leading-relaxed text-ink-soft">
-          Fix isn&apos;t a therapist, doctor or emergency service, and never diagnoses. If things feel unsafe,
-          it will point you to real people &mdash; use{" "}
-          <Link href="/help" className="font-medium text-ink underline underline-offset-4 hover:text-accent">
-            Get help
-          </Link>{" "}
-          at the top any time. And it will never tell you it&apos;s fine to drive after a smoke.
-        </p>
-      </section>
-
-      {/* Feedback */}
-      <section className="py-14">
-        <Suggest compact />
+            <ol className="flex flex-col gap-4">
+              {EXAMPLE_STEPS.map((step) => (
+                <li key={step.index} className="flex flex-col gap-1.5">
+                  <span className="text-xs text-ink-soft">
+                    {step.index} &middot; {step.label}
+                  </span>
+                  {step.body ? (
+                    <span
+                      className={
+                        step.isUser
+                          ? "self-start rounded-xl bg-chip px-3.5 py-2 text-sm text-ink"
+                          : "self-start rounded-xl border border-line bg-bg/40 px-3.5 py-2.5 text-sm leading-relaxed text-ink"
+                      }
+                    >
+                      {step.body}
+                    </span>
+                  ) : null}
+                </li>
+              ))}
+            </ol>
+          </section>
+        </aside>
       </section>
 
       <SiteFooter />

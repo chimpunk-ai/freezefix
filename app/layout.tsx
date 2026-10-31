@@ -1,10 +1,24 @@
 import type { Metadata, Viewport } from "next";
-import { Sora } from "next/font/google";
+import { Plus_Jakarta_Sans, Newsreader } from "next/font/google";
 import "./globals.css";
 
 // Fonts are downloaded at build time and served from our own domain, so no visitor data goes
 // to Google (keeps us GDPR-friendly for UK/EU users).
-const bodyFont = Sora({ subsets: ["latin"], variable: "--font-body", display: "swap", weight: ["300", "400", "600", "800"] });
+// Body: Plus Jakarta Sans — clean, humanist sans, matches reference prototype.
+// Display: Newsreader — elegant Google-licensed serif for headlines.
+const bodyFont = Plus_Jakarta_Sans({
+  subsets: ["latin"],
+  variable: "--font-body",
+  display: "swap",
+  weight: ["300", "400", "500", "600", "700"],
+});
+const displayFont = Newsreader({
+  subsets: ["latin"],
+  variable: "--font-serif",
+  display: "swap",
+  weight: ["300", "400", "500"],
+  style: ["normal", "italic"],
+});
 
 const SITE_URL = "https://getfreezefix.com";
 const DESCRIPTION =
@@ -93,8 +107,8 @@ export const viewport: Viewport = {
   // Both dark and light theme-color values so the browser chrome adapts.
   // The inline script below picks the right one before first paint.
   themeColor: [
-    { media: "(prefers-color-scheme: dark)", color: "#141218" },
-    { media: "(prefers-color-scheme: light)", color: "#faf8f5" },
+    { media: "(prefers-color-scheme: dark)", color: "#0F1F1A" },   /* Grove deep green */
+    { media: "(prefers-color-scheme: light)", color: "#F4F8F5" },  /* Grove cream */
   ],
   viewportFit: "cover",
 };
@@ -141,13 +155,13 @@ const jsonLd = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" className={bodyFont.variable}>
+    <html lang="en" className={`${bodyFont.variable} ${displayFont.variable}`}>
       <head>
         {/* Prevent flash of wrong theme: read localStorage before first paint.
             Sets data-theme on <html> and updates the theme-color meta tag. */}
         <script
           dangerouslySetInnerHTML={{
-            __html: `(function(){try{var t=localStorage.getItem("ff_theme");if(t==="light"||t==="dark"){document.documentElement.setAttribute("data-theme",t);var m=document.querySelector('meta[name="theme-color"]');if(m)m.setAttribute("content",t==="light"?"#faf8f5":"#141218")}}catch(e){}})()`,
+            __html: `(function(){try{var t=localStorage.getItem("ff_theme");if(t==="light"||t==="dark"){document.documentElement.setAttribute("data-theme",t);var m=document.querySelector('meta[name="theme-color"]');if(m)m.setAttribute("content",t==="light"?"#F4F8F5":"#0F1F1A")}}catch(e){}})()`,
           }}
         />
         <script
