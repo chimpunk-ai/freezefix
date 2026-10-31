@@ -34,8 +34,8 @@ export const SCENARIOS: Scenario[] = [
     emoji: "🍃",
     context:
       "They smoked and now everything feels overwhelming. This is very common — cannabis can amplify sensations and thoughts. Reassure them it passes, ground them in the present.",
-    opener: "",
-    chips: [],
+    opener: "The volume just went up on everything. What's loudest?",
+    chips: ["head's loud", "body's buzzy", "want to leave", "already home"],
   },
   {
     id: "pres",
