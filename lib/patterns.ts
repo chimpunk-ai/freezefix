@@ -33,6 +33,13 @@ export type Patterns = {
   recentScenarios: string[]; // the scenario card ids they used, most recent first
 };
 
+// WEEKDAY_LABEL is declared BEFORE EMPTY on purpose: EMPTY's initializer reads from it,
+// and Next.js 16's prerender evaluates this module server-side at build time. Keeping the
+// label above the const avoids a temporal-dead-zone ReferenceError when the Turbopack
+// minifier reorders the file and renames WEEKDAY_LABEL into a short local — the symptom
+// was "Cannot access 'h' before initialization" during the /patterns prerender step.
+export const WEEKDAY_LABEL = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"] as const;
+
 const EMPTY: Patterns = {
   totalWins: 0,
   activeDays: 0,
@@ -44,8 +51,6 @@ const EMPTY: Patterns = {
   currentStreak: 0,
   recentScenarios: [],
 };
-
-export const WEEKDAY_LABEL = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"] as const;
 
 /** Safe JSON array read from localStorage; returns [] on any failure. */
 function readArray<T>(key: string): T[] {
