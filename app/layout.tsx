@@ -1,24 +1,16 @@
 import type { Metadata, Viewport } from "next";
-import { Plus_Jakarta_Sans, Newsreader } from "next/font/google";
 import "./globals.css";
 
-// Fonts are downloaded at build time and served from our own domain, so no visitor data goes
-// to Google (keeps us GDPR-friendly for UK/EU users).
+// Fonts are loaded via Google's CDN with <link> tags in the head below rather
+// than next/font/google. Reason: Next.js 16's default Turbopack build has an
+// open regression with next/font/google when multiple weights + italic are
+// requested ("next/font/google queries have exactly one entry"), which breaks
+// the Cloudflare Workers production build. The CDN approach is a short-term
+// unblocker; when the upstream fix lands we can move back to next/font/google
+// and self-hosted font files. preconnect keeps the perf cost tiny.
+//
 // Body: Plus Jakarta Sans — clean, humanist sans, matches reference prototype.
 // Display: Newsreader — elegant Google-licensed serif for headlines.
-const bodyFont = Plus_Jakarta_Sans({
-  subsets: ["latin"],
-  variable: "--font-body",
-  display: "swap",
-  weight: ["300", "400", "500", "600", "700"],
-});
-const displayFont = Newsreader({
-  subsets: ["latin"],
-  variable: "--font-serif",
-  display: "swap",
-  weight: ["300", "400", "500"],
-  style: ["normal", "italic"],
-});
 
 const SITE_URL = "https://getfreezefix.com";
 const DESCRIPTION =
@@ -155,8 +147,17 @@ const jsonLd = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" className={`${bodyFont.variable} ${displayFont.variable}`}>
+    <html lang="en">
       <head>
+        {/* Google Fonts: Plus Jakarta Sans (body) + Newsreader (serif).
+            See the comment at the top of this file for why we use the CDN here.
+            preconnect to both hosts first so DNS + TLS happen alongside HTML parse. */}
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="" />
+        <link
+          rel="stylesheet"
+          href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&family=Newsreader:ital,wght@0,300..500;1,300..500&display=swap"
+        />
         {/* Prevent flash of wrong theme: read localStorage before first paint.
             Sets data-theme on <html> and updates the theme-color meta tag. */}
         <script

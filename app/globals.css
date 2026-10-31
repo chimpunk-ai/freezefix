@@ -24,9 +24,13 @@
   --color-frost: hsl(10 45% 72%);           /* warm pink/terracotta outline accent */
   --color-teal: hsl(148 43% 60%);           /* deeper mint for emphasis — kept name for compatibility with existing components */
 
-  /* Fonts set by next/font in app/layout.tsx: --font-body (Plus Jakarta Sans), --font-serif (Newsreader) */
-  --font-sans: var(--font-body), ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
-  --font-display: var(--font-serif), Newsreader, Georgia, "Times New Roman", serif;
+  /* Font families — raw stacks, so no CSS vars need to be injected by any JS
+     font loader. See app/layout.tsx for how the <link> tags load these from
+     Google's CDN. */
+  --font-body: "Plus Jakarta Sans", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --font-serif: Newsreader, Georgia, "Times New Roman", serif;
+  --font-sans: var(--font-body);
+  --font-display: var(--font-serif);
 }
 
 /* ── Light theme overrides ───────────────────────────────────────────────────
