@@ -78,7 +78,37 @@ jobs:
           fi
 
       - name: Type check
-        run: npm run typecheck
+        id: typecheck
+        run: |
+          set +e
+          npm run typecheck 2>&1 | tee typecheck-output.txt
+          code=$?
+          echo "exit_code=$code" >> "$GITHUB_OUTPUT"
+          exit $code
+
+      - name: Surface typecheck output
+        if: always() && steps.typecheck.outputs.exit_code != '0'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          {
+            echo "## Type check output"
+            echo ""
+            echo '```'
+            head -c 60000 typecheck-output.txt || true
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            {
+              echo "### Type check failure"
+              echo ""
+              echo '```'
+              head -c 60000 typecheck-output.txt || true
+              echo '```'
+            } > tc-comment.md
+            gh pr comment "${{ github.event.pull_request.number }}" --body-file tc-comment.md
+          fi
+          exit 1
 
       - name: Lint
         id: lint
