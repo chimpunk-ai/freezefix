@@ -1,58 +1,70 @@
 @import "tailwindcss";
 
-/* FreezeFix "Ember" theme (2026-10-21 redesign).
-   Warm charcoal night, soft amber/gold accents, clean neutrals.
-   No greens, no clinical blues, no cannabis-leaf shorthand.
-   Calm and modern, works at 2am. No alarm reds. */
+/* FreezeFix "Grove" theme (2026-10-31 rebuild).
+   Deep green charcoal night, mint sage primary, warm cream, terracotta help accent.
+   Values are HSL triplets taken from the approved reference prototype's live CSS,
+   not guessed. The old "Ember" amber palette has been retired.
+   Calm, mobile-first, works at 2am. No alarm reds, no clinical blues, no cannabis-leaf shorthand. */
 @theme {
-  --color-bg: #141218;              /* warm charcoal */
-  --color-card: rgba(255, 248, 240, 0.06);
-  --color-chip: rgba(255, 248, 240, 0.10);
-  --color-line: rgba(255, 248, 240, 0.14);
-  --color-ink: #f0ece6;             /* warm cream */
-  --color-ink-soft: #b5ada3;        /* muted warm grey */
-  --color-ink-faint: #7d776f;       /* soft stone */
-  --color-accent: #e8a84c;          /* warm amber-gold */
-  --color-accent-ink: #1c1408;      /* deep brown for text on amber */
-  --color-glow: #f2c563;            /* honey highlight */
-  --color-frost: #d4956a;           /* warm terracotta — primary interactive */
-  --color-teal: #c07b4f;            /* deeper terracotta for emphasis */
-  --font-sans: var(--font-body), ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
-  --font-display: var(--font-body), ui-sans-serif, system-ui, sans-serif;
+  /* Core canvas */
+  --color-bg: hsl(161 33% 9%);              /* #0F1F1A — deep green charcoal */
+  --color-card: hsl(158 27% 14%);           /* forest night, same as prototype --card */
+  --color-chip: hsl(156 29% 19%);           /* same as prototype --accent, used for subtle chips */
+  --color-line: hsl(155 16% 23%);           /* prototype --border */
+  --color-ink: hsl(135 20% 96%);            /* warm cream, prototype --foreground */
+  --color-ink-soft: hsl(150 11% 75%);       /* prototype --muted-foreground */
+  --color-ink-faint: hsl(150 10% 55%);      /* a touch darker than ink-soft for fine print */
+
+  /* Primary = mint sage, on dark bg carries dark ink */
+  --color-accent: hsl(148 43% 76%);         /* #AFD7B6 — mint sage, prototype --primary */
+  --color-accent-ink: hsl(161 33% 9%);      /* prototype --primary-foreground */
+  --color-glow: hsl(148 43% 82%);           /* lighter mint for hover/glow */
+
+  /* Secondary = warm terracotta for "Get help now" style callouts */
+  --color-frost: hsl(10 45% 72%);           /* warm pink/terracotta outline accent */
+  --color-teal: hsl(148 43% 60%);           /* deeper mint for emphasis — kept name for compatibility with existing components */
+
+  /* Font families — raw stacks, so no CSS vars need to be injected by any JS
+     font loader. See app/layout.tsx for how the <link> tags load these from
+     Google's CDN. */
+  --font-body: "Plus Jakarta Sans", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --font-serif: Newsreader, Georgia, "Times New Roman", serif;
+  --font-sans: var(--font-body);
+  --font-display: var(--font-serif);
 }
 
 /* ── Light theme overrides ───────────────────────────────────────────────────
    Applied when the OS prefers light AND the user hasn't forced dark,
-   or when the user explicitly chose light. */
+   or when the user explicitly chose light. Keeps the sage/mint identity. */
 @media (prefers-color-scheme: light) {
   :root:not([data-theme="dark"]) {
-    --color-bg: #faf8f5;
-    --color-card: rgba(40, 32, 24, 0.05);
-    --color-chip: rgba(40, 32, 24, 0.07);
-    --color-line: rgba(40, 32, 24, 0.12);
-    --color-ink: #1c1814;
-    --color-ink-soft: #5c544a;
-    --color-ink-faint: #8a837a;
-    --color-accent: #c4841f;
-    --color-accent-ink: #1c1408;
-    --color-glow: #daa23c;
-    --color-frost: #b06b3a;
-    --color-teal: #9a5b2e;
+    --color-bg: hsl(135 25% 97%);
+    --color-card: hsl(148 20% 93%);
+    --color-chip: hsl(148 25% 88%);
+    --color-line: hsl(148 15% 80%);
+    --color-ink: hsl(161 33% 12%);
+    --color-ink-soft: hsl(161 15% 32%);
+    --color-ink-faint: hsl(150 10% 48%);
+    --color-accent: hsl(148 43% 42%);        /* deeper mint for contrast on light */
+    --color-accent-ink: hsl(135 25% 97%);
+    --color-glow: hsl(148 43% 50%);
+    --color-frost: hsl(10 45% 48%);
+    --color-teal: hsl(148 43% 36%);
   }
 }
 :root[data-theme="light"] {
-  --color-bg: #faf8f5;
-  --color-card: rgba(40, 32, 24, 0.05);
-  --color-chip: rgba(40, 32, 24, 0.07);
-  --color-line: rgba(40, 32, 24, 0.12);
-  --color-ink: #1c1814;
-  --color-ink-soft: #5c544a;
-  --color-ink-faint: #8a837a;
-  --color-accent: #c4841f;
-  --color-accent-ink: #1c1408;
-  --color-glow: #daa23c;
-  --color-frost: #b06b3a;
-  --color-teal: #9a5b2e;
+  --color-bg: hsl(135 25% 97%);
+  --color-card: hsl(148 20% 93%);
+  --color-chip: hsl(148 25% 88%);
+  --color-line: hsl(148 15% 80%);
+  --color-ink: hsl(161 33% 12%);
+  --color-ink-soft: hsl(161 15% 32%);
+  --color-ink-faint: hsl(150 10% 48%);
+  --color-accent: hsl(148 43% 42%);
+  --color-accent-ink: hsl(135 25% 97%);
+  --color-glow: hsl(148 43% 50%);
+  --color-frost: hsl(10 45% 48%);
+  --color-teal: hsl(148 43% 36%);
 }
 
 html,
@@ -64,42 +76,43 @@ body {
 body {
   -webkit-font-smoothing: antialiased;
   -webkit-tap-highlight-color: transparent;
-  /* Warm glow: soft amber orbs and a low golden gradient at the horizon. */
+  /* Soft green mist: a low mint orb to the upper-left, a cooler forest glow upper-right,
+     and a gentle sage lift at the horizon. Deliberately quieter than Ember so the mint CTA pops. */
   background-image:
-    radial-gradient(60% 40% at 20% 10%, rgba(212, 149, 106, 0.18), transparent 70%),
-    radial-gradient(50% 35% at 90% 25%, rgba(232, 168, 76, 0.14), transparent 70%),
-    radial-gradient(70% 40% at 50% 105%, rgba(242, 197, 99, 0.16), transparent 70%);
+    radial-gradient(60% 40% at 20% 10%, rgba(175, 215, 182, 0.10), transparent 70%),
+    radial-gradient(50% 35% at 90% 25%, rgba(80, 140, 110, 0.08), transparent 70%),
+    radial-gradient(70% 40% at 50% 105%, rgba(175, 215, 182, 0.09), transparent 70%);
   background-attachment: fixed;
 }
 
-/* Light-mode body gradients — subtle warmth on a cream base. */
+/* Light-mode body gradients — a hint of sage on cream. */
 @media (prefers-color-scheme: light) {
   :root:not([data-theme="dark"]) body {
     background-image:
-      radial-gradient(60% 40% at 20% 10%, rgba(176, 107, 58, 0.06), transparent 70%),
-      radial-gradient(50% 35% at 90% 25%, rgba(255, 237, 210, 0.30), transparent 70%),
-      radial-gradient(70% 40% at 50% 105%, rgba(196, 132, 31, 0.06), transparent 70%);
+      radial-gradient(60% 40% at 20% 10%, rgba(80, 140, 110, 0.06), transparent 70%),
+      radial-gradient(50% 35% at 90% 25%, rgba(175, 215, 182, 0.18), transparent 70%),
+      radial-gradient(70% 40% at 50% 105%, rgba(100, 160, 125, 0.05), transparent 70%);
   }
 }
 :root[data-theme="light"] body {
   background-image:
-    radial-gradient(60% 40% at 20% 10%, rgba(176, 107, 58, 0.06), transparent 70%),
-    radial-gradient(50% 35% at 90% 25%, rgba(255, 237, 210, 0.30), transparent 70%),
-    radial-gradient(70% 40% at 50% 105%, rgba(196, 132, 31, 0.06), transparent 70%);
+    radial-gradient(60% 40% at 20% 10%, rgba(80, 140, 110, 0.06), transparent 70%),
+    radial-gradient(50% 35% at 90% 25%, rgba(175, 215, 182, 0.18), transparent 70%),
+    radial-gradient(70% 40% at 50% 105%, rgba(100, 160, 125, 0.05), transparent 70%);
 }
 /* Force dark gradients back when user explicitly picks dark */
 :root[data-theme="dark"] body {
   background-image:
-    radial-gradient(60% 40% at 20% 10%, rgba(212, 149, 106, 0.18), transparent 70%),
-    radial-gradient(50% 35% at 90% 25%, rgba(232, 168, 76, 0.14), transparent 70%),
-    radial-gradient(70% 40% at 50% 105%, rgba(242, 197, 99, 0.16), transparent 70%);
+    radial-gradient(60% 40% at 20% 10%, rgba(175, 215, 182, 0.10), transparent 70%),
+    radial-gradient(50% 35% at 90% 25%, rgba(80, 140, 110, 0.08), transparent 70%),
+    radial-gradient(70% 40% at 50% 105%, rgba(175, 215, 182, 0.09), transparent 70%);
 }
 
 h1,
 h2 {
   font-family: var(--font-display);
-  font-weight: 800;
-  letter-spacing: -0.035em;
+  font-weight: 400;             /* Newsreader reads elegantly at regular weight */
+  letter-spacing: -0.015em;
 }
 
 /* A quieter, more comfortable reading line length and leading on long prose blocks. */

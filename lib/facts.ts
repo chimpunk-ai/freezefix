@@ -107,7 +107,7 @@ export const FACTS: Fact[] = [
   },
   {
     id: "replay",
-    line: "Replaying a conversation means your brain is trying to learn.",
+    line: "The replay loop is your brain learning.",
     body: "Going over what you said isn't a malfunction. Your brain does it to improve for next time. The problem is it keeps revising a final draft that was already sent.",
     source: "Research on rumination and social learning",
   },
@@ -137,7 +137,7 @@ export const FACTS: Fact[] = [
   },
   {
     id: "spiral-direction",
-    line: "A thought spiral always goes down, never sideways.",
+    line: "Spirals go down, never sideways.",
     body: "Spirals follow a pattern: one bad thought leads to a worse one, never a random one. Knowing it's a pattern — not a revelation — is sometimes enough to step off it.",
     source: "Cognitive psychology research on rumination chains",
   },
@@ -187,7 +187,7 @@ export const FACTS: Fact[] = [
   },
   {
     id: "scroll-instead",
-    line: "Scrolling instead of working is your brain self-medicating.",
+    line: "Scrolling is your brain self-medicating.",
     body: "Your phone gives you tiny hits of novelty and reward. Your brain goes for that because the task in front of you doesn't. It's not a character flaw — it's dopamine doing what dopamine does.",
     source: "Research on dopamine, novelty-seeking and digital distraction",
   },
@@ -211,7 +211,7 @@ export const FACTS: Fact[] = [
   },
   {
     id: "clean-desk",
-    line: "Tidying your desk instead of working is still progress.",
+    line: "Tidying instead of working is still progress.",
     body: "Your brain needs to feel in control of something before it can tackle the scary thing. Tidying is a warm-up, not a distraction. Just don't let it become the main event.",
     source: "Research on perceived control and task initiation",
   },
@@ -225,7 +225,7 @@ export const FACTS: Fact[] = [
   },
   {
     id: "msg-draft",
-    line: "A bad reply sent beats a perfect one never sent.",
+    line: "A bad reply sent beats a perfect one unsent.",
     body: "The person waiting doesn't care if it's eloquent. They care that you replied. 'Sorry, been in my head, how are you' is a perfectly fine message.",
     source: "General findings on social anxiety and avoidance",
   },
@@ -243,7 +243,7 @@ export const FACTS: Fact[] = [
   },
   {
     id: "overthink-text",
-    line: "They read your message in 3 seconds. You wrote it in 30 minutes.",
+    line: "They read it in 3 seconds. You spent 30 min.",
     body: "The tone, the word choice, the possible misreadings — none of that lands the way it does in your head. They read it at normal speed and moved on.",
     source: "Research on curse of knowledge and communication",
   },
@@ -258,7 +258,7 @@ export const FACTS: Fact[] = [
   {
     id: "heart-rate",
     line: "Your heart speeds up. That's normal.",
-    body: "Cannabis can raise your heart rate by 20-50 beats per minute. Feels alarming, but for a healthy adult it's temporary and not dangerous. It settles.",
+    body: "Cannabis can raise your heart rate by 20-50 beats per minute. Feels alarming, but for a healthy adult it's temporary and harmless. It settles.",
     source: "Research on cardiovascular effects of THC",
   },
   {
@@ -305,19 +305,19 @@ export const FACTS: Fact[] = [
   },
   {
     id: "shaky-hands",
-    line: "Shaky hands are adrenaline, not danger.",
+    line: "Shaky hands are just adrenaline.",
     body: "When your body's in fight-or-flight mode, it dumps adrenaline and your hands shake. Annoying, but harmless. Hold something warm — it helps.",
     source: "Research on sympathetic nervous system activation",
   },
   {
     id: "chest-tightness",
-    line: "That tight feeling in your chest is probably tension.",
+    line: "That tight chest is probably just tension.",
     body: "Anxiety makes you breathe shallowly and tense your chest muscles without realising. Try breathing into your belly instead of your chest. If it eases, that's what it was.",
     source: "Research on anxiety-related somatic symptoms",
   },
   {
     id: "temperature",
-    line: "Feeling hot and cold at the same time is a thing.",
+    line: "Hot and cold at the same time is a thing.",
     body: "Cannabis can mess with your body's thermostat. Feeling flushed one minute and cold the next isn't your body malfunctioning — it's just confused about the temperature.",
     source: "Research on cannabinoids and thermoregulation",
   },
@@ -343,13 +343,13 @@ export const FACTS: Fact[] = [
   },
   {
     id: "music",
-    line: "Music sounds better high because it actually does.",
+    line: "Music hits better high. Not placebo.",
     body: "Cannabis can change how your brain processes sound, making details more vivid. If a song hits different, that's your auditory cortex having a moment.",
     source: "Research on cannabis and auditory perception",
   },
   {
     id: "giggles",
-    line: "The giggles are your brain being fine, actually.",
+    line: "The giggles are your brain being fine.",
     body: "Cannabis increases blood flow to the frontal and temporal lobes, the bits involved in laughter. Getting the giggles doesn't mean you're too far gone — your brain's just enjoying itself.",
     source: "Neuroimaging studies on THC and cerebral blood flow",
   },
@@ -367,7 +367,7 @@ export const FACTS: Fact[] = [
   },
   {
     id: "colours-vivid",
-    line: "Colours looking brighter isn't your imagination.",
+    line: "Brighter colours aren't your imagination.",
     body: "Cannabis can increase visual sensitivity in some people. If the sky looks absurdly blue or the lights seem extra, that's your visual cortex having an opinion.",
     source: "Research on cannabinoids and visual processing",
   },
@@ -381,7 +381,7 @@ export const FACTS: Fact[] = [
   // ─── SLEEP & ENERGY ───
   {
     id: "cant-sleep",
-    line: "Can't sleep because your brain won't shut up? That's normal.",
+    line: "Brain won't shut up at bedtime? Normal.",
     body: "Your brain processes the day's events at night. If you gave it a lot to process, it takes longer. The thoughts aren't important — they're leftovers.",
     source: "Research on sleep-onset rumination",
   },
@@ -449,13 +449,13 @@ export const FACTS: Fact[] = [
   },
   {
     id: "bored-restless",
-    line: "Boredom isn't laziness — it's your brain asking for meaning.",
+    line: "Boredom is your brain asking for meaning.",
     body: "When nothing around you feels stimulating, your brain is actually searching for something worthwhile. It's a signal, not a flaw.",
     source: "Research on boredom and meaning-seeking, Eastwood et al.",
   },
   {
     id: "guilt",
-    line: "Guilt about relaxing means the relaxing is working.",
+    line: "Guilt about relaxing means it's working.",
     body: "If you feel guilty about doing nothing, that's your productivity brain refusing to clock off. The discomfort IS the rest — your brain just hasn't caught up yet.",
     source: "Research on leisure guilt and workaholism",
   },
@@ -519,7 +519,7 @@ export const FACTS: Fact[] = [
   },
   {
     id: "family-hard",
-    line: "Finding family events hard is incredibly common.",
+    line: "Family events being hard is very common.",
     body: "Family dynamics trigger old patterns. You're not regressing — you're in the environment where those patterns were built. Noticing it is already half the battle.",
     source: "Research on family systems and behavioural regression",
   },
@@ -531,13 +531,13 @@ export const FACTS: Fact[] = [
   },
   {
     id: "cancel-plans",
-    line: "Cancelling plans doesn't make you a bad friend.",
+    line: "Cancelling doesn't make you a bad friend.",
     body: "Sometimes you don't have it in you. A honest 'not feeling it tonight, sorry' is better than showing up resentful. Good friends understand. You'd understand if they did it.",
     source: "Common sense and social psychology",
   },
   {
     id: "they-moved-on",
-    line: "That argument you're replaying? They've already moved on.",
+    line: "That argument? They've already moved on.",
     body: "People process conflict faster than you think. While you're still rehearsing what you should have said, they've already forgotten the specifics. You're the only one still in the ring.",
     source: "Research on conflict rumination and the actor-observer asymmetry",
   },
@@ -551,7 +551,7 @@ export const FACTS: Fact[] = [
   },
   {
     id: "imposter",
-    line: "Imposter syndrome means you're paying attention.",
+    line: "Imposter syndrome means you're switched on.",
     body: "The more competent you become, the more you notice how much you don't know. Actual imposters don't get imposter syndrome — they think they're great.",
     source: "Research on the Dunning-Kruger effect and imposter phenomenon",
   },
@@ -563,7 +563,7 @@ export const FACTS: Fact[] = [
   },
   {
     id: "meeting-anxiety",
-    line: "Most people in that meeting are also winging it.",
+    line: "Most people in that meeting are winging it.",
     body: "The person who sounds confident has just had more practice sounding confident. They don't have a secret manual. Everyone's figuring it out as they go.",
     source: "Research on expertise perception and social comparison",
   },
@@ -583,13 +583,13 @@ export const FACTS: Fact[] = [
   // ─── SELF-IMAGE & IDENTITY ───
   {
     id: "compare-social",
-    line: "Instagram isn't real. You know this. But still.",
+    line: "Instagram isn't real. You know. Still.",
     body: "Knowing something intellectually and feeling it emotionally are different systems. Your rational brain knows it's curated. Your emotional brain doesn't care. Both are valid.",
     source: "Research on social media and social comparison, Vogel et al.",
   },
   {
     id: "mirror-lie",
-    line: "You look different to yourself than to everyone else.",
+    line: "You look different to yourself than to others.",
     body: "You see a mirror image — reversed, at odd angles, in bathroom lighting. Nobody else sees you that way. The version of you that exists in other people's eyes is better than the one in your mirror.",
     source: "Research on mere exposure effect and facial recognition",
   },
@@ -601,7 +601,7 @@ export const FACTS: Fact[] = [
   },
   {
     id: "labels",
-    line: "You don't need a label for what you're feeling.",
+    line: "You don't need a label for what you feel.",
     body: "Not everything has to be a diagnosis, a condition, or a category. Sometimes you're just having a weird time. That's enough of an explanation.",
     source: "General psychology of emotional labelling",
   },
@@ -627,13 +627,13 @@ export const FACTS: Fact[] = [
   },
   {
     id: "cold-face",
-    line: "Splashing cold water on your face triggers a reset.",
+    line: "Cold water on your face triggers a reset.",
     body: "It activates the dive reflex — your heart rate drops and your body conserves energy. It's a biological override, and it takes about thirty seconds.",
     source: "Research on the mammalian dive reflex",
   },
   {
     id: "sunlight",
-    line: "Sunlight in your eyes in the morning sets your whole day.",
+    line: "Morning sunlight sets your whole day.",
     body: "Morning light tells your brain to start the serotonin and cortisol cycles that make you feel awake now and sleepy later. Even a few minutes by a window helps.",
     source: "Research on circadian photoreception, Huberman Lab summary",
   },
@@ -658,7 +658,7 @@ export const FACTS: Fact[] = [
   {
     id: "chewing-gum",
     line: "Chewing gum lowers cortisol.",
-    body: "The repetitive jaw motion sends a signal that you're eating, and your brain figures if you're eating you can't be in danger. Weird, but the research holds up.",
+    body: "The repetitive jaw motion sends a signal that you're eating, and your brain figures if you're eating you can't be under threat. Weird, but the research holds up.",
     source: "Research on mastication and stress response, Scholey et al.",
   },
   {
@@ -689,7 +689,7 @@ export const FACTS: Fact[] = [
   },
   {
     id: "green-out",
-    line: "A green out isn't dangerous. It's deeply unpleasant.",
+    line: "A green out is horrible but passes.",
     body: "Nausea, dizziness, cold sweats, wanting to lie down — it passes. Sit down, sip water, wait. Your body is processing, not breaking.",
     source: "General cannabis effects guidance",
   },
@@ -733,7 +733,7 @@ export const FACTS: Fact[] = [
   // ─── PHILOSOPHY & PERSPECTIVE ───
   {
     id: "main-character",
-    line: "You're not the main character. And that's freeing.",
+    line: "You're not the main character. That's freeing.",
     body: "Nobody's following your plot arc. Nobody's keeping track of your mistakes. You're a background character in almost everyone's story, and that means you're free to mess up in peace.",
     source: "Research on egocentrism and the spotlight effect",
   },
@@ -763,13 +763,13 @@ export const FACTS: Fact[] = [
   },
   {
     id: "asking-help",
-    line: "Asking for help is a social skill, not a weakness.",
+    line: "Asking for help is a social skill.",
     body: "People like being asked for help. It makes them feel trusted and competent. You're not burdening them — you're giving them a chance to be useful.",
     source: "Research on the Ben Franklin effect and help-seeking",
   },
   {
     id: "mistakes-learn",
-    line: "You learn more from mistakes than from getting it right.",
+    line: "You learn more from mistakes than from wins.",
     body: "Your brain pays more attention to errors than successes because errors are where the useful information is. Messing up is how your brain updates its model of the world.",
     source: "Research on error-related negativity and learning",
   },
@@ -795,7 +795,7 @@ export const FACTS: Fact[] = [
   },
   {
     id: "plant-alive",
-    line: "Keeping a plant alive counts as having your life together.",
+    line: "Keeping a plant alive counts. Really.",
     body: "The bar for adulthood is flexible. If something in your care is still alive, you're doing better than you think. That includes yourself.",
     source: "General optimism",
   },
@@ -819,7 +819,7 @@ export const FACTS: Fact[] = [
   },
   {
     id: "weird-everyone",
-    line: "Everyone is weird. You're just honest about it.",
+    line: "Everyone is weird. You're just honest.",
     body: "The person who seems totally normal is hiding the exact same kind of weirdness you are. Normal is a setting on a washing machine, not a realistic human state.",
     source: "General psychology of social presentation",
   },
@@ -845,7 +845,7 @@ export const FACTS: Fact[] = [
   // ─── CONNECTIONS & MODERN LIFE ───
   {
     id: "wifi-down",
-    line: "Your wifi going down isn't a sign from the universe.",
+    line: "Wifi going down isn't a sign from above.",
     body: "It's a router being a router. The timing feels significant because your brain finds patterns in everything. Reset it, wait, move on.",
     source: "Research on apophenia and pattern recognition",
   },
@@ -895,7 +895,7 @@ export const FACTS: Fact[] = [
   },
   {
     id: "boundary-kind",
-    line: "Setting a boundary is one of the kindest things you can do.",
+    line: "Setting a boundary is a kindness.",
     body: "For you and for them. A boundary isn't a wall — it's a signpost. It says 'here's how to be around me without it going wrong.' That's useful information.",
     source: "Research on interpersonal boundaries and relationship quality",
   },
@@ -955,7 +955,7 @@ export const FACTS: Fact[] = [
   },
   {
     id: "appetite-mood",
-    line: "Not wanting to eat when stressed is your body's call.",
+    line: "No appetite when stressed is your body's call.",
     body: "Stress hormones suppress appetite in some people and increase it in others. Neither response is wrong. Your body's just running a different programme right now.",
     source: "Research on cortisol and appetite regulation",
   },

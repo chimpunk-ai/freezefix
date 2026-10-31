@@ -1,10 +1,16 @@
 import type { Metadata, Viewport } from "next";
-import { Sora } from "next/font/google";
 import "./globals.css";
 
-// Fonts are downloaded at build time and served from our own domain, so no visitor data goes
-// to Google (keeps us GDPR-friendly for UK/EU users).
-const bodyFont = Sora({ subsets: ["latin"], variable: "--font-body", display: "swap", weight: ["300", "400", "600", "800"] });
+// Fonts are loaded via Google's CDN with <link> tags in the head below rather
+// than next/font/google. Reason: Next.js 16's default Turbopack build has an
+// open regression with next/font/google when multiple weights + italic are
+// requested ("next/font/google queries have exactly one entry"), which breaks
+// the Cloudflare Workers production build. The CDN approach is a short-term
+// unblocker; when the upstream fix lands we can move back to next/font/google
+// and self-hosted font files. preconnect keeps the perf cost tiny.
+//
+// Body: Plus Jakarta Sans — clean, humanist sans, matches reference prototype.
+// Display: Newsreader — elegant Google-licensed serif for headlines.
 
 const SITE_URL = "https://getfreezefix.com";
 const DESCRIPTION =
@@ -93,8 +99,8 @@ export const viewport: Viewport = {
   // Both dark and light theme-color values so the browser chrome adapts.
   // The inline script below picks the right one before first paint.
   themeColor: [
-    { media: "(prefers-color-scheme: dark)", color: "#141218" },
-    { media: "(prefers-color-scheme: light)", color: "#faf8f5" },
+    { media: "(prefers-color-scheme: dark)", color: "#0F1F1A" },   /* Grove deep green */
+    { media: "(prefers-color-scheme: light)", color: "#F4F8F5" },  /* Grove cream */
   ],
   viewportFit: "cover",
 };
@@ -141,13 +147,22 @@ const jsonLd = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" className={bodyFont.variable}>
+    <html lang="en">
       <head>
+        {/* Google Fonts: Plus Jakarta Sans (body) + Newsreader (serif).
+            See the comment at the top of this file for why we use the CDN here.
+            preconnect to both hosts first so DNS + TLS happen alongside HTML parse. */}
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="" />
+        <link
+          rel="stylesheet"
+          href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&family=Newsreader:ital,wght@0,300..500;1,300..500&display=swap"
+        />
         {/* Prevent flash of wrong theme: read localStorage before first paint.
             Sets data-theme on <html> and updates the theme-color meta tag. */}
         <script
           dangerouslySetInnerHTML={{
-            __html: `(function(){try{var t=localStorage.getItem("ff_theme");if(t==="light"||t==="dark"){document.documentElement.setAttribute("data-theme",t);var m=document.querySelector('meta[name="theme-color"]');if(m)m.setAttribute("content",t==="light"?"#faf8f5":"#141218")}}catch(e){}})()`,
+            __html: `(function(){try{var t=localStorage.getItem("ff_theme");if(t==="light"||t==="dark"){document.documentElement.setAttribute("data-theme",t);var m=document.querySelector('meta[name="theme-color"]');if(m)m.setAttribute("content",t==="light"?"#F4F8F5":"#0F1F1A")}}catch(e){}})()`,
           }}
         />
         <script

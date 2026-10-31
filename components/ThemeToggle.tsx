@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, type ReactElement } from "react";
 
 const K_THEME = "ff_theme"; // "light" | "dark" | absent (= system)
 
@@ -42,7 +42,7 @@ function saveTheme(pref: ThemePref) {
   }
 }
 
-const OPTIONS: { value: ThemePref; label: string; icon: JSX.Element }[] = [
+const OPTIONS: { value: ThemePref; label: string; icon: ReactElement }[] = [
   {
     value: "system",
     label: "System",
