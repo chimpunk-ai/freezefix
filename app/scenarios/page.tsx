@@ -8,7 +8,10 @@ export const metadata: Metadata = {
     "Founder-only red-team scripts. Not for general use.",
   // Noindex: this surface must never show up in search. Even the title must not look
   // like a real feature in a snippet. The prototype's version carries the same warning.
-  robots: { index: false, follow: false, nocache: true },
+  // noindex + nofollow is sufficient; the `nocache` directive is omitted because
+  // Next.js's Metadata typings for it have shifted between majors and tripped the
+  // OpenNext build in the past. Nothing on this page should be cached in practice.
+  robots: { index: false, follow: false },
 };
 
 export const dynamic = "force-dynamic";
