@@ -18,6 +18,9 @@ export default function SiteFooter() {
         <a href="/privacy" className="text-ink-soft transition hover:text-ink">
           Privacy
         </a>
+        <a href="/patterns" className="text-ink-soft transition hover:text-ink">
+          Patterns
+        </a>
         <a href="/terms" className="text-ink-soft transition hover:text-ink">
           Terms
         </a>
