@@ -142,7 +142,7 @@ a {
 }
 
 /* The signature moment: the ice block that thaws when you press it.
-   Cool morning stone, warms to amber on tap. */
+   Cool morning stone, warms to mint sage on tap — Grove palette (was Ember amber). */
 .ice {
   position: relative;
   isolation: isolate;
@@ -159,7 +159,9 @@ a {
   position: absolute;
   inset: 0;
   border-radius: inherit;
-  background: linear-gradient(160deg, #f2c563 0%, #e8a84c 55%, #c4841f 100%);
+  /* Grove mint sage, blending from the lighter --color-glow into the deeper --color-teal.
+     Hex rather than the token so the gradient stops stay crisp on CSS-animation. */
+  background: linear-gradient(160deg, #c3e4c9 0%, #afd7b6 55%, #6cae82 100%);
   opacity: 0;
   z-index: -1;
   transition: opacity 420ms ease;
@@ -169,8 +171,8 @@ a {
 }
 .ice.thawing {
   background: transparent;
-  color: #1c1408;
-  box-shadow: 0 18px 50px -10px rgba(232, 168, 76, 0.65);
+  color: hsl(161 33% 9%); /* Grove deep green, same as --color-accent-ink */
+  box-shadow: 0 18px 50px -10px rgba(175, 215, 182, 0.55);
 }
 .ice.thawing::after {
   opacity: 1;
@@ -184,7 +186,7 @@ a {
 }
 .reward {
   animation: rise 700ms cubic-bezier(0.2, 0.9, 0.3, 1.2) both;
-  text-shadow: 0 0 32px rgba(242, 197, 99, 0.55);
+  text-shadow: 0 0 32px rgba(175, 215, 182, 0.55); /* Grove mint glow (was Ember amber) */
 }
 
 /* Light-mode ice: keep the same form but adjust shadow for a light canvas. */
@@ -196,7 +198,7 @@ a {
       0 12px 32px -8px rgba(20, 18, 24, 0.18);
   }
   :root:not([data-theme="dark"]) .ice.thawing {
-    box-shadow: 0 12px 36px -8px rgba(196, 132, 31, 0.45);
+    box-shadow: 0 12px 36px -8px rgba(80, 140, 110, 0.45); /* Grove deeper mint */
   }
 }
 :root[data-theme="light"] .ice {
@@ -206,7 +208,7 @@ a {
     0 12px 32px -8px rgba(20, 18, 24, 0.18);
 }
 :root[data-theme="light"] .ice.thawing {
-  box-shadow: 0 12px 36px -8px rgba(196, 132, 31, 0.45);
+  box-shadow: 0 12px 36px -8px rgba(80, 140, 110, 0.45); /* Grove deeper mint */
 }
 
 @media (prefers-reduced-motion: reduce) {

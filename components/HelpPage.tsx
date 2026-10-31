@@ -2,7 +2,9 @@
 
 import { useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
+import Link from "next/link";
 import HelpScreen from "@/components/HelpScreen";
+import SiteFooter from "@/components/SiteFooter";
 import { detectRegion } from "@/lib/country";
 import type { HelpScreen as HelpScreenId } from "@/lib/risk";
 
@@ -61,8 +63,40 @@ export default function HelpPage() {
   const back = screen === "under18" ? undefined : onBack;
 
   return (
-    <main className="mx-auto w-full max-w-2xl px-5 py-6">
-      <HelpScreen screen={screen} region={region} onRegionChange={onRegionChange} onBack={back} />
-    </main>
+    <div className="mx-auto flex min-h-dvh w-full max-w-2xl flex-col px-5 pb-10 pt-4">
+      {/* Unified site header — same Fix wordmark + Back pill as the legal pages.
+          The crisis content below is intentionally the first thing in <main>, not
+          preceded by anything that would delay reading a phone number. */}
+      <header className="mb-6 flex items-center justify-between py-2">
+        <Link href="/" aria-label="GetFreezeFix home" className="flex items-center gap-2.5">
+          <span
+            aria-hidden="true"
+            className="flex h-9 w-9 items-center justify-center rounded-full bg-accent font-serif text-lg italic text-accent-ink"
+            style={{ fontFamily: "var(--font-display)" }}
+          >
+            f
+          </span>
+          <span className="font-serif text-xl text-ink" style={{ fontFamily: "var(--font-display)" }}>
+            Fix
+          </span>
+        </Link>
+        {/* Only screens that aren't the under-18 hard stop get a Back pill. */}
+        {back && (
+          <button
+            type="button"
+            onClick={back}
+            className="min-h-[40px] rounded-full bg-chip px-4 py-1.5 text-sm text-ink transition hover:bg-chip/80"
+          >
+            Back
+          </button>
+        )}
+      </header>
+      <main className="flex-1">
+        <HelpScreen screen={screen} region={region} onRegionChange={onRegionChange} onBack={back} />
+      </main>
+      <div className="mt-12">
+        <SiteFooter />
+      </div>
+    </div>
   );
 }

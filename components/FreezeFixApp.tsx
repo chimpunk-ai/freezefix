@@ -462,25 +462,41 @@ export default function FreezeFixApp() {
 
   return (
     <div className="mx-auto flex min-h-dvh w-full max-w-md flex-col px-5 pb-8 pt-4">
-      {/* Top bar: brand + the Emergency link that sits on every screen, free, no login. */}
-      <header className="mb-8 flex items-center justify-between">
+      {/* Top bar: Fix wordmark (matches landing + legal shell) and the Emergency link
+          that sits on every screen, free and never behind a sign-up or paywall. */}
+      <header className="mb-8 flex items-center justify-between py-1">
         <button
           onClick={() => {
             if (step === "gate" || step === "blocked") return;
             resetFlow();
             setStep("home");
           }}
-          className="text-lg font-semibold text-ink"
-          aria-label="FreezeFix home"
+          aria-label="GetFreezeFix home"
+          className="flex items-center gap-2.5"
         >
-          freezefix
+          <span
+            aria-hidden="true"
+            className="flex h-9 w-9 items-center justify-center rounded-full bg-accent font-serif text-lg italic text-accent-ink"
+            style={{ fontFamily: "var(--font-display)" }}
+          >
+            f
+          </span>
+          <span className="font-serif text-xl text-ink" style={{ fontFamily: "var(--font-display)" }}>
+            Fix
+          </span>
         </button>
         {step !== "loading-app" && !(step === "help" && help?.screen === "emergency") && (
           <button
             onClick={() => showHelp("emergency", step === "blocked" ? null : step === "help" ? help?.returnTo ?? "home" : step)}
-            className="rounded-full border border-line px-4 py-2.5 text-sm font-semibold text-ink-soft hover:text-ink min-h-[44px] min-w-[44px]"
+            className="flex min-h-[40px] items-center gap-2 rounded-full border border-frost/60 px-4 py-1.5 text-sm text-frost transition hover:border-frost hover:bg-frost/10"
+            aria-label="Get help now"
           >
-            Get help
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
+              <circle cx="12" cy="12" r="9" />
+              <circle cx="12" cy="12" r="3" />
+              <path d="M12 3v2M12 19v2M3 12h2M19 12h2M5.6 5.6l1.4 1.4M17 17l1.4 1.4M5.6 18.4l1.4-1.4M17 7l1.4-1.4" />
+            </svg>
+            Get help now
           </button>
         )}
       </header>
@@ -1302,7 +1318,7 @@ function BigButton({ onClick, disabled, children }: { onClick: () => void; disab
     <button
       onClick={onClick}
       disabled={disabled}
-      className="w-full rounded-[1.75rem] bg-accent px-5 py-5 text-xl font-bold text-accent-ink shadow-[0_14px_36px_-14px_rgba(227,182,116,0.6)] transition disabled:opacity-30 disabled:shadow-none active:scale-[0.98]"
+      className="w-full rounded-[1.75rem] bg-accent px-5 py-5 text-xl font-bold text-accent-ink shadow-[0_14px_36px_-14px_rgba(175,215,182,0.6)] transition disabled:opacity-30 disabled:shadow-none active:scale-[0.98]"
     >
       {children}
     </button>
