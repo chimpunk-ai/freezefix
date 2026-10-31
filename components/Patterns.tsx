@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
-import AppShell from "@/components/AppShell";
+import SiteFooter from "@/components/SiteFooter";
 import { allWins } from "@/lib/wins";
 import { barPct, computePatterns, winsByWeek, type Patterns } from "@/lib/patterns";
 
@@ -44,9 +44,33 @@ export default function PatternsPage() {
   const empty = !data || (data.totalWins === 0 && data.topMoments.length === 0);
 
   return (
-    <AppShell wide>
+    <main className="mx-auto w-full max-w-5xl px-5 pb-16">
+      {/* Header matches the landing page — same logo, same Get help button, no new nav. */}
+      <header className="flex items-center justify-between py-5">
+        <Link href="/" aria-label="GetFreezeFix home" className="flex items-center gap-2.5">
+          <span
+            aria-hidden="true"
+            className="flex h-9 w-9 items-center justify-center rounded-full bg-accent font-serif text-lg italic text-accent-ink"
+            style={{ fontFamily: "var(--font-display)" }}
+          >
+            f
+          </span>
+          <span className="font-serif text-xl text-ink" style={{ fontFamily: "var(--font-display)" }}>
+            Fix
+          </span>
+        </Link>
+        <nav className="flex items-center gap-3 text-sm">
+          <Link
+            href="/app"
+            className="min-h-[44px] rounded-full bg-chip px-4 py-2 text-ink transition hover:bg-chip/80"
+          >
+            Back to Fix
+          </Link>
+        </nav>
+      </header>
+
       {/* Hero */}
-      <section className="flex flex-col gap-3 pb-6">
+      <section className="flex flex-col gap-3 py-6">
         <p className="font-mono text-xs uppercase tracking-[0.22em] text-ink-soft">Patterns · on this device only</p>
         <h1
           className="text-[clamp(2rem,6vw,3rem)] leading-[1.08] text-ink"
@@ -220,7 +244,8 @@ export default function PatternsPage() {
         </div>
       )}
 
-    </AppShell>
+      <SiteFooter />
+    </main>
   );
 }
 
