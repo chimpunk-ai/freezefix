@@ -53,11 +53,12 @@ const ITEMS: Item[] = [
     ),
   },
   {
-    href: "/fix",
+    // The chat flow currently lives at /app; the Fix tab links straight to it rather
+    // than through a redirect, so the Nav never depends on a build-time redirect config.
+    href: "/app",
     label: "Fix",
     hero: true,
-    // The chat currently lives at /app; the Fix tab is active on both.
-    match: (p) => p.startsWith("/fix") || p.startsWith("/app"),
+    match: (p) => p.startsWith("/app") || p.startsWith("/fix"),
     icon: (
       <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true" {...stroke}>
         <path d="M12 3l1.6 4.6L18 9l-4.4 1.4L12 15l-1.6-4.6L6 9l4.4-1.4L12 3z" />
