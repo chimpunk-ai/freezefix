@@ -6,7 +6,7 @@ import HelpPage from "@/components/HelpPage";
 // passing the 18+ gate, sign-up, payment or any animated flow.
 
 export const metadata: Metadata = {
-  title: "Help now — FreezeFix",
+  title: "Help now",
   description: "Real phone numbers and chat lines for urgent help. Free, no sign-up, no account.",
   robots: { index: false, follow: false },
 };
