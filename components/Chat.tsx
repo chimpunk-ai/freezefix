@@ -393,6 +393,13 @@ export default function Chat({
                 const p = pending;
                 setNote(null);
                 setPending(null);
+                // The failed send already pushed a "user" bubble into `turns`. Drop
+                // it here so `send()` can re-add it as a single bubble, otherwise
+                // each tap of "Tap to resend" stacks another copy of the same
+                // message under the error (visible in the 2026-11-01 screenshot).
+                setTurns((t) =>
+                  t.length > 0 && t[t.length - 1].role === "user" ? t.slice(0, -1) : t
+                );
                 send(p.text, p.image);
               }}
               className="mb-2 w-full rounded-xl bg-chip px-4 py-3 text-left text-sm text-ink"
