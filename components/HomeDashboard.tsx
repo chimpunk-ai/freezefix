@@ -6,6 +6,7 @@ import AppShell from "@/components/AppShell";
 import { last7Days, last7Summary, getAnswer, setToday, todayISO, type DayShape, type Shape } from "@/lib/checkins";
 import { readGoal, writeGoal, GOALS, GOAL_LABEL, type GoalId } from "@/lib/goals";
 import { allWins } from "@/lib/wins";
+import { count as journalCount } from "@/lib/journal";
 
 // Daily companion home — the Home tab in AppNav. The whole dashboard reads only this
 // device's localStorage (check-ins, goal, wins log) and never writes anything to a
@@ -49,7 +50,9 @@ export default function HomeDashboard() {
     setDays(last7Days(now));
     setShape(last7Summary(now));
     setGoal(readGoal());
-    setWinsCount(allWins().length);
+    // Entries counted on home = wins (quick saves from inside /app) + journal entries
+    // (richer, structured). Keeping them separate in storage but summed on the surface.
+    setWinsCount(allWins().length + journalCount());
     setMounted(true);
   }, []);
 

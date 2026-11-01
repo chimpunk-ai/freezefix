@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
-import AppShell from "@/components/AppShell";
-import StubScreen from "@/components/StubScreen";
+import UserPlans from "@/components/UserPlans";
 
 export const metadata: Metadata = {
   title: "Plan",
@@ -13,17 +12,7 @@ export const dynamic = "force-dynamic";
 
 // This route is the USER'S plans / goals (the "Tomorrow Loop" from the reference
 // prototype). It is NOT the paid subscription plans in `lib/plans.ts`, which stay
-// frozen and live under /api/paywall. Separate concepts, same word; the two must not
-// be conflated in code or copy.
+// frozen and live under /api/paywall. Separate concepts, same word.
 export default function Page() {
-  return (
-    <AppShell>
-      <StubScreen
-        kicker="Plan · on this device only"
-        title="One tiny plan for tomorrow."
-        description="Write a single if–then for tomorrow — only if you'd like one. No reminders, no streaks, no scoreboard. Lives in this browser; nothing is scheduled or sent anywhere."
-        cta={{ href: "/app", label: "Open Fix" }}
-      />
-    </AppShell>
-  );
+  return <UserPlans />;
 }
