@@ -18,6 +18,7 @@ import FactCard from "@/components/FactCard";
 import Suggest from "@/components/Suggest";
 import ThemeToggle from "@/components/ThemeToggle";
 
+import AppNav from "@/components/AppNav";
 import { greeting, readableMemory, memoryOn, setMemoryOn, forgetAll, noteVisit, setNameInMemory, type MemoryLine } from "@/lib/memory";
 import { SAFETY_BUTTONS, keywordCheck, type HelpScreen as HelpScreenId, type RiskLevel, type RiskResult } from "@/lib/risk";
 import { MOMENTS, type MomentId } from "@/lib/prompt";
@@ -153,16 +154,20 @@ export default function FreezeFixApp() {
   }
 
   // Where consent and onboarding hand off to: name step first if they haven't given one,
-  // then straight into the chat when they came from a scenario card, otherwise the picker.
+  // then straight into the chat when they came from a scenario card, otherwise the
+  // in-app home with the six scenario cards. The old "moment" picker (Around people /
+  // Alone and spiralling / Stuck on a task / Can't reply) is no longer a user-facing
+  // step — those four values stay in lib/prompt.ts as INTERNAL context the AI receives
+  // via buildUserMessage, but a fresh visitor never sees them labelled on screen.
   function afterConsent(): Step {
     if (!get("local", K_NAME)) return "name";
     if (scenario) return features.ai ? "chat" : "words";
-    return "moment";
+    return "home";
   }
 
   function afterName(): Step {
     if (scenario) return features.ai ? "chat" : "words";
-    return "moment";
+    return "home";
   }
 
   // Remembers which cards they actually tap, so the useful ones drift to the top.
@@ -461,7 +466,9 @@ export default function FreezeFixApp() {
   const showHelpCard = sessionLevel >= 3 && step !== "help" && step !== "blocked" && step !== "gate";
 
   return (
-    <div className="mx-auto flex min-h-dvh w-full max-w-md flex-col px-5 pb-8 pt-4">
+    // pb-28 reserves room below the content for the fixed AppNav bar; the shell on
+    // all the new routes uses the same padding so content doesn't hide behind the tabs.
+    <div className="mx-auto flex min-h-dvh w-full max-w-md flex-col px-5 pb-28 pt-4">
       {/* Top bar: Fix wordmark (matches landing + legal shell) and the Emergency link
           that sits on every screen, free and never behind a sign-up or paywall. */}
       <header className="mb-8 flex items-center justify-between py-1">
@@ -556,7 +563,10 @@ export default function FreezeFixApp() {
                   setThawing(false);
                   resetFlow();
                   setScenario(null);
-                  setStep(get("local", K_CONSENT) ? "moment" : "consent");
+                  // The default moment ("alone") is kept as the internal AI context
+                  // for an "I'm frozen" tap; the user never picks it off a menu now.
+                  setMoment("alone");
+                  setStep(get("local", K_CONSENT) ? (features.ai ? "chat" : "words") : "consent");
                 };
                 const reduce = typeof window !== "undefined" && window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
                 if (reduce) go();
@@ -629,26 +639,14 @@ export default function FreezeFixApp() {
           </div>
         )}
 
-        {step === "moment" && (
-          <Screen title="What's going on?">
-            <div className="grid grid-cols-2 gap-3">
-              {(Object.keys(MOMENTS) as MomentId[]).map((m) => (
-                <button
-                  key={m}
-                  onClick={() => {
-                    buzz();
-                    setMoment(m);
-                    setStep(features.ai ? "chat" : "words");
-                  }}
-                  className="flex aspect-square flex-col justify-between rounded-[1.75rem] border border-line bg-card p-4 text-left transition active:scale-[0.97]"
-                >
-                  <span className="text-4xl" aria-hidden="true">{MOMENT_EMOJI[m]}</span>
-                  <span className="text-lg font-semibold leading-tight text-ink">{MOMENTS[m]}</span>
-                </button>
-              ))}
-            </div>
-          </Screen>
-        )}
+        {/* The "moment" picker (Around people / Alone and spiralling / Stuck on a
+            task / Can't reply) used to render here. It was removed because those four
+            labels were user-facing noise over an internal AI-prompt category. The
+            MomentId values themselves remain in lib/prompt.ts and are still handed
+            to the AI as context via buildUserMessage — a user just doesn't pick one
+            off a menu any more. Any surviving code path that tries to setStep("moment")
+            is harmless (it renders nothing); the step is kept in the union so a stale
+            session reload doesn't crash. */}
 
         {step === "check" && (
           <Screen title="Which one?" subtitle="So we get you the right help, fast.">
@@ -1299,6 +1297,10 @@ export default function FreezeFixApp() {
           </div>
         )}
       </main>
+      {/* Persistent bottom tab bar — same component the rest of the app uses, so a
+          user deep in the chat can still reach Home / Journal / Insights / Plan.
+          AppNav's match predicate highlights "Fix" while this screen is active. */}
+      <AppNav />
     </div>
   );
 }
