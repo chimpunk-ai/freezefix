@@ -7,6 +7,38 @@ import { screenshotsOn } from "@/lib/features";
 import { paymentsOn } from "@/lib/plans";
 import { aiKey } from "@/lib/ai";
 import { SCENARIOS } from "@/lib/scenarios";
+// Diagnostic logger: writes a one-line record of each upstream failure to the
+// Cloudflare Worker log so we can tell WHY the AI call failed (401 bad key, 404
+// bad model, 429 rate limit, 503 overloaded, timeout, network reset…) without
+// adding a Supabase column or exposing the detail to the client. The user's
+// words are never logged — only the status, our model name, which retry
+// attempt we were on, and the first 300 chars of Anthropic's own error body
+// (which only ever contains Anthropic's reason, never anything about this user
+// or anyone else).
+function logUpstreamFailure(ctx: {
+  stage: "non_ok" | "stream_error" | "verdict_missing" | "network" | "outer_catch";
+  attempt: number;
+  status?: number;
+  model?: string;
+  detail?: string;
+}) {
+  try {
+    // Deliberately console.log, not console.error — Cloudflare's log viewer surfaces
+    // both, and this is diagnostic, not a server-side exception we need alerts on.
+    console.log(
+      JSON.stringify({
+        tag: "chat_upstream_fail",
+        stage: ctx.stage,
+        attempt: ctx.attempt,
+        status: ctx.status,
+        model: ctx.model,
+        detail: ctx.detail?.slice(0, 300),
+      })
+    );
+  } catch {
+    /* logging must never break a request */
+  }
+}
 
 // The buddy. Streams its reply, but ONLY after the risk verdict has arrived.
 //
@@ -155,9 +187,14 @@ export async function POST(req: Request) {
       // than failing twice for a reason we can already see.
       let noThinking = false;
       try {
-        // Two attempts at most. A retry only happens when nothing has reached the screen,
-        // so nobody ever sees half a reply, then a second one.
-        for (let attempt = 0; attempt < 2; attempt++) {
+        // Five attempts at most, with exponential backoff (1s, 2s, 4s, 8s between
+        // tries — total up to ~15 s of trying before giving up). A retry only happens
+        // when nothing has reached the screen, so nobody ever sees half a reply then
+        // a second one. The point of a longer loop: a provider blip of a few seconds
+        // is the single biggest cause of "Fix couldn't connect" in production, and we
+        // care more about the user getting the real AI reply than about shaving a
+        // couple of seconds off the worst case.
+        for (let attempt = 0; attempt < 5; attempt++) {
         streamError = null;
         const upstream = await fetch("https://api.anthropic.com/v1/messages", {
           method: "POST",
@@ -188,19 +225,40 @@ export async function POST(req: Request) {
             noThinking = true;
             continue;
           }
-          // Retry once on transient upstream errors (429, 502–504, 529) before giving up.
-          // These are almost always the provider being momentarily overloaded; a second
-          // attempt a beat later usually succeeds.
+          // Retry up to four times on transient upstream errors (429, 502–504, 529).
+          // These are almost always the provider being momentarily overloaded; a
+          // second or third attempt a beat later usually succeeds. Exponential wait
+          // between attempts: 1s, 2s, 4s, 8s. Retry-After header is still honoured,
+          // capped at 10 s so a 60-second-breath hint doesn't block the Worker.
           const retryable = [429, 502, 503, 504, 529].includes(upstream.status);
-          if (retryable && attempt === 0) {
-            // Honour Retry-After when the provider sends one, capped at 10s so we don't
-            // block the worker for unreasonably long.
+          if (retryable && attempt < 4) {
             const ra = upstream.headers.get("retry-after");
-            const wait = ra ? Math.min(Number(ra) * 1000 || 2000, 10000) : 1500;
+            const fallbackWait = 1000 * 2 ** attempt; // 1s, 2s, 4s, 8s
+            const wait = ra ? Math.min(Number(ra) * 1000 || fallbackWait, 10000) : fallbackWait;
+            logUpstreamFailure({
+              stage: "non_ok",
+              attempt,
+              status: upstream.status,
+              model: process.env.AI_MODEL || "claude-haiku-5-5",
+              detail,
+            });
             await new Promise((r) => setTimeout(r, wait));
             continue;
           }
+          // Terminal failure. Log it to the Worker log (full status + detail) so we
+          // can diagnose from Cloudflare logs. The USER sees a short, honest error —
+          // not canned safety moves. The user came for AI; we don't pretend to give
+          // them AI with a template, and we don't rob the client of the chance to
+          // show a resend button.
+          logUpstreamFailure({
+            stage: "non_ok",
+            attempt,
+            status: upstream.status,
+            model: process.env.AI_MODEL || "claude-haiku-5-5",
+            detail,
+          });
           const errorCode = upstream.status === 429 ? "too_many_requests"
+            : upstream.status === 401 || upstream.status === 403 ? "ai_off"
             : upstream.status >= 500 ? "server_error"
             : "ai_unavailable";
           send({ error: errorCode, status: upstream.status, detail: detail.slice(0, 300) });
@@ -318,11 +376,30 @@ export async function POST(req: Request) {
         }
 
         if (!verdict || !replyStarted) {
-          // Nothing usable came back and nothing was shown. Worth one more go: this is
-          // almost always the provider reporting "overloaded" part-way through.
-          if (attempt === 0 && !reply && !replyStarted) continue;
-          // The detail is this caller's own answer, so it reveals nothing about anyone else,
-          // and without it this failure is invisible from outside.
+          // Nothing usable came back and nothing was shown. Try again — the provider
+          // reporting "overloaded" part-way through accounts for most of these. With
+          // five attempts in the outer loop, we can afford four retries here.
+          if (attempt < 4 && !reply && !replyStarted) {
+            logUpstreamFailure({
+              stage: "stream_error",
+              attempt,
+              model: process.env.AI_MODEL || "claude-haiku-5-5",
+              detail: streamError ?? buf.slice(0, 300),
+            });
+            // Short pause before retrying — a provider dropping a stream mid-flight is
+            // the same signal as a 503 at the top; give it a breath.
+            await new Promise((r) => setTimeout(r, 1000 * 2 ** attempt));
+            continue;
+          }
+          // All attempts exhausted and still nothing on screen. Log the shape to the
+          // Worker and surface a short, honest error to the user. The resend button
+          // in Chat.tsx will replace the pending bubble on next send (PR #18 fix).
+          logUpstreamFailure({
+            stage: !verdict ? "verdict_missing" : "stream_error",
+            attempt,
+            model: process.env.AI_MODEL || "claude-haiku-5-5",
+            detail: streamError ?? buf.slice(0, 300),
+          });
           send({
             error: "ai_unavailable",
             detail: streamError ?? buf.slice(0, 300),
@@ -340,7 +417,16 @@ export async function POST(req: Request) {
         controller.close();
         return;
         }
-      } catch {
+      } catch (e) {
+        // Catch-all for anything the loop didn't anticipate (fetch rejections, abort
+        // timeouts, network reset). Log the exception then send an honest error
+        // through the stream so the client's resend path can light up.
+        logUpstreamFailure({
+          stage: "outer_catch",
+          attempt: -1,
+          model: process.env.AI_MODEL || "claude-haiku-5-5",
+          detail: e instanceof Error ? e.message : String(e),
+        });
         try {
           send({ error: "ai_unavailable" });
           controller.close();
