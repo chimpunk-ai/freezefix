@@ -47,7 +47,10 @@ export async function POST(req: Request) {
   const quota = await consumeQuota(req, deviceId, "voice");
   countCookie = quota.setCookie ?? null;
   if (!quota.allowed) {
-    return respond({ error: quota.reason === "limit" ? "limit" : "voice_off", used: quota.used, limit: quota.limit }, 429);
+    // "limit" is too generic — lib/chat-errors.ts can't map it to a sensible message.
+    // Use "voice_limit" so the client renders "That's today's voice notes" rather
+    // than the generic "That didn't come through" fallback.
+    return respond({ error: quota.reason === "limit" ? "voice_limit" : "voice_off", used: quota.used, limit: quota.limit }, 429);
   }
 
   try {

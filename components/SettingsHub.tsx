@@ -70,6 +70,15 @@ const DATA_TABLE: { what: string; where: string; delete: string }[] = [
   },
 ];
 
+type Caps = { free: number; paid: number };
+type Config = {
+  ai?: boolean;
+  beta?: boolean;
+  voice?: boolean;
+  screenshot?: boolean;
+  limits?: { voice?: Caps; screenshot?: Caps; check?: Caps };
+};
+
 export default function SettingsHub() {
   const [mounted, setMounted] = useState(false);
   const [journal, setJournal] = useState(0);
@@ -77,12 +86,21 @@ export default function SettingsHub() {
   const [wins, setWins] = useState(0);
   const [confirmWipe, setConfirmWipe] = useState(false);
   const [wiped, setWiped] = useState(false);
+  // Server-side config: feature flags + daily caps. Fetched once on mount so we don't
+  // keep hitting /api/config while the user flips around settings. "undefined" means
+  // "we haven't been told", so the UI shows "–" rather than a confident "0".
+  const [cfg, setCfg] = useState<Config | null>(null);
 
   useEffect(() => {
     setJournal(journalCount());
     setPlans(planCount());
     setWins(allWins().length);
     setMounted(true);
+    // Fire and forget. If the fetch fails, the section just doesn't render the caps.
+    fetch("/api/config", { cache: "no-store" })
+      .then((r) => (r.ok ? r.json() : null))
+      .then((d: Config | null) => setCfg(d))
+      .catch(() => setCfg(null));
   }, []);
 
   function wipe() {
@@ -189,6 +207,49 @@ export default function SettingsHub() {
         </p>
       </section>
 
+      {/* Daily limits — what the server caps today. Chat itself is open to everyone
+          while payments are frozen; voice and screenshots stay feature-flagged off
+          at build time. "–" means we don't have a number from the server. */}
+      <section className="mt-5 rounded-[1.5rem] border border-line bg-card p-5">
+        <div className="flex items-start justify-between gap-3">
+          <p className="font-mono text-xs uppercase tracking-[0.22em] text-ink-soft">Daily limits</p>
+          {cfg?.beta && (
+            <span className="rounded-full border border-accent/60 bg-accent/10 px-2.5 py-0.5 text-[10px] uppercase tracking-wider text-accent">
+              Open beta · unlimited chat
+            </span>
+          )}
+        </div>
+        <ul className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-3">
+          <LimitRow
+            label="Chat"
+            cap={cfg?.beta ? "Unlimited" : "First unfreeze free, then paywall"}
+            on={cfg?.ai ?? false}
+            offLabel="AI key not set"
+          />
+          <LimitRow
+            label="Voice notes"
+            cap={cfg?.limits?.voice ? `${cfg.limits.voice.free}/day free · ${cfg.limits.voice.paid} on paid` : "–"}
+            on={cfg?.voice ?? false}
+            offLabel="Not switched on"
+          />
+          <LimitRow
+            label="Screenshots"
+            cap={
+              cfg?.limits?.screenshot
+                ? `${cfg.limits.screenshot.free}/day free · ${cfg.limits.screenshot.paid} on paid`
+                : "–"
+            }
+            on={cfg?.screenshot ?? false}
+            offLabel="Not switched on"
+          />
+        </ul>
+        <p className="mt-4 text-xs leading-relaxed text-ink-faint">
+          Caps are static — the server enforces them per device per day. &quot;Remaining today&quot;
+          needs a database read we have not wired yet; the error message when a cap trips
+          names which cap it was.
+        </p>
+      </section>
+
       {/* Reminders — honest */}
       <section className="mt-5 rounded-[1.5rem] border border-line bg-card p-5">
         <p className="font-mono text-xs uppercase tracking-[0.22em] text-ink-soft">Reminders</p>
@@ -252,6 +313,36 @@ export default function SettingsHub() {
         </p>
       </section>
     </AppShell>
+  );
+}
+
+function LimitRow({
+  label,
+  cap,
+  on,
+  offLabel,
+}: {
+  label: string;
+  cap: string;
+  on: boolean;
+  offLabel: string;
+}) {
+  return (
+    <li className="flex flex-col gap-1 rounded-2xl border border-line/70 bg-bg/60 p-3">
+      <p className="text-xs uppercase tracking-wider text-ink-faint">{label}</p>
+      <p className="text-sm text-ink">{on ? cap : offLabel}</p>
+      <span
+        className={`inline-flex w-fit items-center gap-1.5 rounded-full px-2 py-0.5 text-[10px] uppercase tracking-wider ${
+          on ? "border border-accent/40 text-accent" : "border border-line text-ink-faint"
+        }`}
+      >
+        <span
+          aria-hidden="true"
+          className={`h-1.5 w-1.5 rounded-full ${on ? "bg-accent" : "bg-ink-faint"}`}
+        />
+        {on ? "On" : "Off"}
+      </span>
+    </li>
   );
 }
 
