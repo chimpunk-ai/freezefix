@@ -176,6 +176,24 @@ export default function Chat({
   const bottom = useRef<HTMLDivElement | null>(null);
   const textareaRef = useRef<HTMLTextAreaElement | null>(null);
   const autoSent = useRef(false);
+  // Seconds elapsed since the current `busy` turn started. Used only to vary the
+  // typing-indicator copy ("Fix is thinking…" → "Still working…" → "Hang in there…")
+  // so the user doesn't think the app froze during a cold-start + retry chain, which
+  // can run up to ~15 s on the server (PR #20 revised). Reset to 0 whenever busy
+  // flips off; the ticker interval below only runs while busy is true.
+  const [busyFor, setBusyFor] = useState(0);
+
+  useEffect(() => {
+    if (!busy) {
+      setBusyFor(0);
+      return;
+    }
+    const started = Date.now();
+    const id = window.setInterval(() => {
+      setBusyFor(Math.floor((Date.now() - started) / 1000));
+    }, 500);
+    return () => window.clearInterval(id);
+  }, [busy]);
 
   // Auto-send the initial message from a Sound Familiar card tap.
   useEffect(() => {
@@ -375,11 +393,26 @@ export default function Chat({
           )
         )}
         {busy && turns[turns.length - 1]?.role === "user" && (
-          <div className="ff-bubble flex max-w-[88%] items-center gap-2 self-start rounded-2xl rounded-bl-md bg-card/60 px-4 py-3" role="status" aria-live="polite">
+          <div
+            className="ff-bubble flex max-w-[88%] items-center gap-2 self-start rounded-2xl rounded-bl-md bg-card/60 px-4 py-3"
+            role="status"
+            aria-live="polite"
+          >
             <span className="h-2 w-2 animate-bounce rounded-full bg-frost [animation-delay:-0.3s]" />
             <span className="h-2 w-2 animate-bounce rounded-full bg-frost [animation-delay:-0.15s]" />
             <span className="h-2 w-2 animate-bounce rounded-full bg-frost" />
-            <span className="ml-1 text-sm text-ink-soft">{`Fix is thinking…`}</span>
+            {/* Progressive patience copy: cold-start + retry chain can run up to ~15 s
+                server-side. Static "Fix is thinking…" starts to read as "frozen" past
+                about 6 s, so the wording softens, then acknowledges the longer wait,
+                and finally shows the elapsed seconds — enough signal that the app is
+                still with the user without turning the wait into a visible timer. */}
+            <span className="ml-1 text-sm text-ink-soft">
+              {busyFor < 6
+                ? "Fix is thinking…"
+                : busyFor < 12
+                ? "Fix is thinking… still working"
+                : `Hang in there — still working (${busyFor}s)`}
+            </span>
           </div>
         )}
         <div ref={bottom} />
