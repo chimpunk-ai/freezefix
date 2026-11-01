@@ -62,11 +62,14 @@ const ITEMS: Item[] = [
     ),
   },
   {
-    // The chat flow currently lives at /app; Fix tab links directly to it.
-    href: "/app",
+    // Fix tab lands on the situation picker at /fix; each chip there routes to the
+    // real surface for that situation (/app for chat, /sos for cravings, /plans for
+    // "I want to make a small change"). The tab stays active on /app too so the
+    // nav still highlights Fix when a user is deep in the chat.
+    href: "/fix",
     label: "Fix",
     hero: true,
-    match: (p) => p.startsWith("/app") || p.startsWith("/fix"),
+    match: (p) => p.startsWith("/fix") || p.startsWith("/app"),
     icon: (
       <svg
         viewBox="0 0 24 24"
