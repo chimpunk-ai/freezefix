@@ -4,6 +4,10 @@ export const CHAT_ERROR_MESSAGES: Record<string, string> = {
   not_usable: "Can't use that one. A chat screenshot or a photo of the place, nothing with people in it.",
   screenshot_limit: "That's today's images. Keep typing though.",
   screenshot_off: "Images aren't switched on yet.",
+  // New in the fix-#1 quota round so a daily-cap trip on voice notes reads clearly,
+  // rather than falling through to the generic "That didn't come through" message.
+  voice_limit: "That's today's voice notes. Keep typing though.",
+  voice_off: "Voice notes aren't switched on yet.",
   bad_image: "Couldn't read that image.",
   timeout: "Fix didn't respond in time. Try again?",
   too_many_requests: "We're a bit overloaded right now. Give it a minute and try again.",
