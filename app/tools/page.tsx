@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
-import AppShell from "@/components/AppShell";
-import StubScreen from "@/components/StubScreen";
+import Tools from "@/components/Tools";
 
 export const metadata: Metadata = {
   title: "Everyday tools",
@@ -12,14 +11,5 @@ export const metadata: Metadata = {
 export const dynamic = "force-dynamic";
 
 export default function Page() {
-  return (
-    <AppShell>
-      <StubScreen
-        kicker="Everyday tools"
-        title="Small help for real moments."
-        description="A respectful message, a first step on a task, a calm look at two options. The tools are being built one at a time; nothing on this page is wired up yet. When they land, nothing you type or draft here is sent anywhere."
-        cta={{ href: "/app", label: "Open Fix" }}
-      />
-    </AppShell>
-  );
+  return <Tools />;
 }
