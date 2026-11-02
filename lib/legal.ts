@@ -4,7 +4,17 @@
 // Good enough to launch; a lawyer reviews at 10 paying users (founder decision).
 // Any wording change goes through Setup & Legal first.
 
-export const LAST_UPDATED = "16 October 2026";
+// Bumped 2 November 2026: Terms Section 5 and the Refunds page rewritten to
+// honestly state that no paid plan, trial, or payment flow is active today —
+// stops the previous version (which advertised a $9.99/$39.99 "FreezeFix Plus"
+// that does not exist) from creating UK CPUTR 2008 / EU UCPD 2005/29/EC
+// unfair-commercial-practice exposure. Privacy data-table rows for Account
+// details, Payment details and Payment provider updated to match. The dormant
+// payment code (components/Paywall.tsx, lib/plans.ts, /api/paywall, Paddle
+// webhook) is untouched: it is gated by paymentsOn() which stays off, so it is
+// unreachable until payments are turned back on and the copy here is updated
+// in the same change.
+export const LAST_UPDATED = "2 November 2026";
 
 export const PRIVACY = `
 # FreezeFix Privacy Policy
@@ -32,8 +42,8 @@ Contact for anything about your data: **privacy@getfreezefix.com**.
 | Age confirmation | You confirm you are 18 or over | To keep FreezeFix adults-only | Legal obligation; legitimate interests |
 | Session details (health data) | The moment you pick (around people, alone and spiralling, stuck on a task, can't reply), what you type in the chat, an optional voice note, and an optional image you choose to share | To work out your next steps and to show crisis help when you need it | **Your explicit consent** (you tick a box before your first session) |
 | Feedback | "Did it help?" thumbs up or down, which move you picked | To learn which moves help and improve them | Your explicit consent |
-| Account details (paid plan only) | Email address, plan, trial and renewal dates | To run your subscription, reminders and Tomorrow plan | Contract |
-| Payment details | Handled by our payment provider; we never see your full card number | To take payment and send receipts | Contract; legal obligation (tax) |
+| Account details | Not collected — FreezeFix is anonymous. No email address, no sign-in. If a paid plan launches, this row will describe what it uses then | Not applicable | Not applicable |
+| Payment details | Not collected — no payment flow exists on this site today. If a paid plan launches, our chosen payment provider will handle card details; we will never see them | Not applicable | Not applicable |
 | Technical data | IP address, device and browser type, error logs | To keep the service secure and working | Legitimate interests |
 | Messages to us | Emails to hello@, privacy@ or safety@ | To reply and help you | Legitimate interests |
 | Safety counts | When the safety check shows crisis help: the risk level, time and country only, never your words | To count safety incidents and improve crisis help | Legitimate interests; protecting your vital interests |
@@ -65,7 +75,7 @@ We never sell your data or share it for advertising. We only use trusted service
 | Anthropic | Generates your 3 moves | USA |
 | Resend | Sends account and reminder emails | USA |
 | Zoho Mail | Our support inbox | India |
-| Paddle or Lemon Squeezy (web) and Apple, Google, RevenueCat (apps) | Take payments. As merchant of record, the web payment provider is its own controller for payment data under its own privacy policy | Varies |
+| **No payment provider is active today.** If a paid plan launches, this row will name the provider we use then (likely Paddle as merchant of record), what they do, and where they operate | — | — |
 
 We may also share data if the law requires it, to protect someone's life in an emergency, or if FreezeFix is sold (you would be told first). Anything else needs your explicit consent.
 
@@ -79,11 +89,11 @@ We are based in India and our providers operate in several countries, including 
 | --- | --- |
 | Chat messages, voice notes and images | Not stored by FreezeFix at all. Our AI provider deletes them within 30 days (see section 3). Notes you save stay on your phone |
 | Feedback ("Did it help?") | 24 months, not linked to your name |
-| Account details | Until you delete your account, or 12 months after your last sign-in |
-| Payment and tax records | As long as tax law requires |
+| Account details | Not applicable today (no account is created). If a paid plan launches, we will keep account details until you delete your account, or 12 months after your last sign-in |
+| Payment and tax records | Not applicable today (no payments are taken). If a paid plan launches, we will keep payment and tax records as long as tax law requires |
 | Security logs | 30 days at most |
 
-**Delete everything:** Settings → Delete everything removes your account and the data we hold about you, and we tell our providers to delete it too. Payment records we must keep by law are kept, then deleted.
+**Delete everything:** Settings → Delete everything removes anything FreezeFix holds about you on this device and asks our providers to delete it too. There is no account to delete today; if a paid plan launches, payment records we must keep by law are kept, then deleted.
 
 ## 7. Security
 
@@ -117,10 +127,9 @@ Privacy questions: **privacy@getfreezefix.com**. Safety concerns: **safety@getfr
 `;
 
 const REFUNDS_SECTION = `
-- **Cancel any time** in Settings → Subscription (web) or your App Store or Google Play account (apps). Cancel before the trial ends and you won't be charged. After that, you keep access until the end of the period you paid for.
-- **UK and EU customers** can cancel within 14 days of their first payment for a full refund. This window restarts when a free trial ends.
-- **Everyone else:** payments are not normally refundable, but if something went wrong, email hello@getfreezefix.com within 14 days and we will look at it fairly.
-- App store purchases are refunded through Apple or Google.
+**There is nothing to refund today.** FreezeFix does not take payments on this website or in any app at the moment. Everything on getfreezefix.com — the chat with Fix, the home check-in, the journal, the plans, the insights, crisis help — is free and does not ask for a card.
+
+If a paid plan launches in the future, this page will be updated **before** the first payment is taken to describe exactly how to cancel, how refunds work in the UK, the EU and elsewhere, and how long you have under local law to change your mind.
 
 Nothing in these terms takes away refund or consumer rights you have under the law where you live.
 `;
@@ -160,19 +169,15 @@ We may suspend or close access if you break these rules or put others at risk. C
 
 The moves you see are created by an AI model. They can be unhelpful, wrong or not right for your situation. You choose whether to follow a suggestion, and you are responsible for that choice. Never follow a suggestion that feels unsafe.
 
-## 5. Free and paid plans
+## 5. Free today, paid plans may come later
 
-The core flow and all crisis help are free. FreezeFix Plus adds unlimited sessions, the Tomorrow plan with reminders, voice check-ins, a private weekly reflection and a small-wins tracker.
+**Everything on getfreezefix.com is free right now and does not ask for a card.** The chat with Fix, the home check-in, the journal, the plans, the insights, crisis help and every other surface are open to use without paying anything, without creating an account, and without entering payment details.
 
-| Plan | Price | Billing |
-| --- | --- | --- |
-| Free trial | $0 for 4 days on the web (3 days in the app stores) | Card or store account needed to start |
-| Monthly | $9.99 a month | Renews every month until you cancel |
-| Yearly | $39.99 a year | Renews every year until you cancel |
+**There is no "FreezeFix Plus" to buy today.** No price, no trial, no subscription, no checkout, no card capture exists on this site. Anything you may have read elsewhere about a $9.99 monthly or $39.99 yearly plan was a draft of a possible future product. Those terms are not in force and no one can be charged.
 
-Prices may include or add local taxes. **Your plan renews automatically** at the end of the trial and each period, at the price shown when you subscribed, until you cancel. We will remind you before a yearly plan renews, and tell you at least 30 days before any price change.
+**If a paid plan launches in the future** — tiered features, prices, trial length, the merchant of record, the automatic-renewal rules, the price-change notice and the cancellation flow will all be published here **before** the first payment is taken. Nothing retroactively applies to people who used FreezeFix for free before that date.
 
-**Who sells it.** On the web, our reseller and merchant of record (named at checkout) sells the subscription and handles billing, taxes and receipts under its own buyer terms. In the apps, Apple or Google handles billing under their terms.
+See the public [future plan preview](/future-plan) for the current thinking on what might one day be paid and what will always be free. That page is not a sales page, has no "buy" button, and nothing on it is a commitment.
 
 ## 6. Cancelling and refunds
 ${REFUNDS_SECTION}
