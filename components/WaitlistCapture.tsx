@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { detectRegion } from "@/lib/country";
+import { LANDING_COPY, type Locale } from "@/lib/landing-copy";
 
 // Waitlist email capture — ships 3 November 2026, Europe-audit P1.4.
 //
@@ -34,13 +35,18 @@ type Props = {
   /** Compact: single-line, inline-with-CTAs on the landing page.
    * Full: stacked, with the explanation line, used on /future-plan. */
   variant?: Variant;
+  /** Added 3 Nov 2026 for feat/de-landing. "en" by default; "de" for /de.
+   * Pulls the whole copy block from lib/landing-copy.ts so the strings on the
+   * form stay in step with the headline next to it. */
+  locale?: Locale;
 };
 
 type Status = "idle" | "sending" | "done" | "throttled" | "not_collecting" | "error";
 
-export default function WaitlistCapture({ source, variant = "compact" }: Props) {
+export default function WaitlistCapture({ source, variant = "compact", locale = "en" }: Props) {
   const [email, setEmail] = useState("");
   const [status, setStatus] = useState<Status>("idle");
+  const t = LANDING_COPY[locale].waitlist;
 
   async function submit(e: React.FormEvent) {
     e.preventDefault();
@@ -88,8 +94,7 @@ export default function WaitlistCapture({ source, variant = "compact" }: Props) 
             : "rounded-[1.25rem] border border-line bg-card p-4 text-sm text-ink"
         }
       >
-        Thanks — you&rsquo;re on the list. We&rsquo;ll only email when something you&rsquo;d actually
-        want to know about ships. Easy to unsubscribe in every email.
+        {t.done}
       </div>
     );
   }
@@ -104,8 +109,7 @@ export default function WaitlistCapture({ source, variant = "compact" }: Props) 
             : "rounded-[1.25rem] border border-line bg-card p-4 text-sm text-ink-soft"
         }
       >
-        The waitlist isn&rsquo;t connected yet — try again in a bit. Nothing was lost; we just
-        can&rsquo;t save it right now.
+        {t.notCollecting}
       </div>
     );
   }
@@ -120,8 +124,7 @@ export default function WaitlistCapture({ source, variant = "compact" }: Props) 
             : "rounded-[1.25rem] border border-line bg-card p-4 text-sm text-ink-soft"
         }
       >
-        Already noted. If you&rsquo;ve signed up a few times today, that&rsquo;s plenty — we&rsquo;ll
-        reach out when there&rsquo;s something to say.
+        {t.throttled}
       </div>
     );
   }
@@ -137,7 +140,7 @@ export default function WaitlistCapture({ source, variant = "compact" }: Props) 
         aria-label="Waitlist signup"
       >
         <label htmlFor="waitlist-email-compact" className="text-sm text-ink">
-          Want to hear when the next thing ships? Leave an email.
+          {t.label}
         </label>
         <div className="flex flex-col gap-2 sm:flex-row">
           <input
@@ -145,7 +148,7 @@ export default function WaitlistCapture({ source, variant = "compact" }: Props) 
             type="email"
             inputMode="email"
             autoComplete="email"
-            placeholder="you@wherever.com"
+            placeholder={t.placeholder}
             value={email}
             onChange={(e) => {
               setEmail(e.target.value);
@@ -161,17 +164,16 @@ export default function WaitlistCapture({ source, variant = "compact" }: Props) 
             disabled={status === "sending" || !email}
             className="min-h-[44px] rounded-full bg-accent px-5 text-sm font-medium text-accent-ink transition active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-60"
           >
-            {status === "sending" ? "Adding…" : "Add me"}
+            {status === "sending" ? t.submitting : t.submit}
           </button>
         </div>
         {status === "error" && (
           <p role="alert" className="text-xs text-ink-soft">
-            That didn&rsquo;t go through. Check the address and try again.
+            {t.error}
           </p>
         )}
         <p className="text-xs leading-relaxed text-ink-faint">
-          Email only. No name, no phone, nothing tied to your Fix sessions. We send at most
-          once a month and only when something you&rsquo;d actually want to know about ships.
+          {t.footnote}
         </p>
       </form>
     );
@@ -185,18 +187,14 @@ export default function WaitlistCapture({ source, variant = "compact" }: Props) 
       className="rounded-[1.5rem] border border-line bg-card p-5 sm:p-6"
       aria-label="Waitlist signup"
     >
-      <p className="font-mono text-xs uppercase tracking-[0.22em] text-ink-soft">Tell me when it&rsquo;s real</p>
-      <p className="mt-3 text-sm leading-relaxed text-ink">
-        If any of the above would be useful, leave an email. We&rsquo;ll write once — only
-        when it exists, is privacy-reviewed, and has a price you can decide on.
-      </p>
+      <p className="font-mono text-xs uppercase tracking-[0.22em] text-ink-soft">{t.label}</p>
       <div className="mt-4 flex flex-col gap-2 sm:flex-row">
         <input
           id="waitlist-email-full"
           type="email"
           inputMode="email"
           autoComplete="email"
-          placeholder="you@wherever.com"
+          placeholder={t.placeholder}
           value={email}
           onChange={(e) => {
             setEmail(e.target.value);
@@ -212,17 +210,16 @@ export default function WaitlistCapture({ source, variant = "compact" }: Props) 
           disabled={status === "sending" || !email}
           className="min-h-[44px] rounded-full bg-accent px-5 text-sm font-medium text-accent-ink transition active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-60"
         >
-          {status === "sending" ? "Adding…" : "Keep me posted"}
+          {status === "sending" ? t.submitting : t.submit}
         </button>
       </div>
       {status === "error" && (
         <p role="alert" className="mt-2 text-xs text-ink-soft">
-          That didn&rsquo;t go through. Check the address and try again.
+          {t.error}
         </p>
       )}
       <p className="mt-3 text-xs leading-relaxed text-ink-faint">
-        Email only. No name, no phone, nothing tied to your Fix sessions. Unsubscribe link
-        in every email. Stored in the EU.
+        {t.footnote}
       </p>
     </form>
   );

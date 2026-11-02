@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import SiteFooter from "@/components/SiteFooter";
 import WaitlistCapture from "@/components/WaitlistCapture";
+import { LANDING_COPY, type Locale } from "@/lib/landing-copy";
 
 /* Landing page — "Grove" rebuild (2026-10-31).
  *
@@ -12,62 +13,29 @@ import WaitlistCapture from "@/components/WaitlistCapture";
  *   mint CTA "Open Fix" + "How privacy works" link) → example card marked
  *   "EXAMPLE / Not a live conversation" → three honest-feature cards.
  *
+ * Localized 3 November 2026 (feat/de-landing, Europe-audit P1.5). Takes a
+ * `locale` prop; English is the default so the existing `/` route needs no
+ * change. The German `/de` route passes locale="de". All visible strings
+ * live in lib/landing-copy.ts; this file only lays them out. The illustration,
+ * example-step layout, header/footer structure and the three-feature grid are
+ * identical across locales so a visitor who flips the switcher sees the same
+ * product, just in their language.
+ *
  * The route "/app" is still accountless in this phase. Phase 3 adds the
  * Supabase + Google sign-in guard; nothing about the chat / safety flow changes here.
  */
 
-const FEATURES = [
-  {
-    title: "No judgment",
-    body: "Reflect, reduce, pause, or just get through tonight.",
-  },
-  {
-    title: "You choose your goal",
-    body: "No streaks. Skip anything.",
-  },
-  {
-    title: "Not medical or emergency care",
-    body: "Fix is an AI tool and can be wrong.",
-  },
-];
-
-/* The four-step sample conversation shown on the right-hand card.
- * Labelled "EXAMPLE / Not a live conversation" so there's no implication
- * that an AI reply is actually happening on the landing page. */
-type ExampleStep = {
-  index: string;
-  label: string;
-  body: string | null;
-  speaker: "user" | "fix" | "none";
+type Props = {
+  locale?: Locale;
 };
-const EXAMPLE_STEPS: ExampleStep[] = [
-  {
-    index: "1",
-    label: "Choose a situation",
-    body: "I'm having a craving",
-    speaker: "user",
-  },
-  {
-    index: "2",
-    label: "A few words",
-    body: "I planned not to smoke tonight but I really want to.",
-    speaker: "user",
-  },
-  {
-    index: "3",
-    label: "One small suggestion",
-    body: "“A craving can feel urgent. You don’t have to decide your whole future right now. Would you rather create a ten-minute pause, change your setting, or write down what’s pulling you toward it?”",
-    speaker: "fix",
-  },
-  {
-    index: "4",
-    label: "You choose — try it, another idea, or leave",
-    body: null,
-    speaker: "none",
-  },
-];
 
-export default function Landing() {
+/* Each example-step row needs to know who's "speaking" so it picks the right
+ * bubble style. Lives in code (not copy) because it's layout, not language. */
+type SpeakerKind = "user" | "fix" | "none";
+const SPEAKERS: SpeakerKind[] = ["user", "user", "fix", "none"];
+
+export default function Landing({ locale = "en" }: Props) {
+  const copy = LANDING_COPY[locale];
   const [returning, setReturning] = useState(false);
   useEffect(() => {
     try {
@@ -103,16 +71,27 @@ export default function Landing() {
               <circle cx="12" cy="12" r="3" />
               <path d="M12 3v2M12 19v2M3 12h2M19 12h2M5.6 5.6l1.4 1.4M17 17l1.4 1.4M5.6 18.4l1.4-1.4M17 7l1.4-1.4" />
             </svg>
-            Get help now
+            {copy.getHelpNow}
           </Link>
           {returning && (
             <Link
               href="/app"
               className="hidden min-h-[44px] items-center rounded-full bg-chip px-4 py-2 text-ink hover:bg-chip/80 sm:flex"
             >
-              Open
+              {copy.openReturning}
             </Link>
           )}
+          {/* Locale switcher (feat/de-landing, 3 Nov 2026 — P1.5). Points to
+              the OTHER locale's landing page. One link, no dropdown, so a
+              native speaker who landed on the wrong one is one tap away. */}
+          <Link
+            href={copy.switchTo.href}
+            lang={copy.switchTo.href === "/de" ? "de" : "en"}
+            className="hidden min-h-[44px] items-center rounded-full border border-line/80 px-3 py-2 text-xs uppercase tracking-wider text-ink-soft transition hover:border-line hover:text-ink sm:flex"
+            aria-label={copy.switchTo.label}
+          >
+            {copy.switchTo.label}
+          </Link>
         </nav>
       </header>
 
@@ -120,21 +99,20 @@ export default function Landing() {
       <section className="grid items-start gap-10 py-8 md:py-14 lg:grid-cols-[1.1fr_1fr]">
         <div className="flex flex-col gap-6">
           <p className="font-mono text-xs uppercase tracking-[0.22em] text-ink-soft">
-            GetFreezeFix &middot; for adults 18+
+            {copy.kicker}
           </p>
 
           <h1
             className="text-[clamp(2.4rem,7vw,4rem)] leading-[1.05] text-ink"
             style={{ fontFamily: "var(--font-display)", fontWeight: 400, letterSpacing: "-0.015em" }}
           >
-            More control,
+            {copy.heroHeadlineLine1}
             <br />
-            one moment at a time.
+            {copy.heroHeadlineLine2}
           </h1>
 
           <p className="max-w-[46ch] text-lg leading-relaxed text-ink-soft">
-            A private companion for adults who want to understand their cannabis habits and find a next
-            step that feels right for them.
+            {copy.heroBody}
           </p>
 
           <div className="mt-2 flex flex-wrap items-center gap-5">
@@ -142,7 +120,7 @@ export default function Landing() {
               href="/app"
               className="group flex min-h-[52px] items-center gap-3 rounded-full bg-accent px-7 py-3 text-lg font-medium text-accent-ink shadow-[0_14px_32px_-14px_rgba(175,215,182,0.55)] transition active:scale-[0.98]"
             >
-              Open Fix
+              {copy.ctaOpen}
               <span aria-hidden="true" className="transition group-hover:translate-x-0.5">
                 &rarr;
               </span>
@@ -151,24 +129,36 @@ export default function Landing() {
               href="/privacy"
               className="min-h-[44px] text-base text-ink-soft underline-offset-4 hover:text-ink hover:underline"
             >
-              How privacy works
+              {copy.ctaPrivacy}
             </Link>
           </div>
+
+          {/* Honest note (feat/de-landing, 3 Nov 2026 — P1.5). On the German
+              page this reads "Fix selbst läuft momentan auf Englisch", so
+              Marcus knows the chat is still English before he taps the CTA
+              — no bait and switch. English page has no note. */}
+          {copy.chatIsEnglishNote && (
+            <p className="mt-1 rounded-[1.25rem] border border-line/70 bg-card/60 px-4 py-3 text-sm leading-relaxed text-ink-soft">
+              {copy.chatIsEnglishNote}
+            </p>
+          )}
 
           {/* Waitlist (feat/waitlist, 3 Nov 2026 — Europe-audit P1.4). Lives above
               the three-feature list because the audit showed every European
               persona landed and left without a way for us to notify them when
               DE/FR/NL localization or the paid plan ships. */}
           <div className="mt-2">
-            <WaitlistCapture source="home" variant="compact" />
+            <WaitlistCapture source="home" variant="compact" locale={locale} />
           </div>
 
           {/* Three honest-feature list — stacked on mobile, 3-col on desktop */}
           <ul className="mt-6 grid grid-cols-1 gap-6 border-t border-line pt-6 sm:grid-cols-3">
-            {FEATURES.map((f) => (
+            {copy.features.map((f) => (
               <li key={f.title} className="flex flex-col gap-1">
                 <span className="text-sm font-semibold text-ink">{f.title}</span>
-                <span className="text-sm leading-snug text-ink-soft">{f.body}</span>
+                {f.body ? (
+                  <span className="text-sm leading-snug text-ink-soft">{f.body}</span>
+                ) : null}
               </li>
             ))}
           </ul>
@@ -199,7 +189,7 @@ export default function Landing() {
               <path d="M0 258 Q 140 220, 280 248 T 480 240 L480 300 L0 300 Z" fill="#0A1C15" opacity="0.9" />
             </svg>
             <span className="pointer-events-none absolute left-4 top-4 rounded-full bg-black/35 px-3 py-1 text-[11px] uppercase tracking-wider text-ink/85 backdrop-blur">
-              Illustration
+              {copy.exampleIllustrationLabel}
             </span>
           </div>
 
@@ -209,36 +199,39 @@ export default function Landing() {
           >
             <div className="mb-4 flex items-center justify-between gap-3">
               <h2 id="example-heading" className="font-mono text-xs uppercase tracking-[0.22em] text-ink-soft">
-                Example
+                {copy.exampleKicker}
               </h2>
-              <span className="text-xs text-ink-faint">Not a live conversation</span>
+              <span className="text-xs text-ink-faint">{copy.exampleSubtitle}</span>
             </div>
 
             <ol className="flex flex-col gap-4">
-              {EXAMPLE_STEPS.map((step) => (
-                <li key={step.index} className="flex flex-col gap-1.5">
-                  <span className="text-xs text-ink-soft">
-                    {step.index} &middot; {step.label}
-                  </span>
-                  {step.body !== null ? (
-                    <span
-                      className={
-                        step.speaker === "user"
-                          ? "self-start rounded-xl bg-chip px-3.5 py-2 text-sm text-ink"
-                          : "self-start rounded-xl border border-line bg-bg/40 px-3.5 py-2.5 text-sm leading-relaxed text-ink"
-                      }
-                    >
-                      {step.body}
+              {copy.exampleSteps.map((step, i) => {
+                const speaker = SPEAKERS[i] ?? "none";
+                return (
+                  <li key={step.index} className="flex flex-col gap-1.5">
+                    <span className="text-xs text-ink-soft">
+                      {step.index} &middot; {step.label}
                     </span>
-                  ) : null}
-                </li>
-              ))}
+                    {step.body !== null ? (
+                      <span
+                        className={
+                          speaker === "user"
+                            ? "self-start rounded-xl bg-chip px-3.5 py-2 text-sm text-ink"
+                            : "self-start rounded-xl border border-line bg-bg/40 px-3.5 py-2.5 text-sm leading-relaxed text-ink"
+                        }
+                      >
+                        {step.body}
+                      </span>
+                    ) : null}
+                  </li>
+                );
+              })}
             </ol>
           </section>
         </aside>
       </section>
 
-      <SiteFooter />
+      <SiteFooter locale={locale} />
     </main>
   );
 }

@@ -16,6 +16,15 @@ export default function sitemap(): MetadataRoute.Sitemap {
       priority: 1,
     },
     {
+      // German landing (added 3 Nov 2026, feat/de-landing — Europe-audit P1.5).
+      // Lower priority than / because the chat behind the CTA is still English
+      // for now, but same change frequency so Google re-indexes together.
+      url: `${SITE_URL}/de`,
+      lastModified: now,
+      changeFrequency: "weekly",
+      priority: 0.9,
+    },
+    {
       url: `${SITE_URL}/help`,
       lastModified: now,
       changeFrequency: "monthly",
