@@ -14,6 +14,7 @@
     "test:risk": "tsx scripts/test-risk.ts",
     "test:scenarios": "tsx scripts/test-scenarios.ts",
     "test:country": "tsx scripts/test-country.ts",
+    "test:resources": "tsx scripts/test-resources.ts",
     "test:plans": "tsx scripts/test-plans.ts",
     "test:demo": "tsx scripts/test-demo.ts",
     "test:wins": "tsx scripts/test-wins.ts",
