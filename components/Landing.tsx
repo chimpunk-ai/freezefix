@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import SiteFooter from "@/components/SiteFooter";
+import WaitlistCapture from "@/components/WaitlistCapture";
 
 /* Landing page — "Grove" rebuild (2026-10-31).
  *
@@ -152,6 +153,14 @@ export default function Landing() {
             >
               How privacy works
             </Link>
+          </div>
+
+          {/* Waitlist (feat/waitlist, 3 Nov 2026 — Europe-audit P1.4). Lives above
+              the three-feature list because the audit showed every European
+              persona landed and left without a way for us to notify them when
+              DE/FR/NL localization or the paid plan ships. */}
+          <div className="mt-2">
+            <WaitlistCapture source="home" variant="compact" />
           </div>
 
           {/* Three honest-feature list — stacked on mobile, 3-col on desktop */}

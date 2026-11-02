@@ -262,3 +262,92 @@ create or replace view public.suggestion_summary as
   order by 1 desc, 4 desc;
 
 revoke all on public.suggestion_summary from anon, authenticated;
+
+-- ─────────────────────────────────────────────────────────────────────────────
+-- Waitlist (added 3 November 2026 — fix feat/waitlist, Europe-audit P1.4)
+--
+-- Why this table exists
+--   Before the Europe-persona audit of 2 November 2026 the public landing page
+--   gave visitors three outcomes: "Open Fix", "How privacy works", or leave.
+--   The audit showed every persona (Marcus, Sophie, Lars, Emma, Raj) landing,
+--   not booking a session, and leaving with no way for us to notify them when
+--   the DE/FR/NL localization, the Reduction Program or any paid plan ships.
+--   The waitlist captures the one durable signal — an email — nothing else.
+--
+-- What is NOT stored
+--   No name, no phone, no device id, no IP, no user-agent, no referrer, no
+--   message. Joining a captured email back to a Fix session or any device is
+--   exactly what the product promises not to do, so the schema makes it
+--   structurally impossible on this table alone.
+--
+-- What IS stored
+--   Email (unique, lowercased), region (2 letters, from client-side
+--   detectRegion), locale (first browser language tag, max 16 chars), source
+--   (which page the email came from — "home" or "future-plan"), created_at.
+--
+-- Access
+--   anon role can only execute add_waitlist(). It cannot select from the table,
+--   so a stolen anon key cannot be used to list emails or scrape the audience.
+--   The founder's dashboard uses a server-side service-role query against the
+--   view below.
+-- ─────────────────────────────────────────────────────────────────────────────
+
+create table if not exists public.waitlist (
+  id bigserial primary key,
+  email citext not null unique,
+  region text check (region is null or char_length(region) <= 2),
+  locale text check (locale is null or char_length(locale) <= 16),
+  source text check (source is null or char_length(source) <= 32),
+  created_at timestamptz not null default now()
+);
+
+-- citext is the right type for case-insensitive email uniqueness
+-- (Alex@gmail.com and alex@gmail.com dedupe on insert). Enable the extension
+-- here in case the project doesn't have it already.
+create extension if not exists citext;
+
+alter table public.waitlist enable row level security;
+-- No policies: the public (anon) key cannot read or write this table directly.
+
+create or replace function public.add_waitlist(
+  p_email text, p_region text, p_locale text, p_source text
+) returns void
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  v_email citext;
+begin
+  v_email := lower(trim(coalesce(p_email, '')))::citext;
+  -- Server-side sanity: the API route validates with a strict regex, but the
+  -- database also refuses an empty/malformed value so a stolen anon key or a
+  -- misbehaving client cannot pollute the table.
+  if v_email is null or length(v_email::text) = 0 or length(v_email::text) > 254 then
+    return;
+  end if;
+  if position('@' in v_email::text) < 2 or position('.' in v_email::text) < 3 then
+    return;
+  end if;
+  insert into waitlist (email, region, locale, source)
+  values (
+    v_email,
+    nullif(upper(left(coalesce(p_region, ''), 2)), ''),
+    nullif(left(coalesce(p_locale, ''), 16), ''),
+    nullif(left(coalesce(p_source, ''), 32), '')
+  )
+  on conflict (email) do nothing;
+end;
+$$;
+
+revoke all on function public.add_waitlist(text, text, text, text) from public;
+grant execute on function public.add_waitlist(text, text, text, text) to anon;
+
+-- What the founder reads. Dashboard only; the public key can't touch it.
+create or replace view public.waitlist_summary as
+  select date_trunc('day', created_at)::date as day, region, source, count(*) as n
+  from public.waitlist
+  group by 1, 2, 3
+  order by 1 desc, 4 desc;
+
+revoke all on public.waitlist_summary from anon, authenticated;

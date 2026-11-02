@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import AppShell from "@/components/AppShell";
+import WaitlistCapture from "@/components/WaitlistCapture";
 
 export const metadata: Metadata = {
   title: "Future plan preview",
@@ -82,6 +83,12 @@ export default function Page() {
           refunds and tax still need founder and legal review. Voice, image processing and
           adaptive memory are not part of this preview.
         </p>
+
+        {/* Waitlist (feat/waitlist, 3 Nov 2026 — Europe-audit P1.4). Keeps the
+            audit's "every persona landed and left" problem from recurring
+            specifically on this page, where visitors are already thinking
+            about the future product. */}
+        <WaitlistCapture source="future-plan" variant="full" />
       </section>
     </AppShell>
   );
