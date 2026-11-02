@@ -1,0 +1,56 @@
+name: Warm the Worker
+
+# Keeps the Cloudflare Worker's HTTP isolate hot so a user's first message after an
+# idle period doesn't eat the cold-start penalty (1-3 s). A plain HEAD request to the
+# tiny /api/warm endpoint is enough — the Worker has to run to produce the 200, and
+# that is what keeps it warm.
+#
+# Why GitHub Actions and not a Cloudflare Cron Trigger
+#   Cloudflare's scheduled() handlers run in a different isolate than the HTTP
+#   fetch() handlers, so a cron there wouldn't warm the surface a visitor hits.
+#   An outbound HTTP ping from GitHub Actions goes through the same path a real
+#   visitor's browser uses — which is exactly what we want.
+#
+# Trade-off, acknowledged
+#   GitHub's scheduled runs can be delayed under load (typical 5-10 min, worst
+#   30 min). Perfect-reliability pre-warming would need a paid external pinger
+#   (UptimeRobot free tier is 5-min intervals and is more reliable). For now,
+#   this gives us ~90 % coverage for free, with no new vendor.
+#
+# What this does NOT touch
+#   - Does not call /api/chat (no AI quota)
+#   - Does not touch Supabase, Paddle, or any secret
+#   - Does not read or write any user data
+
+on:
+  schedule:
+    # Every 5 minutes. Cron is in UTC. GitHub Actions enforces a 5-minute minimum
+    # for scheduled workflows anyway.
+    - cron: "*/5 * * * *"
+  # Allow manual runs from the Actions tab for diagnosis without waiting on cron.
+  workflow_dispatch:
+
+permissions:
+  # No write permissions needed — this workflow only makes an outbound HTTP request.
+  contents: read
+
+concurrency:
+  group: warm
+  # If a prior run is still running (unlikely for a 3-second HEAD), cancel it rather
+  # than queueing a long tail.
+  cancel-in-progress: true
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    steps:
+      - name: HEAD /api/warm
+        run: |
+          set -eo pipefail
+          # --fail turns a non-2xx into a non-zero exit so a failing warm is visible
+          # in the Actions UI. --silent --show-error avoids spamming the log on
+          # success but surfaces the actual error on failure.
+          curl --fail --silent --show-error --head \
+            --max-time 15 \
+            "https://getfreezefix.com/api/warm" > /dev/null
+          echo "Pinged /api/warm at $(date -u +'%Y-%m-%dT%H:%M:%SZ')"
