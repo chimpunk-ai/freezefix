@@ -2,8 +2,16 @@
 // SOURCE: FreezeFix Safety Pack v1.0, sections 3 and 6. Verified by Safety & Trust on 15 Oct 2026.
 // RE-CHECK BY: 15 Jan 2027, and before every new country launch.
 // This is the ONLY place phone numbers live. The AI never types a number itself.
+//
+// France added 3 November 2026 (feat/resources-fr, Europe-audit P1.6). Every FR
+// number below is verified against sante.fr, the French Ministry of Health's
+// authoritative page, on 3 November 2026:
+//   3114            — sante.fr/node/3485559 (24/7, free, confidential)
+//   SOS Amitié      — same page (FR + EN lines, chat 13h-3h)
+//   Drogues Info Service — sante.fr/node/798461 (anonymous, confidential)
+//   Fil Santé Jeunes     — sante.fr/node/8130029 (ages 12-25, 9h-23h, free)
 
-export type CountryCode = "GB" | "US" | "IE" | "NL" | "DE" | "IN" | "OTHER";
+export type CountryCode = "GB" | "US" | "IE" | "NL" | "DE" | "FR" | "IN" | "OTHER";
 
 export type Contact = {
   label: string; // what the line is, shown to the user
@@ -124,6 +132,35 @@ export const RESOURCES: Record<CountryCode, CountryResources> = {
     youth: [{ label: "Nummer gegen Kummer", display: "116 111", tel: "116111", note: "Mon–Sat 14:00–20:00, free, anonymous", blurb: "A free German listening line for children and teens." }],
     youthNightBackup: { label: "TelefonSeelsorge", display: "116 123", tel: "116123", note: "24/7, free" },
   },
+  FR: {
+    name: "France",
+    emergency: { label: "Emergency (medical)", display: "112 (SAMU 15, police 17)", tel: "112", note: "24/7, free" },
+    crisis: [
+      { label: "3114 — National suicide prevention", display: "3114", tel: "3114", note: "24/7, free, confidential", blurb: "France's national suicide-prevention line, run by the Ministry of Health." },
+      { label: "SOS Amitié", display: "09 72 39 40 50", tel: "0972394050", note: "24/7, French; call cost of a local number", blurb: "A long-running French listening line, in French." },
+      { label: "SOS Amitié (English)", display: "01 46 21 46 46", tel: "0146214646", note: "English-speaking line", blurb: "The English-language line run by SOS Amitié, for callers who prefer English." },
+      { label: "SOS Amitié chat", display: "sos-amitie.com", url: "https://www.sos-amitie.com", note: "13:00–03:00, 7 days a week" },
+    ],
+    urgentMentalHealth: [
+      { label: "3114 — National suicide prevention", display: "3114", tel: "3114", note: "24/7, free, confidential", blurb: "France's national suicide-prevention line, run by the Ministry of Health." },
+    ],
+    substances: [
+      // Drug-specific anonymous line first, then the general crisis line as a
+      // calm backup. Hours per sante.fr: answers every day; the widely
+      // published 8h-2h window is left out here because sante.fr does not
+      // confirm it. The call being free is also left unstated for the same
+      // reason — the service is anonymous and confidential, which is what
+      // sante.fr does confirm.
+      { label: "Drogues Info Service", display: "0 800 23 13 13", tel: "0800231313", note: "Every day, anonymous, confidential", blurb: "A free French information line for drug use and addiction worries." },
+      { label: "3114", display: "3114", tel: "3114", note: "24/7, free, confidential" },
+    ],
+    youth: [
+      // Fil Santé Jeunes serves ages 12-25, which covers most of our under-18
+      // bucket. It is not 24/7 (9h-23h), so 3114 is the night backup.
+      { label: "Fil Santé Jeunes (12–25)", display: "0 800 235 236", tel: "0800235236", note: "9:00–23:00, free, anonymous", blurb: "A free French listening line for young people, run with the Ministry of Health." },
+    ],
+    youthNightBackup: { label: "3114", display: "3114", tel: "3114", note: "24/7, free, confidential" },
+  },
   IN: {
     name: "India",
     emergency: { label: "Emergency", display: "112", tel: "112", note: "24/7, free, national", blurb: "India's single national emergency number (police, fire, medical)." },
@@ -159,7 +196,7 @@ export const OTHER_EMERGENCY_NUMBERS: Record<string, string> = {
   AU: "000", NZ: "111", ZA: "112",
 };
 
-export const VERIFIED_COUNTRIES: CountryCode[] = ["GB", "US", "IE", "NL", "DE", "IN"];
+export const VERIFIED_COUNTRIES: CountryCode[] = ["GB", "US", "IE", "NL", "DE", "FR", "IN"];
 
 export type ResolvedResources = CountryResources & { code: CountryCode; region: string };
 
