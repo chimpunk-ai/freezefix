@@ -400,8 +400,14 @@ export async function POST(req: Request) {
             model: process.env.AI_MODEL || "claude-haiku-5-5",
             detail: streamError ?? buf.slice(0, 300),
           });
+          // Pick the error code the client should show. `ai_dropped` names what
+          // actually happened — the provider started a stream then dropped it, or
+          // the stream ended without a verdict. That is a different failure from a
+          // non-OK HTTP response at the top of the fetch (handled above), and the
+          // client's resend copy reads better when they are distinguished.
+          const code = streamError ? "ai_dropped" : "ai_unavailable";
           send({
-            error: "ai_unavailable",
+            error: code,
             detail: streamError ?? buf.slice(0, 300),
             // Only ever shapes of events and a stop reason: no other caller's content.
             events: [...new Set(seen)].join(","),
@@ -421,14 +427,20 @@ export async function POST(req: Request) {
         // Catch-all for anything the loop didn't anticipate (fetch rejections, abort
         // timeouts, network reset). Log the exception then send an honest error
         // through the stream so the client's resend path can light up.
+        const msg = e instanceof Error ? e.message : String(e);
+        // AbortSignal.timeout(45000) rejects with a TimeoutError or an abort error
+        // depending on the runtime — map both to a distinct `ai_timeout` so the
+        // user sees "Fix took too long" rather than the generic "couldn't connect".
+        const name = e instanceof Error ? e.name : "";
+        const isTimeout = /timeout|aborterror/i.test(name) || /time.?out/i.test(msg);
         logUpstreamFailure({
           stage: "outer_catch",
           attempt: -1,
           model: process.env.AI_MODEL || "claude-haiku-5-5",
-          detail: e instanceof Error ? e.message : String(e),
+          detail: msg,
         });
         try {
-          send({ error: "ai_unavailable" });
+          send({ error: isTimeout ? "ai_timeout" : "ai_unavailable" });
           controller.close();
         } catch {
           /* already closed */

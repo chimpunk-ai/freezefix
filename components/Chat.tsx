@@ -435,9 +435,19 @@ export default function Chat({
                 );
                 send(p.text, p.image);
               }}
-              className="mb-2 w-full rounded-xl bg-chip px-4 py-3 text-left text-sm text-ink"
+              // The resend affordance was buried as grey underline text inside the
+              // error pill — easy to miss on a phone. Promote the whole row to a
+              // clear two-part layout: honest copy on the left, a mint "Tap to
+              // resend" chip pinned to the right. The accent border makes it read
+              // as an action, not a notification.
+              className="mb-2 flex w-full items-center justify-between gap-3 rounded-2xl border border-accent/50 bg-chip/80 px-4 py-3 text-left text-sm text-ink transition hover:border-accent active:scale-[0.99]"
+              autoFocus
+              aria-label={`${note} — tap to resend`}
             >
-              {note} <span className="font-semibold underline underline-offset-2">Tap to resend</span>
+              <span className="flex-1">{note}</span>
+              <span className="flex-shrink-0 rounded-full bg-accent px-3 py-1 text-xs font-semibold text-accent-ink">
+                Tap to resend
+              </span>
             </button>
           ) : (
             <p className="mb-2 rounded-xl bg-chip px-4 py-3 text-sm text-ink-soft">{note}</p>
