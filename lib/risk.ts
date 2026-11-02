@@ -30,17 +30,43 @@ const CANT = "(?:can'?t|cannot|can not|cant)";
 const WONT = "(?:won'?t|will not|wont|doesn'?t|does not)";
 
 const PATTERNS = {
-  // R1 chest pain / heart that won't settle / fainting -> Emergency
+  // R1 chest pain / heart that WON'T SETTLE / fainting -> Emergency
+  //
+  // Scope note (PR fix/risk-heart-racing-demote, 2 November 2026 — Abhay audit P0.2):
+  // A bare "heart racing / pounding / thumping / hammering" used to live here and
+  // triggered the emergency wall on its own. That was wrong for this product's
+  // actual audience. Cannabis causes a dose-dependent sinus tachycardia that
+  // typically peaks around 20-30 minutes post-inhalation and self-resolves within
+  // the hour; it is the single most common complaint in a green-out and is not,
+  // by itself, a cardiac event. A 22-year-old typing "smoked too much, frozen,
+  // heart racing" is exactly the person Fix was built for — bouncing them to the
+  // emergency wall was both clinically wrong and product-destroying.
+  //
+  // Those bare "my heart is going fast" phrasings now live in the Level 1 `watch`
+  // bucket below (same bucket that already carried "heart kinda fast" and
+  // "edible / too high / greening"). What stays here at Level 4 is only the
+  // genuine red flags:
+  //   - literal "heart attack"
+  //   - heart WON'T slow / settle / stop / calm (sustained, non-resolving — this
+  //     is the phrasing that distinguishes a cardiac event from a stoner panic)
+  //   - any chest-pain pattern, numb/tingling arm, "think I'm dying", fainting
+  //     and loss of consciousness (all unchanged)
+  //
+  // A heart complaint that co-occurs with any of those still fires R1 via that
+  // other pattern — regexes are OR-joined, so demoting "racing" does not weaken
+  // detection of real cardiac co-presentations. The Hinglish R1 block below is
+  // unchanged in this PR; Hindi-language audit is tracked separately.
   r1: new RegExp(
     [
       "chest (?:pain|hurts?|is hurting|feels? (?:tight|heavy|weird)|pressure|tight)",
       "(?:tight|crushing|heavy) chest",
       "chest.{0,20}(?:hurts?|hurting|pain|tight|pressure)",
       "heart attack",
-      `heart(?:'s| is)? (?:\\w+ )?(?:${WONT} (?:slow|settle|stop|calm))`,
-      "heart(?:'s| is)? going (?:crazy|mental|mad|1\\d\\d|2\\d\\d)",
-      "heart(?:'s| is)? (?:racing|pounding|thumping|hammering)",
-      "heart (?:race|pound)",
+      // Up to 6 words between "heart" and "won't slow / settle / stop / calm"
+      // so phrasings like "my heart is pounding and it won't slow down" are
+      // still caught at R1 after "pounding/racing" alone was demoted to watch.
+      // Capped to 6 to avoid catching unrelated clauses in a long message.
+      `heart(?:'s| is)?(?: \\w+){0,6} ${WONT} (?:slow|settle|stop|calm)`,
       "(?:i )?think i'?m dying",
       "arm (?:feels? )?(?:weird|numb|tingl)",
       "(?:nearly|almost|about to) (?:pass(?:ed)? out|faint(?:ed)?)",
@@ -280,6 +306,16 @@ const PATTERNS = {
       "greening",
       "heart(?:'s| is)? (?:a bit |kinda |kind of |quite |so )?fast",
       "heart(?:'s| is)? beating (?:so |really |a bit )?fast",
+      // Moved down from R1 on 2 November 2026 (fix/risk-heart-racing-demote).
+      // These are the normal stoner-panic phrasings for cannabis sinus
+      // tachycardia; they stay in the Level 1 watch bucket so the user gets a
+      // real Fix response, not an emergency wall. Genuine cardiac red flags
+      // (chest pain, numb arm, "won't settle", heart attack, faint, "think I'm
+      // dying") remain at R1 above and still bounce to emergency on their own
+      // or in combination.
+      "heart(?:'s| is)? going (?:crazy|mental|mad|1\\d\\d|2\\d\\d)",
+      "heart(?:'s| is)? (?:racing|pounding|thumping|hammering)",
+      "heart (?:race|pound)",
       "losing my mind",
       "going crazy",
       "freaking out (?:so )?bad",

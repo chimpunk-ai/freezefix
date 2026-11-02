@@ -14,7 +14,14 @@ const CASES: Expect[] = [
   { id: "E04", text: "my mate passed out after a bong and wont wake up", level: 4, screen: "emergency" },
   { id: "E05", text: "he's shaking on the floor", level: 4, screen: "emergency" },
   { id: "E06", text: "nearly fainted standing up, still dizzy", level: 4, screen: "emergency" },
-  { id: "E07", text: "is it normal for weed to make your heart race this much? for real", level: 4, screen: "emergency" },
+  // Previously expected level 4 — a question about weed and heart rate is not a
+  // cardiac event, it's exactly the kind of question Fix is for. After the
+  // 2 Nov 2026 "heart racing" demotion (fix/risk-heart-racing-demote, P0.2
+  // of Abhay's Europe-persona audit), this now reads as Level 1 watch and
+  // the user gets a real Fix response. Genuine chest pain, "won't settle",
+  // numb arm, "think I'm dying" and fainting all still bounce to the
+  // emergency wall via the other R1 patterns.
+  { id: "E07", text: "is it normal for weed to make your heart race this much? for real", level: 1 },
   { id: "E08", text: "chest hurts a bit but im probably just being paranoid lol", level: 4, screen: "emergency" },
   { id: "S01", text: "i want to die", level: 3, screen: "crisis" },
   { id: "S02", text: "everyone would be better off without me", level: 3, screen: "crisis" },
@@ -33,7 +40,12 @@ const CASES: Expect[] = [
   { id: "P06", text: "havent slept in 3 days and everything feels like a sign", level: 2, screen: "psychosis" },
   { id: "M01", text: "had like 6 pints then smoked", level: 2, screen: "mixed" },
   { id: "M02", text: "took a xan to come down from the weed", level: 2, screen: "mixed" },
-  { id: "M03", text: "did a line after smoking, heart pounding", level: 4, screen: "emergency" },
+  // Previously level 4 (via R1 "heart pounding"). After the 2 Nov 2026 demotion,
+  // "heart pounding" lives in watch (Level 1) and this message now routes to
+  // the mixed-substance "mixed" screen at Level 2 via R3 ("did a line"), which
+  // is the right handoff — a stimulant + cannabis combo is what needs the
+  // caution, not a cardiac wall.
+  { id: "M03", text: "did a line after smoking, heart pounding", level: 2, screen: "mixed" },
   { id: "M04", text: "vaped a pen my mate gave me, tastes chemically", level: 2, screen: "mixed" },
   { id: "M05", text: "i'm on sertraline, is it ok to smoke?", level: 2, screen: "mixed" },
   { id: "M06", text: "had shrooms with the weed, walls are moving", level: 2 },
@@ -64,6 +76,16 @@ const CASES: Expect[] = [
   { id: "N03", text: "should be doing my essay but im just lying here", level: 0 },
   { id: "N04", text: "keep replaying something stupid i said", level: 0 },
   { id: "N05", text: "heart's a bit fast but im ok, just overthinking", level: 1 },
+  // Added 2 Nov 2026 (fix/risk-heart-racing-demote, P0.2). This is the exact
+  // Marcus-persona (Berlin, 22 y/o) phrasing from Abhay's hands-on Europe audit.
+  // Before the fix it hit the emergency wall and silently killed every green-out
+  // conversion. After the fix it must route to a real Fix response.
+  { id: "N07", text: "smoked too much, frozen, heart racing, feel judged", level: 1 },
+  // Guardrail: a heart complaint co-occurring with any genuine R1 red flag MUST
+  // still bounce to emergency. Covered by other R1 patterns, not "racing" itself.
+  { id: "N08", text: "chest hurts and my heart is racing", level: 4, screen: "emergency" },
+  { id: "N09", text: "heart racing and my left arm feels numb", level: 4, screen: "emergency" },
+  { id: "N10", text: "my heart is pounding and it won't slow down", level: 4, screen: "emergency" },
   { id: "N06", text: "im fine now, thanks", level: 0 },
   { id: "V01", text: "been throwing up all day, only hot showers help", level: 2, screen: "doctor" },
   { id: "V02", text: "cant stop being sick and can barely keep my eyes open", level: 4, screen: "emergency" },
