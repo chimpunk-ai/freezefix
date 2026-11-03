@@ -44,6 +44,8 @@ const CACHE_NAME = `freezefix-${VERSION}`;
 const PRECACHE = [
   "/",
   "/de",
+  "/fr",
+  "/nl",
   "/program",
   "/too-high-what-to-do",
   "/zu-high-was-tun",
@@ -53,9 +55,6 @@ const PRECACHE = [
   "/manifest.webmanifest",
   "/icon.svg",
   "/icon-maskable.svg",
-  // /fr and /nl are added here as soon as feat/fr-nl-locales (PR #34) merges.
-  // Kept off the list until the routes exist so the service-worker install
-  // step doesn't need to swallow 404s silently.
 ];
 
 self.addEventListener("install", (event) => {
