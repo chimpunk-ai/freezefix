@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import SiteFooter from "@/components/SiteFooter";
 import WaitlistCapture from "@/components/WaitlistCapture";
+import TutorialCard from "@/components/TutorialCard";
 import { LANDING_COPY, type Locale } from "@/lib/landing-copy";
 
 /* Landing page — "Grove" rebuild (2026-10-31).
@@ -168,34 +169,20 @@ export default function Landing({ locale = "en" }: Props) {
           </ul>
         </div>
 
-        {/* ── Right-hand: example card ─────────────────────────────────── */}
+        {/* ── Right-hand: tutorial + example card ──────────────────────
+            Tutorial card REPLACES the old sunrise SVG + "ILLUSTRATION" badge
+            placeholder (feat/tutorial-replaces-illustration, 4 Nov 2026).
+            Yuki (Barcelona, UX designer, 15-persona audit): "That badge
+            belongs in a Figma file, not production — ship the art or ship
+            nothing." Lars (Amsterdam, engineer): "Replace the chat-bubble
+            example with real pattern output — a 7-day grid — show the data
+            the landing implies, not another conversation screenshot." The
+            tutorial card has four steps; step 3 renders a real-looking
+            7-day pattern strip, which is Lars's suggestion.
+            The example conversation card below the tutorial is unchanged —
+            it still shows what the chat feels like in a crisis moment. */}
         <aside aria-labelledby="example-heading" className="w-full">
-          {/* A lightweight SVG hero placeholder — a warm sage/mint sunrise.
-              Replaces the prototype's photo with licensed-free art until a
-              hero photo is signed off. */}
-          <div className="relative overflow-hidden rounded-[1.75rem] border border-line bg-card">
-            <svg viewBox="0 0 480 300" className="h-56 w-full" aria-hidden="true" preserveAspectRatio="xMidYMid slice">
-              <defs>
-                <linearGradient id="skyGrad" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stopColor="#1E3A2F" />
-                  <stop offset="60%" stopColor="#2C5A47" />
-                  <stop offset="100%" stopColor="#AFD7B6" />
-                </linearGradient>
-                <radialGradient id="sun" cx="0.72" cy="0.68" r="0.35">
-                  <stop offset="0%" stopColor="#F2E7C6" stopOpacity="0.95" />
-                  <stop offset="100%" stopColor="#AFD7B6" stopOpacity="0" />
-                </radialGradient>
-              </defs>
-              <rect width="480" height="300" fill="url(#skyGrad)" />
-              <rect width="480" height="300" fill="url(#sun)" />
-              {/* Soft rolling hills */}
-              <path d="M0 230 Q 120 180, 240 215 T 480 205 L480 300 L0 300 Z" fill="#0F2A20" opacity="0.75" />
-              <path d="M0 258 Q 140 220, 280 248 T 480 240 L480 300 L0 300 Z" fill="#0A1C15" opacity="0.9" />
-            </svg>
-            <span className="pointer-events-none absolute left-4 top-4 rounded-full bg-black/35 px-3 py-1 text-[11px] uppercase tracking-wider text-ink/85 backdrop-blur">
-              {copy.exampleIllustrationLabel}
-            </span>
-          </div>
+          <TutorialCard locale={locale} />
 
           <section
             aria-labelledby="example-heading"
