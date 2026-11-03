@@ -30,6 +30,16 @@ export default function sitemap(): MetadataRoute.Sitemap {
       // product, not the product itself. monthly change-frequency because
       // the clinical copy should not drift often; when it does it is a
       // deliberate update, not a trickle.
+      // Reduction Program (added 3 Nov 2026, feat/program — audit P2.8).
+      // The ongoing-value piece: a 2/4/6 week self-guided plan. Monthly
+      // change-frequency because the shell copy rarely moves; day-to-day
+      // state lives in localStorage per-visitor and isn't indexable.
+      url: `${SITE_URL}/program`,
+      lastModified: now,
+      changeFrequency: "monthly",
+      priority: 0.85,
+    },
+    {
       url: `${SITE_URL}/too-high-what-to-do`,
       lastModified: now,
       changeFrequency: "monthly",

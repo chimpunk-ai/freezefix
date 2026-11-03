@@ -17,6 +17,7 @@
     "test:resources": "tsx scripts/test-resources.ts",
     "test:landing-copy": "tsx scripts/test-landing-copy.ts",
     "test:seo-copy": "tsx scripts/test-seo-copy.ts",
+    "test:program": "tsx scripts/test-program.ts",
     "test:plans": "tsx scripts/test-plans.ts",
     "test:demo": "tsx scripts/test-demo.ts",
     "test:wins": "tsx scripts/test-wins.ts",
