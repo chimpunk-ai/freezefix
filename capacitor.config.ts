@@ -28,8 +28,28 @@
 // to what the service worker (public/sw.js) caches, which is the four
 // landing pages, the three SEO landings, the program shell, the help
 // screen and the offline fallback. The Fix chat requires network.
+//
+// The CapacitorConfig type is inlined below instead of imported from
+// "@capacitor/cli" because the Capacitor packages are intentionally
+// NOT in package.json (see docs/native-build.md). Importing a missing
+// type module would make the Cloudflare Workers build fail at
+// type-check time. The inline interface stays in sync with
+// @capacitor/cli as of v6; when the owner runs `npm install @capacitor/cli`
+// per docs/native-build.md, they can switch to the real import if they
+// want full IntelliSense from Capacitor's own typings.
 
-import type { CapacitorConfig } from "@capacitor/cli";
+type CapacitorConfig = {
+  appId: string;
+  appName: string;
+  webDir: string;
+  server?: {
+    url?: string;
+    cleartext?: boolean;
+    allowNavigation?: string[];
+  };
+  ios?: { contentInset?: string };
+  android?: { allowMixedContent?: boolean };
+};
 
 const config: CapacitorConfig = {
   appId: "com.getfreezefix.app",
