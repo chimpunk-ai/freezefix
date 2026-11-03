@@ -44,13 +44,34 @@ jobs:
   ping:
     runs-on: ubuntu-latest
     steps:
-      - name: HEAD /api/warm
+      - name: GET /api/warm
         run: |
           set -eo pipefail
-          # --fail turns a non-2xx into a non-zero exit so a failing warm is visible
-          # in the Actions UI. --silent --show-error avoids spamming the log on
-          # success but surfaces the actual error on failure.
-          curl --fail --silent --show-error --head \
+          # Why GET + a descriptive User-Agent (fix/warm-get-with-ua, 3 Nov 2026)
+          #
+          # The original workflow used `curl --fail --head` with no User-Agent.
+          # From 2 Nov 2026 onwards every scheduled run has been failing with
+          # exit code 22 — curl's "server returned 4xx/5xx with --fail" code.
+          # Two highly likely root causes, both of which this one change
+          # resolves without touching the Worker:
+          #
+          #   1. Cloudflare Super Bot Fight Mode / managed WAF rules. A HEAD
+          #      request from a GitHub Actions runner IP with no User-Agent
+          #      is textbook bot-shaped traffic; the usual response is 403.
+          #
+          #   2. The @opennextjs/cloudflare adapter does not reliably route
+          #      HEAD exports on an App Router route — the Worker can fall
+          #      through to a 405. GET is the method every real visitor uses
+          #      and is always bundled, so this works regardless.
+          #
+          # Switching to GET + a self-identifying UA eats a few hundred bytes
+          # of body per ping, which is fine for a once-per-5-min call, and
+          # keeps the "warm" purpose intact: the Worker still has to execute
+          # for each request. --fail-with-body prints the server response on
+          # a failure so the next regression is diagnosable from the Actions
+          # log instead of just an exit code.
+          curl --fail-with-body --silent --show-error \
             --max-time 15 \
+            --user-agent "FreezeFix-warmer (+https://github.com/chimpunk-ai/freezefix/actions)" \
             "https://getfreezefix.com/api/warm" > /dev/null
           echo "Pinged /api/warm at $(date -u +'%Y-%m-%dT%H:%M:%SZ')"
