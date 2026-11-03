@@ -98,7 +98,7 @@ export const SEO_PAGES: SeoLandingContent[] = [
       heading: "What is actually happening",
       paragraphs: [
         "You took in more THC than your body is comfortable with right now. Your heart rate goes up a bit. Your blood pressure can swing. Time feels stretched. Thoughts can spiral into things that would not normally bother you. It can feel like a cardiac event. It is not; it is the chemistry working through, and it tapers off on its own.",
-        "For most people, inhaled cannabis peaks at around 20–30 minutes and the heaviest feelings ease within an hour or two. Edibles can run longer — three to six hours before the strongest part is behind you — because your gut and liver release the dose more slowly. Either way, the direction is down. You are already past the hardest part by the time you finish reading this.",
+        "For most people, inhaled cannabis peaks at around 20–30 minutes and the heaviest feelings ease within an hour or two. Edibles run longer because your gut releases the dose slowly — the strongest part can last an hour or two, with a softer tail of a few hours after that where you'll feel fuzzy but no longer scared. If you took an edible: find somewhere comfortable, tell someone trusted if you can, and plan to be exactly where you are for a bit. Either way, the direction is down. You are already past the hardest part by the time you finish reading this.",
       ],
       cite:
         "Timings in line with public guidance from Health Canada, the US CDC, and NHS Talk to Frank.",
@@ -169,7 +169,7 @@ export const SEO_PAGES: SeoLandingContent[] = [
       heading: "Was gerade wirklich passiert",
       paragraphs: [
         "Du hast mehr THC aufgenommen, als dein Körper gerade bequem verarbeitet. Dein Puls steigt. Der Blutdruck schwankt. Zeit fühlt sich gedehnt an. Gedanken drehen sich um Sachen, die dich sonst nicht so beschäftigen würden. Es kann sich wie ein Herzproblem anfühlen. Es ist keins — es ist die Chemie, die durchläuft, und sie geht von selbst zurück.",
-        "Bei den meisten Menschen erreicht geraucht konsumiertes Cannabis nach etwa 20–30 Minuten den stärksten Punkt und die intensivsten Gefühle lassen in ein bis zwei Stunden nach. Edibles brauchen länger — drei bis sechs Stunden, bis der stärkste Teil vorbei ist — weil Magen und Leber die Dosis langsamer freisetzen. In beiden Fällen geht die Richtung nach unten. Bis du das hier zu Ende gelesen hast, bist du schon ein Stück weiter.",
+        "Bei den meisten Menschen erreicht geraucht konsumiertes Cannabis nach etwa 20–30 Minuten den stärksten Punkt und die intensivsten Gefühle lassen in ein bis zwei Stunden nach. Edibles brauchen länger, weil der Magen die Dosis langsam freisetzt — der stärkste Teil kann ein bis zwei Stunden dauern, mit einem weicheren Nachhall danach, in dem du dich benebelt, aber nicht mehr verängstigt fühlst. Wenn du ein Edible genommen hast: such dir einen bequemen Platz, sag einer vertrauten Person Bescheid, wenn du kannst, und plan einfach ein, eine Weile dort zu bleiben. In beiden Fällen geht die Richtung nach unten. Bis du das hier zu Ende gelesen hast, bist du schon ein Stück weiter.",
       ],
       cite:
         "Zeitangaben orientieren sich an öffentlichen Informationen von Health Canada, der US CDC und NHS Talk to Frank.",
@@ -240,7 +240,7 @@ export const SEO_PAGES: SeoLandingContent[] = [
       heading: "What a greenout actually is",
       paragraphs: [
         "A greenout — too much weed too fast — is your body pushing back on more THC than it was comfortable with. Heart rate up, blood pressure wobbly, time stretched, maybe nausea, maybe cold sweats, maybe the feeling that something is really wrong. It is not a cardiac event, even though it can feel exactly like one. It is the dose working through.",
-        "For inhaled cannabis the heaviest part peaks at around 20–30 minutes and the worst feelings ease within an hour or two. Edibles run longer — three to six hours before the hardest bit is behind you — because the gut and liver release the dose slowly. The direction is down. You are already past the worst of it just by reading this far.",
+        "For inhaled cannabis the heaviest part peaks at around 20–30 minutes and the worst feelings ease within an hour or two. Edibles run longer because your gut releases the dose slowly — the strongest part can last an hour or two, with a softer tail of a few hours after that where you'll feel fuzzy but no longer scared. If you took an edible: get somewhere comfortable, tell a trusted mate if you can, and plan to stay put for a while. The direction is down. You are already past the worst of it just by reading this far.",
       ],
       cite:
         "Timings in line with public guidance from Health Canada, the US CDC, and NHS Talk to Frank.",

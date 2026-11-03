@@ -10,8 +10,21 @@
 //   SOS Amitié      — same page (FR + EN lines, chat 13h-3h)
 //   Drogues Info Service — sante.fr/node/798461 (anonymous, confidential)
 //   Fil Santé Jeunes     — sante.fr/node/8130029 (ages 12-25, 9h-23h, free)
+//
+// Australia added 4 November 2026 (fix/safety-audit-wave) from the 15-persona
+// audit — Priya (Melbourne, 25, GAD) flagged that an Australian tapping "Get
+// help now" was being handed 000 (burning building) and findahelpline.com (a
+// shrug) because AU was in the OTHER bucket. 000 for a 2am anxiety spiral is
+// a shrug from a mental-health product. Every AU number below is verified
+// against healthdirect.gov.au/mental-health-helplines (the Australian
+// Government's official mental-health helpline directory) on 4 November 2026:
+//   Lifeline           — 13 11 14, 24/7, crisis counselling (text + chat too)
+//   Beyond Blue        — 1300 22 4636, 24/7 (chat too)
+//   Kids Helpline      — 1800 55 1800, 24/7, FREE confidential (ages up to 25)
+//   13YARN             — 13 92 76, 24/7, FREE (Aboriginal + Torres Strait Islander)
+//   Suicide Call Back  — 1300 659 467, 24/7
 
-export type CountryCode = "GB" | "US" | "IE" | "NL" | "DE" | "FR" | "IN" | "OTHER";
+export type CountryCode = "GB" | "US" | "IE" | "NL" | "DE" | "FR" | "AU" | "IN" | "OTHER";
 
 export type Contact = {
   label: string; // what the line is, shown to the user
@@ -161,6 +174,35 @@ export const RESOURCES: Record<CountryCode, CountryResources> = {
     ],
     youthNightBackup: { label: "3114", display: "3114", tel: "3114", note: "24/7, free, confidential" },
   },
+  AU: {
+    name: "Australia",
+    emergency: { label: "Emergency", display: "000", tel: "000", note: "24/7, free, national" },
+    crisis: [
+      { label: "Lifeline", display: "13 11 14", tel: "131114", note: "24/7, crisis counselling", blurb: "Australia's main crisis-support and suicide-prevention line." },
+      { label: "Lifeline (text)", display: "Text 0477 13 11 14", sms: { to: "0477131114" }, note: "24/7, standard text rate" },
+      { label: "Lifeline (chat)", display: "lifeline.org.au/crisis-chat", url: "https://www.lifeline.org.au/crisis-chat/", note: "24/7" },
+      { label: "Beyond Blue", display: "1300 22 4636", tel: "1300224636", note: "24/7", blurb: "Australian mental-health line for anxiety, depression and support." },
+      { label: "Suicide Call Back Service", display: "1300 659 467", tel: "1300659467", note: "24/7" },
+      { label: "13YARN (Aboriginal + Torres Strait Islander)", display: "13 92 76", tel: "139276", note: "24/7, free, confidential", blurb: "First Nations crisis support, by First Nations counsellors." },
+    ],
+    urgentMentalHealth: [
+      { label: "Lifeline", display: "13 11 14", tel: "131114", note: "24/7, crisis counselling", blurb: "Australia's main crisis-support and suicide-prevention line." },
+      { label: "Beyond Blue", display: "1300 22 4636", tel: "1300224636", note: "24/7", blurb: "Australian mental-health line for anxiety, depression and support." },
+    ],
+    substances: [
+      // AU has no single dedicated cannabis line; the National Alcohol and
+      // Other Drug Hotline redirects callers to each state/territory's own
+      // ADIS line. The direct-dial state hotlines are below, selected to
+      // cover the biggest populations; the AU-wide number sits above them.
+      { label: "National Alcohol and Other Drug Hotline", display: "1800 250 015", tel: "1800250015", note: "24/7, free, confidential", blurb: "The AU-wide line that routes you to your state's own drug and alcohol service." },
+      { label: "Lifeline", display: "13 11 14", tel: "131114", note: "24/7" },
+    ],
+    youth: [
+      { label: "Kids Helpline (5–25)", display: "1800 55 1800", tel: "1800551800", note: "24/7, free, confidential", blurb: "Australia's free 24/7 counselling service for ages 5–25." },
+      { label: "Kids Helpline (chat + email)", display: "kidshelpline.com.au", url: "https://kidshelpline.com.au/", note: "24/7, free" },
+    ],
+    youthNightBackup: { label: "Lifeline", display: "13 11 14", tel: "131114", note: "24/7" },
+  },
   IN: {
     name: "India",
     emergency: { label: "Emergency", display: "112", tel: "112", note: "24/7, free, national", blurb: "India's single national emergency number (police, fire, medical)." },
@@ -196,7 +238,7 @@ export const OTHER_EMERGENCY_NUMBERS: Record<string, string> = {
   AU: "000", NZ: "111", ZA: "112",
 };
 
-export const VERIFIED_COUNTRIES: CountryCode[] = ["GB", "US", "IE", "NL", "DE", "FR", "IN"];
+export const VERIFIED_COUNTRIES: CountryCode[] = ["GB", "US", "IE", "NL", "DE", "FR", "AU", "IN"];
 
 export type ResolvedResources = CountryResources & { code: CountryCode; region: string };
 
