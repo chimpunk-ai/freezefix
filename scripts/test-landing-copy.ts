@@ -36,6 +36,7 @@ for (const locale of LOCALES) {
     ["heroBody", "heroBody"],
     ["ctaOpen", "ctaOpen"],
     ["ctaPrivacy", "ctaPrivacy"],
+    ["ctaWasThatNormal", "ctaWasThatNormal"],
     ["exampleHeading", "exampleHeading"],
     ["exampleKicker", "exampleKicker"],
     ["exampleSubtitle", "exampleSubtitle"],

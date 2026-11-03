@@ -74,6 +74,10 @@ export type LandingCopy = {
   heroBody: string;
   ctaOpen: string;
   ctaPrivacy: string;
+  /** Sophie door — a short link from the hero to /was-that-normal
+   *  for one-off / post-party users who aren't daily users. Added
+   *  4 Nov 2026 (feat/was-that-normal). */
+  ctaWasThatNormal: string;
   /** Honest note shown ONLY on non-English pages: "Fix chat is still English".
    *  null on English because there's nothing to disclose. */
   chatIsEnglishNote: string | null;
@@ -152,6 +156,7 @@ export const LANDING_COPY: Record<Locale, LandingCopy> = {
       "A private companion for adults who want to understand their cannabis habits and find a next step that feels right for them.",
     ctaOpen: "Open Fix",
     ctaPrivacy: "How privacy works",
+    ctaWasThatNormal: "Just once, and it scared me — was that normal?",
     chatIsEnglishNote: null,
     features: [
       { title: "No judgment", body: "Reflect, reduce, pause, or just get through tonight." },
@@ -243,6 +248,7 @@ export const LANDING_COPY: Record<Locale, LandingCopy> = {
       "Ein stiller Begleiter für Erwachsene, die ihren Cannabis-Konsum verstehen und einen nächsten Schritt finden wollen, der sich für sie richtig anfühlt.",
     ctaOpen: "Fix öffnen",
     ctaPrivacy: "Wie Datenschutz funktioniert",
+    ctaWasThatNormal: "Nur einmal, und es hat mir Angst gemacht — war das normal?",
     // The chat itself is still English today. Say it plainly, don't bait and
     // switch. "Fix spricht aktuell Englisch — Deutsch folgt bald."
     chatIsEnglishNote:
@@ -349,6 +355,7 @@ export const LANDING_COPY: Record<Locale, LandingCopy> = {
       "Un compagnon privé pour les adultes qui veulent comprendre leurs habitudes avec le cannabis et trouver un prochain pas qui leur parle vraiment.",
     ctaOpen: "Ouvrir Fix",
     ctaPrivacy: "Comment la vie privée fonctionne",
+    ctaWasThatNormal: "C'était une fois, ça m'a fait peur — c'était normal ?",
     chatIsEnglishNote:
       "Fix lui-même est pour l'instant en anglais. Le français est en cours — si tu préfères attendre, laisse ton email plus bas et on te préviendra.",
     features: [
@@ -448,6 +455,7 @@ export const LANDING_COPY: Record<Locale, LandingCopy> = {
       "Een stille metgezel voor volwassenen die hun cannabisgebruik willen begrijpen en een volgende stap willen vinden die goed voelt voor hen.",
     ctaOpen: "Fix openen",
     ctaPrivacy: "Hoe privacy werkt",
+    ctaWasThatNormal: "Eén keer, en het schrikte me af — was dat normaal?",
     chatIsEnglishNote:
       "Fix zelf is nu in het Engels. Nederlands komt eraan — als je dat liever afwacht, laat hieronder een e-mail achter en we laten het weten.",
     features: [

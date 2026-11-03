@@ -138,6 +138,19 @@ export default function Landing({ locale = "en" }: Props) {
             </Link>
           </div>
 
+          {/* Sophie door (feat/was-that-normal, 4 Nov 2026). Soft link
+              aimed at one-off / post-party users who don't identify with
+              the "understand your habits" framing. Below the primary CTA
+              so it doesn't steal attention, above the chat-is-English
+              note so it IS visible without scrolling. */}
+          <Link
+            href="/was-that-normal"
+            className="-mt-2 inline-flex min-h-[32px] items-center gap-1.5 text-sm text-ink-soft underline-offset-4 hover:text-ink hover:underline"
+          >
+            {copy.ctaWasThatNormal}
+            <span aria-hidden="true">&rarr;</span>
+          </Link>
+
           {/* Honest note (feat/de-landing, 3 Nov 2026 — P1.5). On the German
               page this reads "Fix selbst läuft momentan auf Englisch", so
               Marcus knows the chat is still English before he taps the CTA
