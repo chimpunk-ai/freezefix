@@ -25,6 +25,29 @@ export default function sitemap(): MetadataRoute.Sitemap {
       priority: 0.9,
     },
     {
+      // SEO landing pages (added 3 Nov 2026, feat/seo-landing-pages — audit
+      // P1.7). Prioritised below / and /de because they're funnels INTO the
+      // product, not the product itself. monthly change-frequency because
+      // the clinical copy should not drift often; when it does it is a
+      // deliberate update, not a trickle.
+      url: `${SITE_URL}/too-high-what-to-do`,
+      lastModified: now,
+      changeFrequency: "monthly",
+      priority: 0.8,
+    },
+    {
+      url: `${SITE_URL}/zu-high-was-tun`,
+      lastModified: now,
+      changeFrequency: "monthly",
+      priority: 0.8,
+    },
+    {
+      url: `${SITE_URL}/greened-out`,
+      lastModified: now,
+      changeFrequency: "monthly",
+      priority: 0.8,
+    },
+    {
       url: `${SITE_URL}/help`,
       lastModified: now,
       changeFrequency: "monthly",
