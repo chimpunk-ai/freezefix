@@ -25,6 +25,20 @@ export default function sitemap(): MetadataRoute.Sitemap {
       priority: 0.9,
     },
     {
+      // French landing (added 3 Nov 2026, feat/fr-nl-locales — audit P3.11).
+      url: `${SITE_URL}/fr`,
+      lastModified: now,
+      changeFrequency: "weekly",
+      priority: 0.9,
+    },
+    {
+      // Dutch landing (added 3 Nov 2026, feat/fr-nl-locales — audit P3.11).
+      url: `${SITE_URL}/nl`,
+      lastModified: now,
+      changeFrequency: "weekly",
+      priority: 0.9,
+    },
+    {
       // SEO landing pages (added 3 Nov 2026, feat/seo-landing-pages — audit
       // P1.7). Prioritised below / and /de because they're funnels INTO the
       // product, not the product itself. monthly change-frequency because

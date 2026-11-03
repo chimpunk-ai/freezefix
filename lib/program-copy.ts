@@ -374,4 +374,218 @@ export const PROGRAM_COPY: Record<Locale, ProgramCopy> = {
       shift_time: "Verschieben von %s auf %s",
     },
   },
+
+  // ─────────────────── French ───────────────────
+  // Added 3 November 2026 for P3.11. Sophie (Paris, 24) weekend user.
+  // "Streak" stays "streak" because that's what she says.
+  fr: {
+    metaTitle: "Le Programme de Réduction — un plan sur 2, 4 ou 6 semaines que tu construis toi-même",
+    metaDescription:
+      "Un plan calme et personnel pour fumer moins, faire une pause, ou déplacer le moment où tu allumes. Sur ton appareil, sans inscription, sans streaks, sans honte. Adultes 18+.",
+
+    introKicker: "Le Programme de Réduction",
+    introH1: "Pas arrêter. Pas de streak. Un plan que tu construis.",
+    introBody:
+      "Un plan court et honnête — deux, quatre ou six semaines — qui t'aide à fumer moins, faire une pause, ou déplacer le moment où tu allumes. Tu choisis l'objectif. Tu notes comment la journée s'est passée en un tap. Fix est là les jours où tu veux parler.",
+    introBullets: [
+      "Pas de streaks. Une journée difficile n'efface pas celles d'avant.",
+      "Uniquement sur ton appareil. Rien n'est téléversé, rien n'a ton nom.",
+      "Mets en pause et reprends quand tu veux. Supprime tout en deux taps.",
+    ],
+    introStartLabel: "Commencer un plan",
+    introPauseFixLink: "Je préfère juste parler → Fix",
+
+    setupStepKicker: "Nouveau plan",
+    pickGoalH2: "Choisis un objectif",
+    pickGoalIntro:
+      "Un seul suffit. Tu pourras modifier le plan plus tard. Si rien ne colle, prends le plus proche et ajuste les chiffres.",
+    goalOptions: [
+      { kind: "days_per_week", title: "Moins de jours par semaine", body: "Réduis le nombre de jours où tu fumes dans la semaine." },
+      { kind: "sessions_per_day", title: "Moins de fois par jour", body: "Les jours où tu fumes, passe de plusieurs à moins de sessions." },
+      { kind: "pause_for", title: "Fais une pause", body: "Pas de cannabis pendant un nombre de jours choisi." },
+      { kind: "shift_time", title: "Déplace l'heure", body: "Décale ton heure habituelle — ex. pas avant 20h ou pas en premier." },
+    ],
+    currentLabel: "Où tu en es",
+    targetLabel: "Où tu veux aller",
+    daysLabel: "Jours",
+    fromTimeLabel: "De",
+    toTimeLabel: "À",
+    nextLabel: "Suivant",
+    backLabel: "Retour",
+
+    pickWeeksH2: "Choisis une durée",
+    pickWeeksIntro:
+      "Un plan qu'on prolonge sans fin devient une corvée. Prends la plus courte durée qui est honnête pour le changement que tu veux.",
+    weeksOptions: [
+      { weeks: 2, title: "2 semaines", body: "Un reset. Assez pour voir une forme, pas assez pour dériver." },
+      { weeks: 4, title: "4 semaines", body: "Une vraie période. Bien pour réduire sans bouleverser ta vie." },
+      { weeks: 6, title: "6 semaines", body: "Un plan plus long pour un plus gros changement. Mets en pause autant que nécessaire." },
+    ],
+    startLabel: "Lancer le plan",
+
+    todayKicker: "Jour %d sur %d",
+    todayH1: "Aujourd'hui",
+    todayGoalPrefix: "Ton plan :",
+    logQuestion: "Comment s'est passée la journée ?",
+    logStates: {
+      well: { title: "Bien passé", body: "Tu as tenu, ou presque. Reste tranquille — pas besoin de tour d'honneur." },
+      mixed: { title: "Mitigé", body: "Une partie a marché. Une partie non. Les deux sont OK à dire." },
+      tough: { title: "Journée difficile", body: "Une journée difficile est un vrai log, pas un échec. La remarquer est le point entier." },
+    },
+    noteLabel: "Une ligne, si tu veux",
+    notePlaceholder: "ex. journée chargée, pas pensé avant 23h",
+    saveLabel: "Enregistrer aujourd'hui",
+    loggedLabel: "Enregistré",
+    editLabel: "Modifier",
+    clearLabel: "Effacer aujourd'hui",
+
+    reflectionKicker: "Réflexion de la semaine",
+    reflectionH2: "Une question calme",
+    reflectionIntro:
+      "Une fois par semaine, une ligne pour toi-même. On peut passer; rien ne se passe si tu ne le fais pas.",
+    reflectionPlaceholder: "Qu'est-ce qui a été plus facile que prévu ?",
+    reflectionSaveLabel: "Enregistrer la réflexion",
+    reflectionDoneLabel: "Enregistrée",
+    reflectionSkipLabel: "Passer cette semaine",
+
+    progressH2: "Ton plan jusqu'ici",
+    progressLogged: "%d sur %d jours notés",
+    progressStateLegend: {
+      well: "Bien passé",
+      mixed: "Mitigé",
+      tough: "Journée difficile",
+    },
+
+    finishedKicker: "Plan terminé",
+    finishedH1: "Tu as atteint la fin de ton plan.",
+    finishedBody:
+      "Rien à prouver. Si le plan a fait son travail, tu le sais déjà. Tu peux prolonger de deux semaines, ou clôturer et garder le log pour plus tard.",
+    finishedExtendLabel: "Prolonger de 2 semaines",
+    finishedWrapLabel: "Clôturer ce plan",
+
+    pausedKicker: "En pause",
+    pausedH1: "Ton plan est en pause.",
+    pausedBody: "Rien ne compte en ce moment. Reprends quand tu veux — tes logs sont conservés.",
+    resumeLabel: "Reprendre le plan",
+
+    settingsH2: "Ce plan",
+    pauseLabel: "Pause",
+    exportLabel: "Exporter mes logs (JSON)",
+    deleteLabel: "Supprimer ce plan",
+    deleteConfirm:
+      "Cela supprime le plan entier de cet appareil. Pas de retour en arrière. Supprimer ?",
+
+    goalLine: {
+      days_per_week: "De %d jours par semaine à %d",
+      sessions_per_day: "De %d fois par jour à %d",
+      pause_for: "Pause de %d jours",
+      shift_time: "Décalage de %s à %s",
+    },
+  },
+
+  // ─────────────────── Dutch ───────────────────
+  nl: {
+    metaTitle: "Het Reductieprogramma — een plan van 2, 4 of 6 weken dat je zelf opbouwt",
+    metaDescription:
+      "Een rustig, zelfgestuurd plan om minder te blowen, een pauze te nemen, of het moment te verschuiven waarop je grijpt. Op je apparaat, geen aanmelding, geen streaks, geen schaamte. Vanaf 18.",
+
+    introKicker: "Het Reductieprogramma",
+    introH1: "Niet stoppen. Geen streak. Een plan dat je bouwt.",
+    introBody:
+      "Een kort, eerlijk plan — twee, vier of zes weken — dat je helpt om minder te blowen, te pauzeren, of het moment te verschuiven waarop je naar een joint grijpt. Jij kiest het doel. Jij logt met één tap hoe de dag ging. Fix is er op de dagen dat je wilt praten.",
+    introBullets: [
+      "Geen streaks. Een zware dag wist de dagen ervoor niet uit.",
+      "Alleen op je apparaat. Niets wordt geupload, niets heeft je naam.",
+      "Pauzeer en hervat wanneer je wilt. Verwijder alles met twee taps.",
+    ],
+    introStartLabel: "Plan starten",
+    introPauseFixLink: "Ik praat liever gewoon → Fix",
+
+    setupStepKicker: "Nieuw plan",
+    pickGoalH2: "Kies één doel",
+    pickGoalIntro:
+      "Een is genoeg. Je kunt het plan later aanpassen. Als niets past, kies het dichtstbijzijnde en pas de getallen aan.",
+    goalOptions: [
+      { kind: "days_per_week", title: "Minder dagen per week", body: "Verminder het aantal dagen dat je in een week blowt." },
+      { kind: "sessions_per_day", title: "Minder keer per dag", body: "Op de dagen dat je wel blowt, ga van meerdere naar minder sessies." },
+      { kind: "pause_for", title: "Een pauze inlassen", body: "Geen cannabis gedurende een gekozen aantal dagen." },
+      { kind: "shift_time", title: "Verschuif het tijdstip", body: "Verschuif je gebruikelijke tijd — bijv. niet voor 20:00 of niet als eerste." },
+    ],
+    currentLabel: "Waar je nu bent",
+    targetLabel: "Waar je naartoe wilt",
+    daysLabel: "Dagen",
+    fromTimeLabel: "Van",
+    toTimeLabel: "Tot",
+    nextLabel: "Volgende",
+    backLabel: "Terug",
+
+    pickWeeksH2: "Kies een lengte",
+    pickWeeksIntro:
+      "Een plan dat je blijft verlengen wordt een plicht. Neem de kortste lengte die eerlijk voelt voor de verandering die je wilt.",
+    weeksOptions: [
+      { weeks: 2, title: "2 weken", body: "Een reset. Lang genoeg om een vorm te zien, niet lang genoeg om af te dwalen." },
+      { weeks: 4, title: "4 weken", body: "Een echte periode. Goed om te minderen zonder je leven om te gooien." },
+      { weeks: 6, title: "6 weken", body: "Een langer plan voor een grotere verandering. Pauzeer zo vaak je nodig hebt." },
+    ],
+    startLabel: "Plan starten",
+
+    todayKicker: "Dag %d van %d",
+    todayH1: "Vandaag",
+    todayGoalPrefix: "Jouw plan:",
+    logQuestion: "Hoe ging vandaag?",
+    logStates: {
+      well: { title: "Ging goed", body: "Je hebt het volgehouden, of bijna. Blijf rustig — geen zegeronde nodig." },
+      mixed: { title: "Gemengd", body: "Een deel werkte. Een deel niet. Beide zijn OK om te zeggen." },
+      tough: { title: "Zware dag", body: "Een zware dag is een echte log, geen mislukking. Hem opmerken is het hele punt." },
+    },
+    noteLabel: "Eén regel, als je wilt",
+    notePlaceholder: "bijv. drukke dag, pas om 23:00 aan gedacht",
+    saveLabel: "Vandaag opslaan",
+    loggedLabel: "Opgeslagen",
+    editLabel: "Bewerken",
+    clearLabel: "Vandaag wissen",
+
+    reflectionKicker: "Weekreflectie",
+    reflectionH2: "Een rustige vraag",
+    reflectionIntro:
+      "Eén keer per week, één regel voor jezelf. Overslaan mag; er gebeurt niets als je het niet doet.",
+    reflectionPlaceholder: "Wat was makkelijker dan je verwachtte?",
+    reflectionSaveLabel: "Reflectie opslaan",
+    reflectionDoneLabel: "Opgeslagen",
+    reflectionSkipLabel: "Deze week overslaan",
+
+    progressH2: "Je plan tot nu toe",
+    progressLogged: "%d van %d dagen gelogd",
+    progressStateLegend: {
+      well: "Ging goed",
+      mixed: "Gemengd",
+      tough: "Zware dag",
+    },
+
+    finishedKicker: "Plan voltooid",
+    finishedH1: "Je hebt het einde van je plan bereikt.",
+    finishedBody:
+      "Niets te bewijzen. Als het plan zijn werk heeft gedaan, weet je dat zelf. Je kunt met twee weken verlengen, of afsluiten en de log bewaren voor later.",
+    finishedExtendLabel: "Verlengen met 2 weken",
+    finishedWrapLabel: "Dit plan afsluiten",
+
+    pausedKicker: "Gepauzeerd",
+    pausedH1: "Je plan is gepauzeerd.",
+    pausedBody: "Niets telt op dit moment. Hervat wanneer je wilt — je logs blijven.",
+    resumeLabel: "Plan hervatten",
+
+    settingsH2: "Dit plan",
+    pauseLabel: "Pauzeren",
+    exportLabel: "Mijn logs exporteren (JSON)",
+    deleteLabel: "Dit plan verwijderen",
+    deleteConfirm:
+      "Dit wist het hele plan van dit apparaat. Geen ongedaan maken. Verwijderen?",
+
+    goalLine: {
+      days_per_week: "Van %d dagen per week naar %d",
+      sessions_per_day: "Van %d keer per dag naar %d",
+      pause_for: "%d dagen pauze",
+      shift_time: "Verschuiven van %s naar %s",
+    },
+  },
 };

@@ -290,21 +290,31 @@ for (const locale of LOCALES) {
 // says so somewhere in the intro bullets or in the tough-day state. If a
 // future PR waters that down and loses the anti-shame framing, the test
 // fails.
+// Each locale has its own anti-streak and tough-not-failure phrasing. Lower-
+// cased because the search is case-insensitive. "streak" is unchanged across
+// languages (Marcus / Sophie / Lars all use the English word).
+const POSTURE_PHRASES: Record<string, { antiStreak: string[]; notFailure: string[] }> = {
+  en: { antiStreak: ["no streak"], notFailure: ["not a failure"] },
+  de: { antiStreak: ["keine streak"], notFailure: ["kein scheitern"] },
+  fr: { antiStreak: ["pas de streak"], notFailure: ["pas un échec"] },
+  nl: { antiStreak: ["geen streak"], notFailure: ["geen mislukking"] },
+};
 for (const locale of LOCALES) {
   const c = PROGRAM_COPY[locale];
   const antiStreak = c.introBullets.join(" ").toLowerCase();
   const toughBody = c.logStates.tough.body.toLowerCase();
-  if (locale === "en") {
-    check(`POSTURE-en-anti-streak-stated`, antiStreak.includes("no streak"),
-      `expected intro bullets to say "no streaks"; got: ${c.introBullets.join(" | ")}`);
-    check(`POSTURE-en-tough-not-failure`, toughBody.includes("not a failure"),
-      `expected tough-day body to say "not a failure"; got: ${c.logStates.tough.body}`);
-  } else {
-    check(`POSTURE-de-anti-streak-stated`, antiStreak.includes("keine streak"),
-      `expected intro bullets to say "keine Streaks"; got: ${c.introBullets.join(" | ")}`);
-    check(`POSTURE-de-tough-not-failure`, toughBody.includes("kein scheitern"),
-      `expected tough-day body to say "kein Scheitern"; got: ${c.logStates.tough.body}`);
-  }
+  const phrases = POSTURE_PHRASES[locale];
+  if (!phrases) continue;
+  check(
+    `POSTURE-${locale}-anti-streak-stated`,
+    phrases.antiStreak.some((p) => antiStreak.includes(p)),
+    `expected intro bullets to say one of ${JSON.stringify(phrases.antiStreak)}; got: ${c.introBullets.join(" | ")}`
+  );
+  check(
+    `POSTURE-${locale}-tough-not-failure`,
+    phrases.notFailure.some((p) => toughBody.includes(p)),
+    `expected tough-day body to say one of ${JSON.stringify(phrases.notFailure)}; got: ${c.logStates.tough.body}`
+  );
 }
 
 // ─────────────────────────────── report ─────────────────────────────
