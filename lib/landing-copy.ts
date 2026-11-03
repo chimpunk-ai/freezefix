@@ -22,9 +22,30 @@
 //   öffnen". Pretending the whole product is German would be worse than
 //   admitting the chat is English and shipping the German chat later.
 
-export type Locale = "en" | "de";
+export type Locale = "en" | "de" | "fr" | "nl";
 
-export const LOCALES: Locale[] = ["en", "de"];
+export const LOCALES: Locale[] = ["en", "de", "fr", "nl"];
+
+/** The locale a visitor sees when their region doesn't match any of
+ *  LOCALES. English is the pivot — every alt-locale header "switch"
+ *  points back to English, not between alt languages, so the user never
+ *  has to go through French to reach Dutch. */
+export const FALLBACK_LOCALE: Locale = "en";
+
+/** Maps a 2-letter country code (from detectRegion / navigator) to the
+ *  landing locale that should greet them. DE / AT / CH → de; FR / BE
+ *  (French-speaking) / LU → fr; NL / BE (Dutch-speaking) → nl.
+ *  BE is Dutch-speaking majority-wise but French in the south — we
+ *  default BE to French because the FR crisis resources are stronger
+ *  than the NL ones for Wallonia; a BE Dutch speaker still gets the
+ *  switcher chip. Everyone else → en. */
+export function pickLandingLocale(region: string): Locale {
+  const r = region.toUpperCase();
+  if (r === "DE" || r === "AT" || r === "CH") return "de";
+  if (r === "FR" || r === "LU" || r === "BE") return "fr";
+  if (r === "NL") return "nl";
+  return "en";
+}
 
 export type LandingCopy = {
   /** 2-letter BCP-47 for the <html lang> and OpenGraph locale. */
@@ -36,8 +57,16 @@ export type LandingCopy = {
   /** Header */
   getHelpNow: string;
   openReturning: string;
-  /** Locale switcher link to the OTHER locale. */
+  /** Locale switcher link to the primary OTHER locale. Kept for backward
+   *  compat with existing SeoLanding + Program headers that render only
+   *  one chip. For the main landing header, use `languageLinks` which
+   *  carries ALL available alternates for the current page. */
   switchTo: { href: string; label: string };
+  /** All alternate-language versions of this page, each a chip in the
+   *  header. On EN this lists de / fr / nl; on each alt locale this is
+   *  just [EN], the pivot — so a visitor never has to navigate through
+   *  French to reach Dutch. Added 3 Nov 2026 for audit P3.11. */
+  languageLinks: Array<{ href: string; label: string; lang: string }>;
   /** Hero */
   kicker: string;
   heroHeadlineLine1: string;
@@ -82,6 +111,11 @@ export const LANDING_COPY: Record<Locale, LandingCopy> = {
     getHelpNow: "Get help now",
     openReturning: "Open",
     switchTo: { href: "/de", label: "Auf Deutsch" },
+    languageLinks: [
+      { href: "/de", label: "Auf Deutsch", lang: "de" },
+      { href: "/fr", label: "En français", lang: "fr" },
+      { href: "/nl", label: "In het Nederlands", lang: "nl" },
+    ],
     kicker: "GetFreezeFix · for adults 18+",
     heroHeadlineLine1: "More control,",
     heroHeadlineLine2: "one moment at a time.",
@@ -148,6 +182,7 @@ export const LANDING_COPY: Record<Locale, LandingCopy> = {
     getHelpNow: "Hilfe jetzt",
     openReturning: "Öffnen",
     switchTo: { href: "/", label: "English" },
+    languageLinks: [{ href: "/", label: "English", lang: "en" }],
     kicker: "GetFreezeFix · ab 18 Jahren",
     heroHeadlineLine1: "Mehr Kontrolle,",
     heroHeadlineLine2: "Moment für Moment.",
@@ -209,6 +244,157 @@ export const LANDING_COPY: Record<Locale, LandingCopy> = {
       { href: "/patterns", label: "Muster" },
       { href: "/terms", label: "AGB" },
       { href: "/refunds", label: "Rückerstattung" },
+      { href: "mailto:hello@getfreezefix.com", label: "hello@getfreezefix.com" },
+    ],
+  },
+
+  // ───────────────────────────── French ─────────────────────────────
+  // Added 3 November 2026 for audit P3.11. Written French-first for Sophie
+  // (Paris, 24, weekend user) — not an auto-translation of the English.
+  // "Craving" stays "craving" because that is what she actually says; a
+  // stilted "envie irrépressible" would sound like a university textbook.
+  // The chat-is-English note is louder here than on /de, because P1.5's
+  // German chat is explicitly next; French chat has no committed date yet,
+  // so the honest line directs Sophie at the waitlist.
+  fr: {
+    htmlLang: "fr",
+    metaTitle: "FreezeFix — un allié pour quand un joint te laisse bloqué",
+    metaDescription:
+      "Un compagnon privé pour les adultes qui veulent comprendre leurs habitudes avec le cannabis et trouver un prochain pas qui leur parle. Ados exclus. Confidentiel.",
+    getHelpNow: "Aide maintenant",
+    openReturning: "Ouvrir",
+    switchTo: { href: "/", label: "English" },
+    languageLinks: [{ href: "/", label: "English", lang: "en" }],
+    kicker: "GetFreezeFix · pour adultes 18+",
+    heroHeadlineLine1: "Plus de contrôle,",
+    heroHeadlineLine2: "un moment à la fois.",
+    heroBody:
+      "Un compagnon privé pour les adultes qui veulent comprendre leurs habitudes avec le cannabis et trouver un prochain pas qui leur parle vraiment.",
+    ctaOpen: "Ouvrir Fix",
+    ctaPrivacy: "Comment la vie privée fonctionne",
+    chatIsEnglishNote:
+      "Fix lui-même est pour l'instant en anglais. Le français est en cours — si tu préfères attendre, laisse ton email plus bas et on te préviendra.",
+    features: [
+      { title: "Pas de jugement", body: "Réfléchir, réduire, faire une pause — ou juste passer ce soir." },
+      { title: "Tu choisis ton objectif", body: "Pas de streaks. Tout peut être passé." },
+      { title: "Fix est un outil IA et peut se tromper.", body: "" },
+    ],
+    exampleHeading: "Exemple",
+    exampleKicker: "Exemple",
+    exampleSubtitle: "Pas une vraie conversation",
+    exampleIllustrationLabel: "Illustration",
+    exampleSteps: [
+      { index: "1", label: "Choisis une situation", body: "J'ai un craving" },
+      {
+        index: "2",
+        label: "Quelques mots",
+        body: "Je comptais ne pas fumer ce soir mais j'en ai vraiment envie.",
+      },
+      {
+        index: "3",
+        label: "Une petite suggestion",
+        body: "« Un craving peut sembler urgent. Tu n'as pas à décider de toute ta vie là, maintenant. Tu veux créer dix minutes de pause, changer d'ambiance, ou écrire ce qui te tire vers ça ? »",
+      },
+      { index: "4", label: "Tu choisis — essayer, une autre idée, ou partir", body: null },
+    ],
+    waitlist: {
+      label: "Tu veux être averti quand la prochaine chose arrive ? Laisse un email.",
+      placeholder: "toi@quelquepart.fr",
+      submit: "Ajoute-moi",
+      submitting: "J'ajoute…",
+      footnote:
+        "Juste l'email. Pas de nom, pas de téléphone, rien de lié à tes conversations avec Fix. On écrit au plus une fois par mois et seulement s'il y a quelque chose que tu veux vraiment savoir.",
+      error: "Ça n'a pas marché. Vérifie l'adresse et réessaie.",
+      throttled:
+        "Déjà noté. Si tu t'es inscrit plusieurs fois aujourd'hui, c'est suffisant — on te contactera quand il y aura quelque chose à dire.",
+      done:
+        "Merci — tu es sur la liste. On n'enverra un email que s'il y a quelque chose que tu veux vraiment savoir. Lien de désinscription dans chaque mail.",
+      notCollecting:
+        "La liste d'attente n'est pas encore connectée — réessaie dans une minute. Rien n'est perdu; on ne peut juste pas l'enregistrer maintenant.",
+    },
+    footerBlurb:
+      "GetFreezeFix.com est un logiciel de soutien pour adultes 18+. Pas une thérapie, pas un conseil médical, pas un service d'urgence.",
+    footerLinks: [
+      { href: "/help", label: "Aide" },
+      { href: "/privacy", label: "Vie privée" },
+      { href: "/patterns", label: "Tendances" },
+      { href: "/terms", label: "CGU" },
+      { href: "/refunds", label: "Remboursements" },
+      { href: "mailto:hello@getfreezefix.com", label: "hello@getfreezefix.com" },
+    ],
+  },
+
+  // ───────────────────────────── Dutch ─────────────────────────────
+  // Added 3 November 2026 for audit P3.11. Written Dutch-first for Lars
+  // (Amsterdam, 25, social user, English-fluent but reads Dutch
+  // marketing better). NL has a particularly strong harm-reduction
+  // culture around cannabis, so this copy leans slightly more
+  // matter-of-fact than EN or DE — "kalm, niet oordelend" lands softer
+  // than "no judgment" in a culture that already does not judge much.
+  nl: {
+    htmlLang: "nl",
+    metaTitle: "FreezeFix — voor als een joint je laat vastlopen",
+    metaDescription:
+      "Een stille metgezel voor volwassenen die hun cannabisgebruik willen begrijpen en een volgende stap willen vinden die bij hen past. Vanaf 18. Privé.",
+    getHelpNow: "Hulp nu",
+    openReturning: "Openen",
+    switchTo: { href: "/", label: "English" },
+    languageLinks: [{ href: "/", label: "English", lang: "en" }],
+    kicker: "GetFreezeFix · voor volwassenen 18+",
+    heroHeadlineLine1: "Meer grip,",
+    heroHeadlineLine2: "moment voor moment.",
+    heroBody:
+      "Een stille metgezel voor volwassenen die hun cannabisgebruik willen begrijpen en een volgende stap willen vinden die goed voelt voor hen.",
+    ctaOpen: "Fix openen",
+    ctaPrivacy: "Hoe privacy werkt",
+    chatIsEnglishNote:
+      "Fix zelf is nu in het Engels. Nederlands komt eraan — als je dat liever afwacht, laat hieronder een e-mail achter en we laten het weten.",
+    features: [
+      { title: "Geen oordeel", body: "Nadenken, minderen, pauzeren — of gewoon vanavond doorkomen." },
+      { title: "Jij kiest je doel", body: "Geen streaks. Alles mag overgeslagen worden." },
+      { title: "Fix is een AI-tool en kan ongelijk hebben.", body: "" },
+    ],
+    exampleHeading: "Voorbeeld",
+    exampleKicker: "Voorbeeld",
+    exampleSubtitle: "Geen echt gesprek",
+    exampleIllustrationLabel: "Illustratie",
+    exampleSteps: [
+      { index: "1", label: "Kies een situatie", body: "Ik heb trek" },
+      {
+        index: "2",
+        label: "Een paar woorden",
+        body: "Ik had afgesproken vanavond niet te blowen maar ik heb er echt zin in.",
+      },
+      {
+        index: "3",
+        label: "Eén klein voorstel",
+        body: "“Trek kan dringend aanvoelen. Je hoeft nu niet je hele toekomst te beslissen. Wil je tien minuten pauze nemen, van omgeving veranderen, of opschrijven wat je ernaartoe trekt?”",
+      },
+      { index: "4", label: "Jij kiest — proberen, een ander idee, of weggaan", body: null },
+    ],
+    waitlist: {
+      label: "Wil je horen wanneer het volgende komt? Laat een e-mail achter.",
+      placeholder: "jij@ergens.nl",
+      submit: "Zet me erop",
+      submitting: "Bezig…",
+      footnote:
+        "Alleen de e-mail. Geen naam, geen telefoon, niets wat gekoppeld is aan je Fix-gesprekken. We mailen hoogstens één keer per maand en alleen als er iets is dat je echt wilt weten.",
+      error: "Dat ging niet door. Controleer het adres en probeer opnieuw.",
+      throttled:
+        "Al genoteerd. Als je je vandaag een paar keer hebt aangemeld, is dat genoeg — we laten het weten als er iets te melden is.",
+      done:
+        "Bedankt — je staat op de lijst. We mailen alleen als er iets is dat je echt wilt weten. Afmeldlink in elke mail.",
+      notCollecting:
+        "De wachtlijst is nog niet aangesloten — probeer het over een minuut nog eens. Niets is kwijt; we kunnen het alleen even niet opslaan.",
+    },
+    footerBlurb:
+      "GetFreezeFix.com is ondersteunende software voor volwassenen vanaf 18. Geen therapie, geen medisch advies, geen noodhulp.",
+    footerLinks: [
+      { href: "/help", label: "Hulp" },
+      { href: "/privacy", label: "Privacy" },
+      { href: "/patterns", label: "Patronen" },
+      { href: "/terms", label: "Voorwaarden" },
+      { href: "/refunds", label: "Terugbetalingen" },
       { href: "mailto:hello@getfreezefix.com", label: "hello@getfreezefix.com" },
     ],
   },

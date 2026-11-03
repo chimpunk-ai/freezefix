@@ -81,17 +81,21 @@ export default function Landing({ locale = "en" }: Props) {
               {copy.openReturning}
             </Link>
           )}
-          {/* Locale switcher (feat/de-landing, 3 Nov 2026 — P1.5). Points to
-              the OTHER locale's landing page. One link, no dropdown, so a
-              native speaker who landed on the wrong one is one tap away. */}
-          <Link
-            href={copy.switchTo.href}
-            lang={copy.switchTo.href === "/de" ? "de" : "en"}
-            className="hidden min-h-[44px] items-center rounded-full border border-line/80 px-3 py-2 text-xs uppercase tracking-wider text-ink-soft transition hover:border-line hover:text-ink sm:flex"
-            aria-label={copy.switchTo.label}
-          >
-            {copy.switchTo.label}
-          </Link>
+          {/* Locale switcher. On English this lists de / fr / nl as separate
+              chips; on each alt locale it is just the single pivot back to
+              English (so a visitor never has to navigate through French to
+              reach Dutch). Extended 3 Nov 2026 for audit P3.11. */}
+          {copy.languageLinks.map((link) => (
+            <Link
+              key={link.lang}
+              href={link.href}
+              lang={link.lang}
+              className="hidden min-h-[44px] items-center rounded-full border border-line/80 px-3 py-2 text-xs uppercase tracking-wider text-ink-soft transition hover:border-line hover:text-ink sm:flex"
+              aria-label={link.label}
+            >
+              {link.label}
+            </Link>
+          ))}
         </nav>
       </header>
 

@@ -28,7 +28,7 @@ import {
 } from "@/lib/program";
 import { PROGRAM_COPY } from "@/lib/program-copy";
 import { detectRegion } from "@/lib/country";
-import type { Locale } from "@/lib/landing-copy";
+import { pickLandingLocale, type Locale } from "@/lib/landing-copy";
 
 // Reduction Program UI. Audit P2.8, 3 November 2026.
 //
@@ -59,7 +59,7 @@ export default function Program() {
   // Mount: pick locale from region, load any existing program.
   useEffect(() => {
     const region = detectRegion();
-    setLocale(region === "DE" || region === "AT" || region === "CH" ? "de" : "en");
+    setLocale(pickLandingLocale(region));
     const p = readProgram();
     if (!p) {
       setPhase({ kind: "intro" });
@@ -197,7 +197,7 @@ function PageHeader({ locale }: { locale: Locale }) {
   return (
     <header className="flex items-center justify-between py-5">
       <Link
-        href={locale === "de" ? "/de" : "/"}
+        href={locale === "en" ? "/" : `/${locale}`}
         aria-label="GetFreezeFix home"
         className="flex items-center gap-2.5"
       >
@@ -221,7 +221,7 @@ function PageHeader({ locale }: { locale: Locale }) {
             <circle cx="12" cy="12" r="9" />
             <circle cx="12" cy="12" r="3" />
           </svg>
-          {locale === "de" ? "Hilfe jetzt" : "Get help now"}
+          {locale === "de" ? "Hilfe jetzt" : locale === "fr" ? "Aide maintenant" : locale === "nl" ? "Hulp nu" : "Get help now"}
         </Link>
       </nav>
     </header>
