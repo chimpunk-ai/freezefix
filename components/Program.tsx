@@ -21,6 +21,8 @@ import {
   todayISO,
   progressFor,
   last14Days,
+  cleanStreakDays,
+  daysUntilTarget,
   type ReductionProgram,
   type Goal,
   type Weeks,
@@ -341,12 +343,21 @@ function SetupGoalDetail({
   const [days, setDays] = useState<number>(7);
   const [fromTime, setFromTime] = useState<string>("12:00");
   const [toTime, setToTime] = useState<string>("20:00");
+  // Default quit target: 30 days out. That's a natural "I have a deadline
+  // in a month" window; the user will overwrite it with their actual date.
+  const [targetDate, setTargetDate] = useState<string>(() => {
+    const d = new Date();
+    d.setDate(d.getDate() + 30);
+    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+  });
 
   const canContinue =
     goalKind === "pause_for"
       ? days >= 1 && days <= 90
       : goalKind === "shift_time"
       ? /^\d{2}:\d{2}$/.test(fromTime) && /^\d{2}:\d{2}$/.test(toTime)
+      : goalKind === "quit_for_date"
+      ? /^\d{4}-\d{2}-\d{2}$/.test(targetDate) && targetDate > todayISO()
       : current > 0 && target >= 0 && target <= current;
 
   const onContinue = () => {
@@ -356,6 +367,8 @@ function SetupGoalDetail({
         ? { kind: "pause_for", days }
         : goalKind === "shift_time"
         ? { kind: "shift_time", from: fromTime, to: toTime }
+        : goalKind === "quit_for_date"
+        ? { kind: "quit_for_date", targetDate }
         : goalKind === "days_per_week"
         ? { kind: "days_per_week", current, target }
         : { kind: "sessions_per_day", current, target };
@@ -411,6 +424,20 @@ function SetupGoalDetail({
               className="min-h-[44px] rounded-full border border-line bg-bg px-4 text-sm text-ink focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent/30"
             />
           </label>
+        </div>
+      ) : goalKind === "quit_for_date" ? (
+        <div className="flex flex-col gap-2">
+          <label className="flex flex-col gap-1 text-sm text-ink">
+            {t.targetDateLabel}
+            <input
+              type="date"
+              value={targetDate}
+              min={todayISO()}
+              onChange={(e) => setTargetDate(e.target.value)}
+              className="min-h-[44px] rounded-full border border-line bg-bg px-4 text-sm text-ink focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent/30"
+            />
+          </label>
+          <p className="text-xs leading-relaxed text-ink-faint">{t.targetDateHint}</p>
         </div>
       ) : (
         <div className="flex flex-col gap-3 sm:flex-row">
@@ -560,6 +587,14 @@ function TodaySection({
         <p className="text-xs uppercase tracking-wider text-ink-soft">{t.todayGoalPrefix}</p>
         <p className="mt-1 text-base text-ink">{goalDescription(t, program.goal)}</p>
       </div>
+
+      {/* Quit-mode panel (clean streak + days-to-target). Added 4 Nov 2026
+          (feat/quit-and-tbreak) for Mohammed's "I need a streak counter"
+          finding. Rendered only in quit_for_date mode — reduction modes
+          keep the no-streak posture. */}
+      {program.goal.kind === "quit_for_date" ? (
+        <QuitPanel t={t} program={program} />
+      ) : null}
 
       {/* Log for today */}
       <div className="flex flex-col gap-3 rounded-[1.5rem] border border-line bg-card p-5 sm:p-6">
@@ -727,6 +762,56 @@ function TodaySection({
   );
 }
 
+// ─────────────────────────────── quit panel ───────────────────────────
+// Rendered on the Today view only when goal.kind === "quit_for_date". Shows
+// the clean-streak counter (consecutive days without a tough log) and the
+// days-to-target. One panel, two numbers; no histogram, no graph — the whole
+// point of quit mode is that a streak IS the honest measure, which is the
+// opposite of the default no-streak posture used for reduction modes.
+
+function QuitPanel({ t, program }: { t: Copy; program: ReductionProgram }) {
+  if (program.goal.kind !== "quit_for_date") return null;
+  const streak = cleanStreakDays(program);
+  const left = daysUntilTarget(program);
+  const target = program.goal.targetDate;
+
+  return (
+    <div className="flex flex-col gap-4 rounded-[1.5rem] border border-accent/40 bg-accent/5 p-5 sm:p-6">
+      <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
+        <div className="flex flex-col gap-1">
+          <p className="font-mono text-xs uppercase tracking-[0.22em] text-ink-soft">
+            {t.quit.streakH2}
+          </p>
+          <p
+            className="text-[clamp(2rem,6vw,2.75rem)] leading-none text-ink"
+            style={{ fontFamily: "var(--font-display)", fontWeight: 400 }}
+          >
+            {streak}
+          </p>
+          <p className="text-sm text-ink-soft">{t.quit.streakUnit}</p>
+        </div>
+        <div className="flex flex-col gap-1">
+          <p className="font-mono text-xs uppercase tracking-[0.22em] text-ink-soft">
+            {t.quit.daysLeftH2}
+          </p>
+          <p
+            className="text-[clamp(2rem,6vw,2.75rem)] leading-none text-ink"
+            style={{ fontFamily: "var(--font-display)", fontWeight: 400 }}
+          >
+            {left}
+          </p>
+          <p className="text-sm text-ink-soft">
+            {left === 0 ? t.quit.daysLeftToday : t.quit.daysLeftUnit}
+          </p>
+        </div>
+      </div>
+      <p className="text-xs leading-relaxed text-ink-faint">
+        {sprintf(t.quit.targetCaption, target)} &middot; {t.quit.streakResetNote}
+      </p>
+    </div>
+  );
+}
+
 function LegendDot({ className, label }: { className: string; label: string }) {
   return (
     <span className="flex items-center gap-1.5">
@@ -801,6 +886,8 @@ function sprintf(template: string, ...args: Array<number | string>): string {
 function goalDescription(t: Copy, g: Goal): string {
   const line = t.goalLine;
   switch (g.kind) {
+    case "quit_for_date":
+      return sprintf(line.quit_for_date, g.targetDate);
     case "days_per_week":
       return sprintf(line.days_per_week, g.current, g.target);
     case "sessions_per_day":
