@@ -22,6 +22,20 @@ export default function SiteFooter({ locale = "en" }: Props) {
       <p className="max-w-[52ch] text-[0.85rem] leading-relaxed text-ink-soft">
         {copy.footerBlurb}
       </p>
+      {/*
+        Pricing-posture line added 4 November 2026 (feat/tutorial-replaces-
+        illustration) after Tom (NYC, cynical) in the 15-persona audit noted
+        that lib/plans.ts carries dormant prices while the landing says
+        nothing about money. His line: "either a founder decided to hide
+        pricing until I'm hooked, or there's a VC deck somewhere." Stating
+        it out loud removes the ambiguity. The actual numbers in lib/plans.ts
+        are still dormant pricing config — this line is honest about posture,
+        not a commitment to a specific price. If a paid plan launches, the
+        /terms + /refunds + this line get updated together in the same PR.
+      */}
+      <p className="max-w-[52ch] text-[0.8rem] leading-relaxed text-ink-faint">
+        {copy.footerPricingPosture}
+      </p>
       <div className="flex flex-wrap items-center gap-x-5 gap-y-2">
         {copy.footerLinks.map((l) => (
           <a key={l.href} href={l.href} className="text-ink-soft transition hover:text-ink">

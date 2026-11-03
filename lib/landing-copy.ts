@@ -83,8 +83,31 @@ export type LandingCopy = {
   exampleHeading: string;
   exampleKicker: string;
   exampleSubtitle: string;
-  exampleIllustrationLabel: string;
   exampleSteps: Array<{ index: string; label: string; body: string | null }>;
+  /**
+   * Tutorial card — "How the long-term loop works."
+   *
+   * Added 4 November 2026 (feat/tutorial-replaces-illustration) after the
+   * 15-persona audit. Multiple agents (Yuki, Lars, implicitly others) called
+   * out the "ILLUSTRATION" placeholder badge sitting in production above the
+   * example card. Lars's specific suggestion: "replace the chat-bubble
+   * example with real pattern output — a 7-day grid or a '4× on Thursdays'
+   * line — show the data the landing implies." This block carries the copy
+   * for the new tutorial card that replaces the sunrise SVG and badge.
+   *
+   * The card has four steps. Step 3 ("Patterns") carries no body prose —
+   * the component renders a real-looking 7-day heat strip (same visual
+   * language as /patterns and /program progress) so the reader sees the
+   * data product, not another chat screenshot. The user also explicitly
+   * asked for a walkthrough about Patterns, Journal, and using the app for
+   * the long run; these four steps are that walkthrough.
+   */
+  tutorial: {
+    kicker: string;
+    heading: string;
+    patternsExampleCaption: string; // sits next to the mini pattern strip
+    steps: Array<{ title: string; body: string }>;
+  };
   /** Waitlist (passed to WaitlistCapture via its own copy prop, see below) */
   waitlist: {
     label: string;
@@ -99,6 +122,12 @@ export type LandingCopy = {
   };
   /** Footer */
   footerBlurb: string;
+  /** Added 4 November 2026 (feat/tutorial-replaces-illustration). An honest
+   *  one-liner about the current pricing posture. The repo carries dormant
+   *  prices in lib/plans.ts; Tom (NYC, 15-persona audit) called that out as
+   *  the shady part. If a paid plan launches, this line, /terms section 5,
+   *  and /refunds get updated together in the same PR. */
+  footerPricingPosture: string;
   footerLinks: Array<{ href: string; label: string }>;
 };
 
@@ -132,7 +161,6 @@ export const LANDING_COPY: Record<Locale, LandingCopy> = {
     exampleHeading: "Example",
     exampleKicker: "Example",
     exampleSubtitle: "Not a live conversation",
-    exampleIllustrationLabel: "Illustration",
     exampleSteps: [
       { index: "1", label: "Choose a situation", body: "I'm having a craving" },
       {
@@ -147,6 +175,29 @@ export const LANDING_COPY: Record<Locale, LandingCopy> = {
       },
       { index: "4", label: "You choose — try it, another idea, or leave", body: null },
     ],
+    tutorial: {
+      kicker: "The long-term loop",
+      heading: "How it adds up over weeks",
+      patternsExampleCaption: "Example — your weeks, not someone else's.",
+      steps: [
+        {
+          title: "Open Fix in a tough moment",
+          body: "One safe next step in under sixty seconds. No sign-up, no account, no name required.",
+        },
+        {
+          title: "Jot a line in Journal",
+          body: "Your own words, on your device only. The feeling, the trigger, what you tried — enough that your week has a shape later.",
+        },
+        {
+          title: "Watch Patterns build",
+          body: "Honest weekly shapes — what days you tend to use, what time, what moods come first. No streaks, no scoreboards.",
+        },
+        {
+          title: "Build a Reduction Plan",
+          body: "A 2, 4 or 6-week plan you set yourself — pause, cut back, or shift the time. Pause and resume whenever.",
+        },
+      ],
+    },
     waitlist: {
       label: "Want to hear when the next thing ships? Leave an email.",
       placeholder: "you@wherever.com",
@@ -164,6 +215,8 @@ export const LANDING_COPY: Record<Locale, LandingCopy> = {
     },
     footerBlurb:
       "GetFreezeFix.com is supportive software for adults 18+. It is not therapy, medical advice or an emergency service.",
+    footerPricingPosture:
+      "Free today. If a paid plan ships one day, you'll see the price and terms before you're ever asked for a card.",
     footerLinks: [
       { href: "/help", label: "Help" },
       { href: "/privacy", label: "Privacy" },
@@ -202,7 +255,6 @@ export const LANDING_COPY: Record<Locale, LandingCopy> = {
     exampleHeading: "Beispiel",
     exampleKicker: "Beispiel",
     exampleSubtitle: "Kein echtes Gespräch",
-    exampleIllustrationLabel: "Illustration",
     // These sample conversation strings are deliberately shown in German even
     // though the real chat is English, because the whole point of the example
     // card is to let Marcus imagine himself inside the conversation. The
@@ -221,6 +273,29 @@ export const LANDING_COPY: Record<Locale, LandingCopy> = {
       },
       { index: "4", label: "Du wählst — ausprobieren, eine andere Idee oder gehen", body: null },
     ],
+    tutorial: {
+      kicker: "Die Langzeit-Schleife",
+      heading: "Wie sich das über Wochen summiert",
+      patternsExampleCaption: "Beispiel — deine Wochen, nicht die von jemand anderem.",
+      steps: [
+        {
+          title: "Fix öffnen in einem schweren Moment",
+          body: "Ein sicherer nächster Schritt in unter sechzig Sekunden. Keine Anmeldung, kein Konto, kein Name.",
+        },
+        {
+          title: "Eine Zeile ins Journal schreiben",
+          body: "Deine eigenen Worte, nur auf deinem Gerät. Das Gefühl, der Auslöser, was du versucht hast — genug, dass deine Woche später eine Form hat.",
+        },
+        {
+          title: "Muster sichtbar machen",
+          body: "Ehrliche Wochen-Shapes — an welchen Tagen du eher rauchst, zu welcher Zeit, welche Stimmungen vorher kommen. Keine Streaks, keine Punktzähler.",
+        },
+        {
+          title: "Einen Reduktions-Plan bauen",
+          body: "Ein Plan über 2, 4 oder 6 Wochen, den du selbst setzt — pausieren, weniger rauchen, oder die Zeit verschieben. Jederzeit pausieren und weitermachen.",
+        },
+      ],
+    },
     waitlist: {
       label: "Willst du erfahren, wann das Nächste kommt? Lass eine E-Mail da.",
       placeholder: "du@irgendwo.de",
@@ -238,6 +313,8 @@ export const LANDING_COPY: Record<Locale, LandingCopy> = {
     },
     footerBlurb:
       "GetFreezeFix.com ist unterstützende Software für Erwachsene ab 18. Keine Therapie, keine medizinische Beratung, kein Notdienst.",
+    footerPricingPosture:
+      "Heute kostenlos. Wenn ein kostenpflichtiger Plan irgendwann kommt, siehst du den Preis und die Bedingungen, bevor jemals nach einer Karte gefragt wird.",
     footerLinks: [
       { href: "/help", label: "Hilfe" },
       { href: "/privacy", label: "Datenschutz" },
@@ -282,7 +359,6 @@ export const LANDING_COPY: Record<Locale, LandingCopy> = {
     exampleHeading: "Exemple",
     exampleKicker: "Exemple",
     exampleSubtitle: "Pas une vraie conversation",
-    exampleIllustrationLabel: "Illustration",
     exampleSteps: [
       { index: "1", label: "Choisis une situation", body: "J'ai un craving" },
       {
@@ -297,6 +373,29 @@ export const LANDING_COPY: Record<Locale, LandingCopy> = {
       },
       { index: "4", label: "Tu choisis — essayer, une autre idée, ou partir", body: null },
     ],
+    tutorial: {
+      kicker: "La boucle sur la durée",
+      heading: "Comment ça prend forme sur les semaines",
+      patternsExampleCaption: "Exemple — tes semaines, pas celles de quelqu'un d'autre.",
+      steps: [
+        {
+          title: "Ouvrir Fix dans un moment difficile",
+          body: "Un prochain pas sûr en moins de soixante secondes. Sans inscription, sans compte, sans nom.",
+        },
+        {
+          title: "Noter une ligne dans Journal",
+          body: "Tes propres mots, uniquement sur ton appareil. Le ressenti, le déclencheur, ce que tu as essayé — assez pour que ta semaine ait une forme plus tard.",
+        },
+        {
+          title: "Voir tes Motifs se dessiner",
+          body: "Des formes hebdomadaires honnêtes — quels jours tu fumes plutôt, à quelle heure, quelles humeurs arrivent avant. Pas de streaks, pas de tableaux de score.",
+        },
+        {
+          title: "Construire un Plan de Réduction",
+          body: "Un plan de 2, 4 ou 6 semaines que tu règles toi-même — pause, réduire, ou décaler l'heure. Mettre en pause et reprendre quand tu veux.",
+        },
+      ],
+    },
     waitlist: {
       label: "Tu veux être averti quand la prochaine chose arrive ? Laisse un email.",
       placeholder: "toi@quelquepart.fr",
@@ -314,6 +413,8 @@ export const LANDING_COPY: Record<Locale, LandingCopy> = {
     },
     footerBlurb:
       "GetFreezeFix.com est un logiciel de soutien pour adultes 18+. Pas une thérapie, pas un conseil médical, pas un service d'urgence.",
+    footerPricingPosture:
+      "Gratuit aujourd'hui. Si un plan payant arrive un jour, tu verras le prix et les conditions avant qu'on ne te demande une carte.",
     footerLinks: [
       { href: "/help", label: "Aide" },
       { href: "/privacy", label: "Vie privée" },
@@ -357,7 +458,6 @@ export const LANDING_COPY: Record<Locale, LandingCopy> = {
     exampleHeading: "Voorbeeld",
     exampleKicker: "Voorbeeld",
     exampleSubtitle: "Geen echt gesprek",
-    exampleIllustrationLabel: "Illustratie",
     exampleSteps: [
       { index: "1", label: "Kies een situatie", body: "Ik heb trek" },
       {
@@ -372,6 +472,29 @@ export const LANDING_COPY: Record<Locale, LandingCopy> = {
       },
       { index: "4", label: "Jij kiest — proberen, een ander idee, of weggaan", body: null },
     ],
+    tutorial: {
+      kicker: "De lange-termijn-lus",
+      heading: "Hoe het over weken opbouwt",
+      patternsExampleCaption: "Voorbeeld — jouw weken, niet die van iemand anders.",
+      steps: [
+        {
+          title: "Open Fix in een zwaar moment",
+          body: "Eén veilige volgende stap binnen zestig seconden. Geen aanmelding, geen account, geen naam nodig.",
+        },
+        {
+          title: "Schrijf een regel in Journal",
+          body: "Je eigen woorden, alleen op je apparaat. Het gevoel, de trigger, wat je probeerde — genoeg zodat je week later een vorm heeft.",
+        },
+        {
+          title: "Zie Patronen opbouwen",
+          body: "Eerlijke weekvormen — welke dagen je blowt, welk tijdstip, welke stemmingen eerst komen. Geen streaks, geen scorebord.",
+        },
+        {
+          title: "Bouw een Reductieplan",
+          body: "Een plan van 2, 4 of 6 weken dat je zelf instelt — pauzeren, minderen, of het tijdstip verschuiven. Pauzeer en hervat wanneer je wilt.",
+        },
+      ],
+    },
     waitlist: {
       label: "Wil je horen wanneer het volgende komt? Laat een e-mail achter.",
       placeholder: "jij@ergens.nl",
@@ -389,6 +512,8 @@ export const LANDING_COPY: Record<Locale, LandingCopy> = {
     },
     footerBlurb:
       "GetFreezeFix.com is ondersteunende software voor volwassenen vanaf 18. Geen therapie, geen medisch advies, geen noodhulp.",
+    footerPricingPosture:
+      "Vandaag gratis. Als er ooit een betaald plan komt, zie je de prijs en voorwaarden voordat er ooit om een kaart wordt gevraagd.",
     footerLinks: [
       { href: "/help", label: "Hulp" },
       { href: "/privacy", label: "Privacy" },

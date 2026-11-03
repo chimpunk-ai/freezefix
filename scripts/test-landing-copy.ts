@@ -39,7 +39,6 @@ for (const locale of LOCALES) {
     ["exampleHeading", "exampleHeading"],
     ["exampleKicker", "exampleKicker"],
     ["exampleSubtitle", "exampleSubtitle"],
-    ["exampleIllustrationLabel", "exampleIllustrationLabel"],
     ["footerBlurb", "footerBlurb"],
   ];
   for (const [key, label] of required) {
@@ -85,6 +84,31 @@ for (const locale of LOCALES) {
 
 // All alt locales: chatIsEnglishNote must be present. English-specific: it
 // must be null (no bait-and-switch sentinel accidentally rendered).
+// ─────────────────── tutorial card (feat/tutorial, 4 Nov 2026) ───────────
+// Tutorial card has 4 steps + a Patterns example caption. A future PR
+// that drops the card from a locale fails here instead of rendering a
+// blank right-column.
+for (const locale of LOCALES) {
+  const t = LANDING_COPY[locale].tutorial;
+  const prefix = `COPY-${locale.toUpperCase()}-tutorial`;
+  check(`${prefix}-kicker`, nonEmpty(t?.kicker));
+  check(`${prefix}-heading`, nonEmpty(t?.heading));
+  check(`${prefix}-patternsExampleCaption`, nonEmpty(t?.patternsExampleCaption));
+  check(`${prefix}-steps-count-4`, (t?.steps?.length ?? 0) === 4);
+  t?.steps?.forEach((s, i) => {
+    check(`${prefix}-step-${i}-title`, nonEmpty(s?.title));
+    check(`${prefix}-step-${i}-body`, nonEmpty(s?.body));
+  });
+}
+
+// ─────────────────── pricing-posture footer line ───────────────────
+// Added after Tom (NYC, 15-persona audit) called out that lib/plans.ts
+// carries dormant prices while the landing says nothing.
+for (const locale of LOCALES) {
+  check(`COPY-${locale.toUpperCase()}-footerPricingPosture`,
+    nonEmpty(LANDING_COPY[locale].footerPricingPosture));
+}
+
 check("COPY-DE-chatIsEnglishNote-present", nonEmpty(LANDING_COPY.de.chatIsEnglishNote));
 check("COPY-FR-chatIsEnglishNote-present", nonEmpty(LANDING_COPY.fr.chatIsEnglishNote));
 check("COPY-NL-chatIsEnglishNote-present", nonEmpty(LANDING_COPY.nl.chatIsEnglishNote));
