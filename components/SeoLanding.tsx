@@ -37,11 +37,16 @@ export default function SeoLanding({ content }: Props) {
 
   return (
     <main className="mx-auto w-full max-w-3xl px-5 pb-16">
-      {/* Product-disclosure banner — the first thing a cold Google visitor
-          sees, so they know whose page this is and what Fix is not. */}
-      <div className="mt-4 rounded-[1.25rem] border border-line/70 bg-card/60 px-4 py-3 text-xs leading-relaxed text-ink-soft">
-        {c.productDisclosure}
-      </div>
+      {/*
+        The product-disclosure banner used to sit here, above the hero.
+        Marcus (DE, 22, panicking at 2am) from the 4 Nov 2026 15-persona
+        audit called that out: a scared stoner lands and the FIRST thing
+        he reads is "not therapy, not a doctor, not an emergency service."
+        His paraphrase: "scheiße, die können mir also auch nicht helfen."
+        Reassurance has to come first; the disclosure is still on the
+        page, moved below the hero (above the CTA) where it informs
+        without pre-emptively unsettling the user.
+      */}
 
       {/* Header: wordmark + Get help now + locale switcher chip */}
       <header className="flex items-center justify-between py-5">
@@ -102,20 +107,19 @@ export default function SeoLanding({ content }: Props) {
         </p>
       </section>
 
-      {/* "What is actually happening" */}
-      <section className="flex flex-col gap-4 border-t border-line pt-8">
-        <h2 className="text-xl text-ink" style={{ fontFamily: "var(--font-display)", fontWeight: 400 }}>
-          {c.whatSection.heading}
-        </h2>
-        {c.whatSection.paragraphs.map((p, i) => (
-          <p key={i} className="text-base leading-relaxed text-ink-soft">
-            {p}
-          </p>
-        ))}
-        <p className="text-xs text-ink-faint">{c.whatSection.cite}</p>
-      </section>
-
-      {/* Three things to try */}
+      {/*
+        Three things to try — moved ABOVE "what is actually happening"
+        and the red-flag list on 4 Nov 2026 (fix/safety-audit-wave).
+        Alex (IE, 20, first bad trip) from the 15-persona audit: "Put the
+        three things to try ABOVE the red-flag list — give me the action
+        before you hand me a symptom checklist that a panicking first-
+        timer will auto-fail." A panicking stoner reads the hero,
+        scrolls, and the next thing they get is three concrete things
+        they can do RIGHT NOW. The physiology explanation and the
+        red-flag list follow, so the page still carries both — just in
+        an order that doesn't make a scared person check their own pulse
+        before they've had a chance to try a glass of water.
+      */}
       <section className="flex flex-col gap-4 border-t border-line pt-8">
         <h2 className="text-xl text-ink" style={{ fontFamily: "var(--font-display)", fontWeight: 400 }}>
           {c.threeThings.heading}
@@ -137,6 +141,19 @@ export default function SeoLanding({ content }: Props) {
             </li>
           ))}
         </ol>
+      </section>
+
+      {/* "What is actually happening" — moved below the three things to try. */}
+      <section className="flex flex-col gap-4 border-t border-line pt-8">
+        <h2 className="text-xl text-ink" style={{ fontFamily: "var(--font-display)", fontWeight: 400 }}>
+          {c.whatSection.heading}
+        </h2>
+        {c.whatSection.paragraphs.map((p, i) => (
+          <p key={i} className="text-base leading-relaxed text-ink-soft">
+            {p}
+          </p>
+        ))}
+        <p className="text-xs text-ink-faint">{c.whatSection.cite}</p>
       </section>
 
       {/* Red flags + emergency line */}
@@ -162,6 +179,17 @@ export default function SeoLanding({ content }: Props) {
         </ul>
         <p className="mt-2 text-sm leading-relaxed text-ink">{c.whenToCall.emergencyLine}</p>
       </section>
+
+      {/*
+        Product-disclosure banner — moved here on 4 Nov 2026
+        (fix/safety-audit-wave) from above-hero. The disclosure still runs
+        before the user clicks "Open Fix", which is all GDPR / consumer-
+        protection law needs — but no longer before the user has had a
+        chance to breathe.
+      */}
+      <div className="mt-8 rounded-[1.25rem] border border-line/70 bg-card/60 px-4 py-3 text-xs leading-relaxed text-ink-soft">
+        {c.productDisclosure}
+      </div>
 
       {/* CTA */}
       <section className="mt-8 flex flex-col gap-3 rounded-[1.5rem] border border-line bg-card p-5 sm:p-6">

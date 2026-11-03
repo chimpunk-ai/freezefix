@@ -109,6 +109,21 @@ for (const p of SEO_PAGES) {
   if (p.cta.secondary) {
     check(`${prefix}-cta-secondary-onsite`, p.cta.secondary.href.startsWith("/"));
   }
+
+  // Edibles-softener guard (fix/safety-audit-wave, 4 Nov 2026). Alex (IE, 20,
+  // first bad trip) crashed on the old "three to six hours" phrasing. The
+  // whatSection prose must still mention edibles AND include a comforting
+  // instruction ("somewhere comfortable" / "einen bequemen Platz") rather than
+  // just a scary duration. Catches a future PR that silently reverts this.
+  const whatProseJoined = p.whatSection.paragraphs.join(" ").toLowerCase();
+  if (whatProseJoined.includes("edible")) {
+    const expected = p.locale === "de"
+      ? ["bequemen platz"]
+      : ["somewhere comfortable", "somewhere you can rest", "stay put"];
+    const hasComfort = expected.some((kw) => whatProseJoined.includes(kw));
+    check(`${prefix}-edible-has-comfort-phrase`, hasComfort,
+      `edibles timing mentioned without a comfort-wrapper phrase; expected one of ${JSON.stringify(expected)}`);
+  }
 }
 
 const pass = results.filter((r) => r.ok).length;

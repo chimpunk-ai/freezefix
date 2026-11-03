@@ -43,6 +43,26 @@ for (const c of VERIFIED_COUNTRIES) {
 const FR = RESOURCES.FR;
 const findBy = (list: Contact[], tel: string) => list.find((x) => x.tel === tel);
 
+// ───────────────────────── Australia specifics ─────────────────────────
+// Verified against healthdirect.gov.au/mental-health-helplines (the Australian
+// Government's official directory) on 4 November 2026. Added after the
+// 15-persona audit flagged that AU falling to the OTHER bucket meant Priya
+// (Melbourne, GAD) was being handed 000 and findahelpline.com instead of
+// Lifeline or Beyond Blue.
+const AU = RESOURCES.AU;
+check("AU-emergency-000", AU.emergency.tel === "000");
+check("AU-lifeline-crisis", Boolean(findBy(AU.crisis, "131114")));
+check("AU-lifeline-text", Boolean(AU.crisis.find((c) => c.sms?.to === "0477131114")));
+check("AU-lifeline-chat-url", AU.crisis.some((c) => (c.url ?? "").includes("lifeline.org.au")));
+check("AU-beyondblue-crisis", Boolean(findBy(AU.crisis, "1300224636")));
+check("AU-suicide-callback", Boolean(findBy(AU.crisis, "1300659467")));
+check("AU-13yarn-first-nations", Boolean(findBy(AU.crisis, "139276")));
+check("AU-lifeline-urgent", Boolean(findBy(AU.urgentMentalHealth, "131114")));
+check("AU-beyondblue-urgent", Boolean(findBy(AU.urgentMentalHealth, "1300224636")));
+check("AU-national-aod", Boolean(findBy(AU.substances, "1800250015")));
+check("AU-kids-helpline-youth", Boolean(findBy(AU.youth, "1800551800")));
+check("AU-youth-night-backup", AU.youthNightBackup?.tel === "131114");
+
 check("FR-emergency-112", FR.emergency.tel === "112");
 check("FR-3114-crisis", Boolean(findBy(FR.crisis, "3114")));
 check("FR-SOS-amitie-fr", Boolean(findBy(FR.crisis, "0972394050")));
@@ -68,6 +88,11 @@ const resolvedPT = resourcesFor("PT");
 check("RESOLVE-PT-falls-to-OTHER", resolvedPT.code === "OTHER");
 check("RESOLVE-PT-emergency-112", resolvedPT.emergency.tel === "112");
 check("OTHER-ES-still-112", OTHER_EMERGENCY_NUMBERS.ES === "112");
+
+const resolvedAU = resourcesFor("AU");
+check("RESOLVE-AU-is-verified", resolvedAU.code === "AU");
+check("RESOLVE-AU-emergency-000", resolvedAU.emergency.tel === "000");
+check("RESOLVE-AU-has-lifeline", Boolean(findBy(resolvedAU.crisis, "131114")));
 
 // ────────────────────────── Non-regression ──────────────────────────
 // If any of these fall over, something unrelated to FR has been touched.

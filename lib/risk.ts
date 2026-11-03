@@ -274,21 +274,55 @@ const PATTERNS = {
     ].join("|")
   ),
   // R8 under 18 -> Stop
+  //
+  // Expanded 4 November 2026 (fix/safety-audit-wave) with German patterns
+  // after the 15-persona audit flagged that Jonas (17, Berlin) was walking
+  // past the entire R8 safety net because every pattern below was English-
+  // only — the German landing has shipped since P1.5 but the regex that
+  // catches a disclosure like "ich bin 16" or "Oberstufe" or "Klasse 11"
+  // did not. A product that offers German chat (eventually) with an age
+  // gate that only reads English is worse than no age gate at all,
+  // because it teaches a native German teenager to disclose in a language
+  // the net doesn't speak.
   r8: new RegExp(
     [
+      // English age statements
       "(?:i'?m|i am|im) (?:only )?1[0-7]\\b",
       "\\b1[0-7] (?:years? old|yo|y/o)\\b",
       "\\baged? 1[0-7]\\b",
+      // English school-year markers
       "\\byear (?:7|8|9|10|11|12)\\b",
       "\\b(?:6|7|8|9|10|11)th grade",
       "(?:freshman|sophomore|junior) (?:in|at) (?:high )?school",
       "\\bgcses?\\b",
       "secondary school",
       "\\bmiddle school",
+      // German age statements
+      "(?:ich bin|bin) (?:erst |nur )?1[0-7](?: jahre?(?: alt)?)?\\b",
+      "(?:ich bin|bin) (?:sechzehn|siebzehn|fünfzehn|vierzehn|dreizehn|zwölf)",
+      // German school-year markers (middle + upper secondary). The
+      // Oberstufe runs 10/11/12/13 and ends at Abitur; a teenager naming
+      // any of these is almost always 14-18. Underage is the safer bet.
+      "\\bklasse (?:[5-9]|1[0-3])\\b",
+      "\\b(?:[5-9]|1[0-3])\\. klasse\\b",
+      "\\boberstufe\\b",
+      "\\bmittelstufe\\b",
+      "\\bunterstufe\\b",
+      "\\bgymnasium\\b.{0,30}(?:schule|klasse|lehrer|hausaufgaben)?",
+      "\\brealschule\\b",
+      "\\bhauptschule\\b",
+      "\\bgesamtschule\\b",
+      "\\babitur\\b",
+      "\\babi(?! ?bear|zeige)",
+      // English parent-finds-out
       "(?:my )?(?:mum|mom|parents|dad) (?:will|might|is gonna|is going to) find out.*(?:school|teacher|class|homework)",
       "(?:school|teacher|class|homework).*(?:my )?(?:mum|mom|parents|dad) (?:will|might) find out",
       "(?:mum|mom|dad|parents) (?:will|would|is gonna|are gonna|gonna|is going to) (?:kill|murder) me.*(?:school|teacher|class|homework|exam)",
       "(?:school|teacher|class|homework|exam).*(?:mum|mom|dad|parents) (?:will|would|is gonna|are gonna|gonna) (?:kill|murder) me",
+      // German parent-finds-out — same clinical intent as the English set
+      "(?:meine )?(?:mama|mutter|eltern|papa|vater) (?:werden|wird|bringt|bringen|bringen mich|tötet|töten) mich?.{0,40}(?:schule|lehrer|lehrerin|klasse|hausaufgaben|abi)",
+      "(?:schule|lehrer|lehrerin|klasse|hausaufgaben|abi).{0,40}(?:mama|mutter|eltern|papa|vater) (?:werden|wird|bringt|bringen) mich (?:erfahren|rausfinden|umbringen|töten)",
+      "(?:mama|mutter|eltern|papa|vater) (?:erfahren|rausfinden).{0,40}(?:schule|lehrer|lehrerin|klasse|hausaufgaben|abi)",
     ].join("|")
   ),
   // Level 1 Watch: vague hopelessness, very high distress, heavy edible and scared
