@@ -74,6 +74,11 @@ export type LandingCopy = {
   heroBody: string;
   ctaOpen: string;
   ctaPrivacy: string;
+  /** Small link under the hero CTA pointing at /for-someone-you-love —
+   *  added 4 Nov 2026 (feat/for-someone-you-love) for the Clara persona.
+   *  Deliberately a tertiary link, not a chip, so it doesn't compete with
+   *  the primary Open Fix action but is findable from the hero. */
+  ctaForSomeone: string;
   /** Honest note shown ONLY on non-English pages: "Fix chat is still English".
    *  null on English because there's nothing to disclose. */
   chatIsEnglishNote: string | null;
@@ -152,6 +157,7 @@ export const LANDING_COPY: Record<Locale, LandingCopy> = {
       "A private companion for adults who want to understand their cannabis habits and find a next step that feels right for them.",
     ctaOpen: "Open Fix",
     ctaPrivacy: "How privacy works",
+    ctaForSomeone: "Here for someone you love?",
     chatIsEnglishNote: null,
     features: [
       { title: "No judgment", body: "Reflect, reduce, pause, or just get through tonight." },
@@ -219,6 +225,7 @@ export const LANDING_COPY: Record<Locale, LandingCopy> = {
       "Free today. If a paid plan ships one day, you'll see the price and terms before you're ever asked for a card.",
     footerLinks: [
       { href: "/help", label: "Help" },
+      { href: "/for-someone-you-love", label: "For someone you love" },
       { href: "/privacy", label: "Privacy" },
       { href: "/patterns", label: "Patterns" },
       { href: "/terms", label: "Terms" },
@@ -243,6 +250,7 @@ export const LANDING_COPY: Record<Locale, LandingCopy> = {
       "Ein stiller Begleiter für Erwachsene, die ihren Cannabis-Konsum verstehen und einen nächsten Schritt finden wollen, der sich für sie richtig anfühlt.",
     ctaOpen: "Fix öffnen",
     ctaPrivacy: "Wie Datenschutz funktioniert",
+    ctaForSomeone: "Für jemanden, den du liebst?",
     // The chat itself is still English today. Say it plainly, don't bait and
     // switch. "Fix spricht aktuell Englisch — Deutsch folgt bald."
     chatIsEnglishNote:
@@ -317,6 +325,7 @@ export const LANDING_COPY: Record<Locale, LandingCopy> = {
       "Heute kostenlos. Wenn ein kostenpflichtiger Plan irgendwann kommt, siehst du den Preis und die Bedingungen, bevor jemals nach einer Karte gefragt wird.",
     footerLinks: [
       { href: "/help", label: "Hilfe" },
+      { href: "/for-someone-you-love", label: "Für jemanden, den du liebst" },
       { href: "/privacy", label: "Datenschutz" },
       { href: "/patterns", label: "Muster" },
       { href: "/terms", label: "AGB" },
@@ -349,6 +358,7 @@ export const LANDING_COPY: Record<Locale, LandingCopy> = {
       "Un compagnon privé pour les adultes qui veulent comprendre leurs habitudes avec le cannabis et trouver un prochain pas qui leur parle vraiment.",
     ctaOpen: "Ouvrir Fix",
     ctaPrivacy: "Comment la vie privée fonctionne",
+    ctaForSomeone: "Ici pour quelqu'un que tu aimes ?",
     chatIsEnglishNote:
       "Fix lui-même est pour l'instant en anglais. Le français est en cours — si tu préfères attendre, laisse ton email plus bas et on te préviendra.",
     features: [
@@ -417,6 +427,7 @@ export const LANDING_COPY: Record<Locale, LandingCopy> = {
       "Gratuit aujourd'hui. Si un plan payant arrive un jour, tu verras le prix et les conditions avant qu'on ne te demande une carte.",
     footerLinks: [
       { href: "/help", label: "Aide" },
+      { href: "/for-someone-you-love", label: "Pour quelqu'un que tu aimes" },
       { href: "/privacy", label: "Vie privée" },
       { href: "/patterns", label: "Tendances" },
       { href: "/terms", label: "CGU" },
@@ -448,6 +459,7 @@ export const LANDING_COPY: Record<Locale, LandingCopy> = {
       "Een stille metgezel voor volwassenen die hun cannabisgebruik willen begrijpen en een volgende stap willen vinden die goed voelt voor hen.",
     ctaOpen: "Fix openen",
     ctaPrivacy: "Hoe privacy werkt",
+    ctaForSomeone: "Hier voor iemand van wie je houdt?",
     chatIsEnglishNote:
       "Fix zelf is nu in het Engels. Nederlands komt eraan — als je dat liever afwacht, laat hieronder een e-mail achter en we laten het weten.",
     features: [
@@ -516,6 +528,7 @@ export const LANDING_COPY: Record<Locale, LandingCopy> = {
       "Vandaag gratis. Als er ooit een betaald plan komt, zie je de prijs en voorwaarden voordat er ooit om een kaart wordt gevraagd.",
     footerLinks: [
       { href: "/help", label: "Hulp" },
+      { href: "/for-someone-you-love", label: "Voor iemand van wie je houdt" },
       { href: "/privacy", label: "Privacy" },
       { href: "/patterns", label: "Patronen" },
       { href: "/terms", label: "Voorwaarden" },

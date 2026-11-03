@@ -18,6 +18,7 @@
     "test:landing-copy": "tsx scripts/test-landing-copy.ts",
     "test:seo-copy": "tsx scripts/test-seo-copy.ts",
     "test:program": "tsx scripts/test-program.ts",
+    "test:for-someone": "tsx scripts/test-for-someone.ts",
     "test:reflections": "tsx scripts/test-reflections.ts",
     "test:pwa": "tsx scripts/test-pwa.ts",
     "test:plans": "tsx scripts/test-plans.ts",

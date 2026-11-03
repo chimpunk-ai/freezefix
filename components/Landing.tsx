@@ -138,6 +138,19 @@ export default function Landing({ locale = "en" }: Props) {
             </Link>
           </div>
 
+          {/* Clara door (feat/for-someone-you-love, 4 Nov 2026). A small
+              tertiary link under the CTA row, aimed at partners / parents /
+              friends who landed here looking to help someone else. Not a
+              chip — doesn't compete with "Open Fix" — but findable from the
+              hero so the reader sees it before scrolling past. */}
+          <Link
+            href="/for-someone-you-love"
+            className="-mt-2 inline-flex min-h-[32px] items-center gap-1.5 text-sm text-ink-soft underline-offset-4 hover:text-ink hover:underline"
+          >
+            {copy.ctaForSomeone}
+            <span aria-hidden="true">&rarr;</span>
+          </Link>
+
           {/* Honest note (feat/de-landing, 3 Nov 2026 — P1.5). On the German
               page this reads "Fix selbst läuft momentan auf Englisch", so
               Marcus knows the chat is still English before he taps the CTA
