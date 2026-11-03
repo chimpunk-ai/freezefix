@@ -72,6 +72,14 @@ export default function sitemap(): MetadataRoute.Sitemap {
       priority: 0.8,
     },
     {
+      // "For someone you love" (added 4 Nov 2026, feat/for-someone-you-love
+      // — Clara persona from the 15-agent audit).
+      url: `${SITE_URL}/for-someone-you-love`,
+      lastModified: now,
+      changeFrequency: "monthly",
+      priority: 0.8,
+    },
+    {
       url: `${SITE_URL}/help`,
       lastModified: now,
       changeFrequency: "monthly",
