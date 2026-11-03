@@ -33,6 +33,8 @@ import {
   weekNumber,
   progressFor,
   last14Days,
+  cleanStreakDays,
+  daysUntilTarget,
   type ReductionProgram,
   type DayState,
 } from "../lib/program";
@@ -249,12 +251,48 @@ const nonEmpty = (s: unknown) => typeof s === "string" && s.trim().length > 0;
     { kind: "sessions_per_day" as const, current: 3, target: 1 },
     { kind: "pause_for" as const, days: 14 },
     { kind: "shift_time" as const, from: "10:00", to: "20:00" },
+    { kind: "quit_for_date" as const, targetDate: "2027-01-15" },
   ]) {
     store.clear();
     createProgram({ weeks: 2, goal });
     const r = readProgram();
     check(`GOAL-${goal.kind}-persisted`, r?.goal.kind === goal.kind);
   }
+}
+
+// ─────────────── quit-mode helpers (feat/quit-and-tbreak) ──────────
+// Mohammed persona from the 15-persona audit. In quit mode the clean-streak
+// counter and days-to-target drive the Today view, and reduction-mode helpers
+// should not fire for quit goals.
+{
+  store.clear();
+  const start = new Date("2026-11-01T10:00:00");
+  let p = createProgram({
+    weeks: 2,
+    goal: { kind: "quit_for_date", targetDate: "2026-11-15" },
+    now: start,
+  });
+  // Fresh program, no logs: streak counts from startedAt.
+  check("QUIT-streak-fresh-day1", cleanStreakDays(p, start) === 1);
+  check("QUIT-streak-fresh-day5", cleanStreakDays(p, new Date("2026-11-05T10:00:00")) === 5);
+  // Days-to-target counts forward.
+  check("QUIT-left-day1", daysUntilTarget(p, start) === 14);
+  check("QUIT-left-day14", daysUntilTarget(p, new Date("2026-11-14T10:00:00")) === 1);
+  check("QUIT-left-target-day", daysUntilTarget(p, new Date("2026-11-15T10:00:00")) === 0);
+  check("QUIT-left-past-target", daysUntilTarget(p, new Date("2026-12-01T10:00:00")) === 0);
+  // isFinished tracks the targetDate, not weeks.
+  check("QUIT-finished-before", !isFinished(p, new Date("2026-11-14T10:00:00")));
+  check("QUIT-finished-at-target", isFinished(p, new Date("2026-11-15T10:00:00")));
+  check("QUIT-finished-past", isFinished(p, new Date("2026-12-10T10:00:00")));
+  // Tough log resets streak; next day = 1.
+  p = setDay(p, "tough", "caved", new Date("2026-11-05T22:00:00"));
+  check("QUIT-streak-after-tough-same-day", cleanStreakDays(p, new Date("2026-11-05T23:00:00")) === 0);
+  check("QUIT-streak-after-tough-next-day", cleanStreakDays(p, new Date("2026-11-06T10:00:00")) === 1);
+  // Non-quit modes always return 0 from the helpers.
+  const r = createProgram({ weeks: 2, goal: { kind: "pause_for", days: 7 }, now: start });
+  check("QUIT-helpers-noop-on-reduction-streak", cleanStreakDays(r, start) === 0);
+  check("QUIT-helpers-noop-on-reduction-left", daysUntilTarget(r, start) === 0);
+  void r;
 }
 
 // ─────────────────── copy shape (EN + DE) ───────────────────────
@@ -266,10 +304,10 @@ for (const locale of LOCALES) {
   check(`${prefix}-introH1`, nonEmpty(c.introH1));
   check(`${prefix}-introBody`, nonEmpty(c.introBody));
   check(`${prefix}-introBullets-3`, c.introBullets.length === 3 && c.introBullets.every(nonEmpty));
-  check(`${prefix}-goalOptions-4`, c.goalOptions.length === 4);
+  check(`${prefix}-goalOptions-5`, c.goalOptions.length === 5);
   check(`${prefix}-goalOptions-kinds`,
     JSON.stringify(c.goalOptions.map((g) => g.kind).sort()) ===
-      JSON.stringify(["days_per_week", "pause_for", "sessions_per_day", "shift_time"]));
+      JSON.stringify(["days_per_week", "pause_for", "quit_for_date", "sessions_per_day", "shift_time"]));
   check(`${prefix}-weeksOptions-3`, c.weeksOptions.length === 3);
   check(`${prefix}-weeksOptions-values`,
     JSON.stringify(c.weeksOptions.map((w) => w.weeks).sort()) === JSON.stringify([2, 4, 6]));
@@ -280,6 +318,19 @@ for (const locale of LOCALES) {
   check(`${prefix}-deleteConfirm`, nonEmpty(c.deleteConfirm));
   check(`${prefix}-goalLine-days-has-%d`, c.goalLine.days_per_week.includes("%d"));
   check(`${prefix}-goalLine-shift-has-%s`, c.goalLine.shift_time.includes("%s"));
+  check(`${prefix}-goalLine-quit-has-%s`, c.goalLine.quit_for_date.includes("%s"));
+  check(`${prefix}-quit-streakH2`, nonEmpty(c.quit?.streakH2));
+  check(`${prefix}-quit-daysLeftH2`, nonEmpty(c.quit?.daysLeftH2));
+  check(`${prefix}-quit-streakResetNote`, nonEmpty(c.quit?.streakResetNote));
+  check(`${prefix}-targetDateLabel`, nonEmpty(c.targetDateLabel));
+  check(`${prefix}-targetDateHint`, nonEmpty(c.targetDateHint));
+  // Ryan's "T-break" rename landed: the pause_for option title must now name
+  // the term his search intent used. English cohort uses "t-break";
+  // non-English copy keeps the loanword so Marcus / Sophie / Lars still
+  // search it in English, which is what they type into Google anyway.
+  const pauseTitle = (c.goalOptions.find((g) => g.kind === "pause_for")?.title ?? "").toLowerCase();
+  check(`${prefix}-pause-has-tbreak`, pauseTitle.includes("t-break") || pauseTitle.includes("tolerance break"),
+    `pause_for title must now mention T-break; got: ${pauseTitle}`);
 }
 
 // Posture guard — positive version. The program's whole posture is "not a

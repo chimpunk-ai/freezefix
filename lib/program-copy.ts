@@ -47,6 +47,9 @@ export type ProgramCopy = {
   daysLabel: string;
   fromTimeLabel: string;
   toTimeLabel: string;
+  /** Quit-mode target-date field + helper. 4 Nov 2026 — Mohammed persona. */
+  targetDateLabel: string;
+  targetDateHint: string;
   nextLabel: string;
   backLabel: string;
 
@@ -111,12 +114,27 @@ export type ProgramCopy = {
     sessions_per_day: string;
     pause_for: string;
     shift_time: string;
+    quit_for_date: string; // "Clean until %s" / "Sauber bis %s"
+  };
+
+  /** Quit-mode specific strings. Rendered only when goal.kind ===
+   *  "quit_for_date" — the one program context where a streak counter is
+   *  honest (the user set the goal up that way). */
+  quit: {
+    streakH2: string; // "Days clean"
+    streakUnit: string; // "days" / "Tage" — pluralization is not perfect here, acceptable
+    streakResetNote: string; // "A used day reset the counter — that's it. Pick up where you were."
+    daysLeftH2: string; // "Days to your target"
+    daysLeftUnit: string; // "days to go"
+    daysLeftToday: string; // "That's today."
+    daysLeftPassed: string; // "You passed the target date." (displayed in the finished state too)
+    targetCaption: string; // "Target: %s" shown on Today
   };
 };
 
 export const PROGRAM_COPY: Record<Locale, ProgramCopy> = {
   en: {
-    metaTitle: "The Reduction Program — a 2 / 4 / 6-week plan you build yourself",
+    metaTitle: "Reduction, tolerance break, or quit by a date — a plan you build yourself",
     metaDescription:
       "A quiet, self-guided plan to cut back, pause, or shift when you reach for cannabis. On your device, no sign-up, no streaks, no shame. Adults 18+.",
 
@@ -149,13 +167,23 @@ export const PROGRAM_COPY: Record<Locale, ProgramCopy> = {
       },
       {
         kind: "pause_for",
-        title: "Pause for a stretch",
-        body: "No cannabis for a chosen number of days.",
+        title: "Tolerance break (T-break) or pause",
+        body: "No cannabis for a chosen number of days. Reset your tolerance, or take time off.",
       },
       {
         kind: "shift_time",
         title: "Shift the time",
         body: "Move your usual time — e.g. not before 8pm, or not first thing.",
+      },
+      {
+        // Mohammed persona (15-persona audit): "I've got a drug test / new job
+        // / pregnancy / clinical reason to STOP by a specific date — pause is
+        // not quite the same, and 'reduction' is hostile when quitting is
+        // literally why I'm here." Quit mode has its own date input and is
+        // the one Program context that shows a streak counter.
+        kind: "quit_for_date",
+        title: "Quit for a date",
+        body: "Stay off completely until a specific date — a drug test, a pregnancy, a new job.",
       },
     ],
     currentLabel: "Where you are now",
@@ -163,6 +191,8 @@ export const PROGRAM_COPY: Record<Locale, ProgramCopy> = {
     daysLabel: "Days",
     fromTimeLabel: "From",
     toTimeLabel: "To",
+    targetDateLabel: "Target date",
+    targetDateHint: "A drug test, a pregnancy, a new job, a wedding — the date you need to be clean by.",
     nextLabel: "Next",
     backLabel: "Back",
 
@@ -242,6 +272,17 @@ export const PROGRAM_COPY: Record<Locale, ProgramCopy> = {
       sessions_per_day: "From %d times a day to %d",
       pause_for: "Pause for %d days",
       shift_time: "Shift from %s to %s",
+      quit_for_date: "Clean until %s",
+    },
+    quit: {
+      streakH2: "Days clean",
+      streakUnit: "days",
+      streakResetNote: "A used day resets the counter. That's it. Pick up where you were.",
+      daysLeftH2: "Days to your target",
+      daysLeftUnit: "days to go",
+      daysLeftToday: "That's today. You did it.",
+      daysLeftPassed: "You passed your target date.",
+      targetCaption: "Target: %s",
     },
   },
 
@@ -279,13 +320,18 @@ export const PROGRAM_COPY: Record<Locale, ProgramCopy> = {
       },
       {
         kind: "pause_for",
-        title: "Pause einlegen",
-        body: "Kein Cannabis für eine gewählte Anzahl Tage.",
+        title: "Tolerance break (T-break) oder Pause",
+        body: "Kein Cannabis für eine gewählte Anzahl Tage. Toleranz zurücksetzen oder einfach eine Pause.",
       },
       {
         kind: "shift_time",
         title: "Zeit verschieben",
         body: "Verschieb deine übliche Zeit — z.B. nicht vor 20 Uhr oder nicht als Erstes am Tag.",
+      },
+      {
+        kind: "quit_for_date",
+        title: "Bis zu einem Datum aufhören",
+        body: "Komplett sauber bleiben bis zu einem bestimmten Datum — Drogentest, Schwangerschaft, neuer Job.",
       },
     ],
     currentLabel: "Wo du gerade bist",
@@ -293,6 +339,8 @@ export const PROGRAM_COPY: Record<Locale, ProgramCopy> = {
     daysLabel: "Tage",
     fromTimeLabel: "Von",
     toTimeLabel: "Bis",
+    targetDateLabel: "Zieldatum",
+    targetDateHint: "Ein Drogentest, eine Schwangerschaft, ein neuer Job, eine Hochzeit — das Datum, bis zu dem du sauber sein musst.",
     nextLabel: "Weiter",
     backLabel: "Zurück",
 
@@ -372,6 +420,17 @@ export const PROGRAM_COPY: Record<Locale, ProgramCopy> = {
       sessions_per_day: "Von %d Mal am Tag auf %d",
       pause_for: "%d Tage Pause",
       shift_time: "Verschieben von %s auf %s",
+      quit_for_date: "Sauber bis %s",
+    },
+    quit: {
+      streakH2: "Tage sauber",
+      streakUnit: "Tage",
+      streakResetNote: "Ein konsumierter Tag setzt den Zähler zurück. Das ist alles. Mach einfach weiter von da.",
+      daysLeftH2: "Tage bis zu deinem Ziel",
+      daysLeftUnit: "Tage noch",
+      daysLeftToday: "Das ist heute. Du hast es geschafft.",
+      daysLeftPassed: "Du hast dein Zieldatum überschritten.",
+      targetCaption: "Ziel: %s",
     },
   },
 
@@ -402,14 +461,17 @@ export const PROGRAM_COPY: Record<Locale, ProgramCopy> = {
     goalOptions: [
       { kind: "days_per_week", title: "Moins de jours par semaine", body: "Réduis le nombre de jours où tu fumes dans la semaine." },
       { kind: "sessions_per_day", title: "Moins de fois par jour", body: "Les jours où tu fumes, passe de plusieurs à moins de sessions." },
-      { kind: "pause_for", title: "Fais une pause", body: "Pas de cannabis pendant un nombre de jours choisi." },
+      { kind: "pause_for", title: "T-break (tolerance break) ou pause", body: "Pas de cannabis pendant un nombre de jours choisi. Reset ta tolérance, ou prends une vraie pause." },
       { kind: "shift_time", title: "Déplace l'heure", body: "Décale ton heure habituelle — ex. pas avant 20h ou pas en premier." },
+      { kind: "quit_for_date", title: "Arrêter pour une date", body: "Reste complètement clean jusqu'à une date précise — test de drogue, grossesse, nouveau job." },
     ],
     currentLabel: "Où tu en es",
     targetLabel: "Où tu veux aller",
     daysLabel: "Jours",
     fromTimeLabel: "De",
     toTimeLabel: "À",
+    targetDateLabel: "Date cible",
+    targetDateHint: "Un test de drogue, une grossesse, un nouveau job, un mariage — la date à laquelle tu dois être clean.",
     nextLabel: "Suivant",
     backLabel: "Retour",
 
@@ -480,6 +542,17 @@ export const PROGRAM_COPY: Record<Locale, ProgramCopy> = {
       sessions_per_day: "De %d fois par jour à %d",
       pause_for: "Pause de %d jours",
       shift_time: "Décalage de %s à %s",
+      quit_for_date: "Clean jusqu'au %s",
+    },
+    quit: {
+      streakH2: "Jours clean",
+      streakUnit: "jours",
+      streakResetNote: "Un jour où tu as fumé remet le compteur à zéro. C'est tout. Reprends où tu en étais.",
+      daysLeftH2: "Jours jusqu'à ta date",
+      daysLeftUnit: "jours restants",
+      daysLeftToday: "C'est aujourd'hui. Tu l'as fait.",
+      daysLeftPassed: "Tu as passé ta date cible.",
+      targetCaption: "Cible : %s",
     },
   },
 
@@ -508,14 +581,17 @@ export const PROGRAM_COPY: Record<Locale, ProgramCopy> = {
     goalOptions: [
       { kind: "days_per_week", title: "Minder dagen per week", body: "Verminder het aantal dagen dat je in een week blowt." },
       { kind: "sessions_per_day", title: "Minder keer per dag", body: "Op de dagen dat je wel blowt, ga van meerdere naar minder sessies." },
-      { kind: "pause_for", title: "Een pauze inlassen", body: "Geen cannabis gedurende een gekozen aantal dagen." },
+      { kind: "pause_for", title: "T-break (tolerance break) of pauze", body: "Geen cannabis gedurende een gekozen aantal dagen. Reset je tolerantie, of neem gewoon pauze." },
       { kind: "shift_time", title: "Verschuif het tijdstip", body: "Verschuif je gebruikelijke tijd — bijv. niet voor 20:00 of niet als eerste." },
+      { kind: "quit_for_date", title: "Stoppen voor een datum", body: "Volledig schoon blijven tot een specifieke datum — drugstest, zwangerschap, nieuwe baan." },
     ],
     currentLabel: "Waar je nu bent",
     targetLabel: "Waar je naartoe wilt",
     daysLabel: "Dagen",
     fromTimeLabel: "Van",
     toTimeLabel: "Tot",
+    targetDateLabel: "Doel-datum",
+    targetDateHint: "Een drugstest, een zwangerschap, een nieuwe baan, een bruiloft — de datum waarop je schoon moet zijn.",
     nextLabel: "Volgende",
     backLabel: "Terug",
 
@@ -586,6 +662,17 @@ export const PROGRAM_COPY: Record<Locale, ProgramCopy> = {
       sessions_per_day: "Van %d keer per dag naar %d",
       pause_for: "%d dagen pauze",
       shift_time: "Verschuiven van %s naar %s",
+      quit_for_date: "Schoon tot %s",
+    },
+    quit: {
+      streakH2: "Dagen schoon",
+      streakUnit: "dagen",
+      streakResetNote: "Een dag waarop je blowde zet de teller terug. Dat is alles. Pak op waar je was.",
+      daysLeftH2: "Dagen tot je doel",
+      daysLeftUnit: "dagen te gaan",
+      daysLeftToday: "Dat is vandaag. Je hebt het gedaan.",
+      daysLeftPassed: "Je bent je doel-datum voorbij.",
+      targetCaption: "Doel: %s",
     },
   },
 };

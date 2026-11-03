@@ -55,17 +55,30 @@ const KEY = "ff_program";
 export type GoalKind =
   | "days_per_week" // fewer use days each week
   | "sessions_per_day" // fewer sessions on the days the user does use
-  | "pause_for" // no use for N days
-  | "shift_time"; // the specific "no joint before 8pm" / "no first-thing-in-the-morning" shift
+  | "pause_for" // no use for N days (a tolerance break / T-break / pause)
+  | "shift_time" // the specific "no joint before 8pm" / "no first-thing-in-the-morning" shift
+  | "quit_for_date"; // stay off until a specific date (drug test, pregnancy, new job)
 
 /** The user's chosen goal. The numbers are the user's own numbers, saved as
  *  typed; this module never prescribes a target. "current" is where they
- *  started; "target" is where they want to be by the end of the plan. */
+ *  started; "target" is where they want to be by the end of the plan.
+ *
+ *  quit_for_date was added 4 November 2026 (feat/quit-and-tbreak) after
+ *  Mohammed (Manchester, 24, drug test in 21 days) from the 15-persona
+ *  audit flagged that none of the existing goals fit "I need to STOP
+ *  completely by a specific date." Reduction-only framing left him with
+ *  no honest option. targetDate is a YYYY-MM-DD local calendar date;
+ *  quit mode is the ONE context in the Program where a streak counter is
+ *  shown (the user explicitly defined success as "stay off until that
+ *  date" and asked for the streak — the "no streaks" posture applies to
+ *  reduction, where a tough day is NOT failure; quit mode is different
+ *  because the user set it up that way). */
 export type Goal =
   | { kind: "days_per_week"; current: number; target: number }
   | { kind: "sessions_per_day"; current: number; target: number }
   | { kind: "pause_for"; days: number }
-  | { kind: "shift_time"; from: string; to: string };
+  | { kind: "shift_time"; from: string; to: string }
+  | { kind: "quit_for_date"; targetDate: string };
 
 export type Weeks = 2 | 4 | 6;
 
@@ -192,7 +205,62 @@ export function weekNumber(p: ReductionProgram, now = new Date()): number {
  *  user is NEVER forced into a decision at this point; the UI shows a
  *  gentle "your plan reached its end — reflect, extend, or wrap up" state. */
 export function isFinished(p: ReductionProgram, now = new Date()): boolean {
+  if (p.goal.kind === "quit_for_date") {
+    return daysUntilTarget(p, now) <= 0;
+  }
   return daysSinceStart(p, now) >= p.weeks * 7;
+}
+
+/** Days from `now` (LOCAL) to the goal's targetDate, inclusive of today.
+ *  Returns 0 when the target is today or already past. Non-quit goals
+ *  return 0. */
+export function daysUntilTarget(p: ReductionProgram, now = new Date()): number {
+  if (p.goal.kind !== "quit_for_date") return 0;
+  const target = parseISODate(p.goal.targetDate);
+  if (!target) return 0;
+  const a = Date.UTC(now.getFullYear(), now.getMonth(), now.getDate());
+  const b = Date.UTC(target.getFullYear(), target.getMonth(), target.getDate());
+  return Math.max(0, Math.floor((b - a) / 86_400_000));
+}
+
+/** Consecutive-clean-day streak for quit_for_date goals, in calendar days.
+ *
+ *  Mohammed (15-persona audit): "'Not quitting. Not a streak.' Fine as a
+ *  philosophy, hostile as a product promise when quitting is literally why
+ *  I'm here. I need a streak counter — it's the only thing that'll stop me
+ *  caving at day 9." Quit mode is the one context where showing a streak
+ *  is honest: the user has explicitly defined success as abstinence until
+ *  a target date, and the streak is just the plain measure of that.
+ *
+ *  Behaviour: counts days from the last "tough" log (exclusive) to today
+ *  (inclusive). Missing days don't break the streak — forgetting to log
+ *  isn't the same as using. If no tough log has ever been saved, counts
+ *  from startedAt to today. Returns 0 for non-quit goals. */
+export function cleanStreakDays(p: ReductionProgram, now = new Date()): number {
+  if (p.goal.kind !== "quit_for_date") return 0;
+  const toughDays = Object.entries(p.logs)
+    .filter(([, log]) => log.state === "tough")
+    .map(([day]) => day)
+    .sort();
+  const lastToughISO = toughDays.length > 0 ? toughDays[toughDays.length - 1] : null;
+  let anchorMs: number;
+  if (lastToughISO) {
+    const d = parseISODate(lastToughISO);
+    if (!d) return 0;
+    anchorMs = Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()) + 86_400_000;
+  } else {
+    const d = new Date(p.startedAt);
+    anchorMs = Date.UTC(d.getFullYear(), d.getMonth(), d.getDate());
+  }
+  const b = Date.UTC(now.getFullYear(), now.getMonth(), now.getDate());
+  return Math.max(0, Math.floor((b - anchorMs) / 86_400_000) + 1);
+}
+
+/** YYYY-MM-DD → Date in local time, or null for garbage. */
+function parseISODate(iso: string): Date | null {
+  const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(iso);
+  if (!m) return null;
+  return new Date(Number(m[1]), Number(m[2]) - 1, Number(m[3]));
 }
 
 // ────────────────────────────────────────────────────────────────────────────
@@ -373,7 +441,7 @@ function isProgram(o: unknown): o is ReductionProgram {
   if (p.weeks !== 2 && p.weeks !== 4 && p.weeks !== 6) return false;
   if (!p.goal || typeof p.goal !== "object") return false;
   const g = p.goal as { kind?: unknown };
-  const kinds: GoalKind[] = ["days_per_week", "sessions_per_day", "pause_for", "shift_time"];
+  const kinds: GoalKind[] = ["days_per_week", "sessions_per_day", "pause_for", "shift_time", "quit_for_date"];
   if (typeof g.kind !== "string" || !kinds.includes(g.kind as GoalKind)) return false;
   if (!p.logs || typeof p.logs !== "object") return false;
   if (!p.reflections || typeof p.reflections !== "object") return false;
