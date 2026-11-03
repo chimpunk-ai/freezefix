@@ -17,5 +17,5 @@
     "paths": { "@/*": ["./*"] }
   },
   "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts"],
-  "exclude": ["node_modules", ".open-next"]
+  "exclude": ["node_modules", ".open-next", "scripts", "capacitor-webdir", "capacitor.config.ts"]
 }

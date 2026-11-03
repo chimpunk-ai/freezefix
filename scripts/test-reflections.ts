@@ -166,9 +166,14 @@ for (const locale of LOCALES) {
   // Posture guard: no evaluative words. The whole posture of this card is
   // open-ended noticing, not pass/fail scoring.
   const joined = c.prompts.join(" ").toLowerCase();
-  const forbidden = locale === "de"
-    ? ["ziel erreicht", "scheitern", "versagen", "streak"]
-    : ["did you stick to", "failure", "streak", "goal met"];
+  const forbidden =
+    locale === "de"
+      ? ["ziel erreicht", "scheitern", "versagen", "streak"]
+      : locale === "fr"
+      ? ["objectif atteint", "échec", "streak", "as-tu tenu"]
+      : locale === "nl"
+      ? ["doel behaald", "mislukking", "streak", "heb je het volgehouden"]
+      : ["did you stick to", "failure", "streak", "goal met"];
   for (const bad of forbidden) {
     if (joined.includes(bad)) {
       check(`POSTURE-${locale}-no-${bad.replace(/\s/g, "-")}`, false, `prompt contained: ${bad}`);
