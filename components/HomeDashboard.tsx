@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import AppShell from "@/components/AppShell";
+import WeeklyReflection from "@/components/WeeklyReflection";
 import { last7Days, last7Summary, getAnswer, setToday, todayISO, type DayShape, type Shape } from "@/lib/checkins";
 import { readGoal, writeGoal, GOALS, GOAL_LABEL, type GoalId } from "@/lib/goals";
 import { allWins } from "@/lib/wins";
@@ -183,6 +184,16 @@ export default function HomeDashboard() {
           </p>
         )}
       </section>
+
+      {/* Weekly reflection card (feat/weekly-reflection, 3 Nov 2026 — audit
+          P2.9). Returns null if the user has already saved or dismissed
+          this week, so it never nags. Lives above the goal picker because
+          "notice your week" is naturally the first beat if you open the
+          app once a week; the goal + help chips stay as everyday surfaces
+          below. */}
+      <div className="mt-5">
+        <WeeklyReflection />
+      </div>
 
       {/* Goal picker */}
       <section className="mt-5 rounded-[1.5rem] border border-line bg-card p-5">
