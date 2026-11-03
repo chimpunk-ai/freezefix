@@ -72,6 +72,14 @@ export default function sitemap(): MetadataRoute.Sitemap {
       priority: 0.8,
     },
     {
+      // "Was that normal?" (added 4 Nov 2026, feat/was-that-normal — Sophie
+      // persona). Short reassurance page for post-party / one-off users.
+      url: `${SITE_URL}/was-that-normal`,
+      lastModified: now,
+      changeFrequency: "monthly",
+      priority: 0.75,
+    },
+    {
       url: `${SITE_URL}/help`,
       lastModified: now,
       changeFrequency: "monthly",
