@@ -169,6 +169,20 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
         />
+        {/* Service worker registration (feat/pwa-and-capacitor-scaffold,
+            3 Nov 2026 — audit P3.13). Deferred until after load so the SW
+            install cost never slows down a user's first interactive paint.
+            The SW itself is public/sw.js; see it for exactly what gets
+            cached and what deliberately doesn't (every /api/ route is
+            network-only). The registration is wrapped in try/catch and
+            a feature check so a browser with SW disabled (private window
+            on some iOS versions, locked-down enterprise profiles)
+            silently falls back to a plain web page instead of erroring. */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `if("serviceWorker" in navigator){window.addEventListener("load",function(){try{navigator.serviceWorker.register("/sw.js",{scope:"/"})}catch(e){}})}`,
+          }}
+        />
       </head>
       <body className="font-sans">{children}</body>
     </html>
