@@ -77,4 +77,52 @@ export const REFLECTIONS_COPY: Record<Locale, ReflectionsCopy> = {
       "Was willst du als kleine Sache in nächste Woche mitnehmen?",
     ],
   },
+
+  // French. Added 4 Nov 2026 to keep in step with P3.11's locale expansion.
+  // Written French-first for Sophie; each prompt ends with a question mark
+  // and never evaluates her.
+  fr: {
+    cardKicker: "Cette semaine",
+    cardHeading: "Une question calme",
+    savedLabel: "Enregistré",
+    skipLabel: "Passer cette semaine",
+    saveLabel: "Enregistrer",
+    savingLabel: "J'enregistre…",
+    placeholder: "Une ligne, si tu veux",
+    oneLineHint:
+      "Uniquement sur ton appareil. Rien n'est téléversé. La question change chaque semaine.",
+    prompts: [
+      "Qu'est-ce qui a été plus facile que prévu cette semaine ?",
+      "À quelle heure de la journée t'es-tu senti le plus toi-même ?",
+      "Un moment qui s'est mieux passé que tu pensais — c'était quoi ?",
+      "À quoi as-tu dit non cette semaine, grand ou petit ?",
+      "Qu'est-ce qui a fait du bien et qui n'a rien coûté ?",
+      "Avec qui as-tu passé du temps dont tu veux plus ?",
+      "Qu'est-ce qu'un moment difficile t'a montré, s'il t'a montré quelque chose ?",
+      "Qu'est-ce que tu veux emmener comme petite chose dans la semaine prochaine ?",
+    ],
+  },
+
+  // Dutch. Added 4 Nov 2026 to keep in step with P3.11's locale expansion.
+  nl: {
+    cardKicker: "Deze week",
+    cardHeading: "Een rustige vraag",
+    savedLabel: "Opgeslagen",
+    skipLabel: "Deze week overslaan",
+    saveLabel: "Opslaan",
+    savingLabel: "Bezig…",
+    placeholder: "Eén regel, als je wilt",
+    oneLineHint:
+      "Alleen op je apparaat. Niets wordt geupload. De vraag verandert elke week.",
+    prompts: [
+      "Wat was deze week makkelijker dan je verwachtte?",
+      "Op welk moment van de dag voelde je je het meest jezelf?",
+      "Een moment dat beter ging dan je dacht — wat was dat?",
+      "Waar heb je deze week nee tegen gezegd, groot of klein?",
+      "Wat was iets goeds dat niets heeft gekost?",
+      "Met wie heb je tijd doorgebracht waar je meer van wilt?",
+      "Wat heeft een zware moment je laten zien, als het je iets heeft laten zien?",
+      "Wat wil je als kleine ding meenemen naar volgende week?",
+    ],
+  },
 };
