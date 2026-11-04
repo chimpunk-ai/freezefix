@@ -322,6 +322,79 @@ export function progressFor(p: ReductionProgram, now = new Date()): Progress {
   };
 }
 
+// ────────────────────────────────────────────────────────────────────────────
+// Optional streak counter
+// ────────────────────────────────────────────────────────────────────────────
+//
+// The product's default posture is NO streaks. Lars (Amsterdam, 15-persona
+// audit) called this out as condescending for his demographic: "I know
+// streaks are a shame mechanic for some people, but some of us genuinely
+// want to see the count — the opt-out that doesn't exist IS the shame
+// mechanic for me." The compromise: the counter is OFF by default
+// (preserving the posture for Marcus, Sophie, Maria, Nina) and visible
+// only to the user who explicitly turns it on in Program settings. The
+// streak preference lives in its own localStorage key — not inside the
+// ReductionProgram schema — so turning it on or off never triggers a
+// data-shape migration.
+
+const STREAK_PREF_KEY = "ff_show_streak";
+
+/** True when the user has explicitly opted in to the streak counter.
+ *  Defaults to false — the project's calm posture stands unless the user
+ *  asks for the number. Never throws; a blocked localStorage returns
+ *  false so the UI shows the default-off state. */
+export function readStreakPref(): boolean {
+  try {
+    return window.localStorage.getItem(STREAK_PREF_KEY) === "1";
+  } catch {
+    return false;
+  }
+}
+
+/** Persist the user's streak preference. */
+export function writeStreakPref(on: boolean): void {
+  try {
+    window.localStorage.setItem(STREAK_PREF_KEY, on ? "1" : "0");
+  } catch {
+    /* storage can be blocked; the toggle still looks right in this session */
+  }
+}
+
+/** Count consecutive "well"-logged days ending at today (local).
+ *
+ *  Rules — written for Lars but applied uniformly:
+ *    • Only "well" days count. A "mixed" or "tough" day ends the streak;
+ *      that is the whole point of a streak counter.
+ *    • A MISSING day — the user did not log — also ends the streak. That
+ *      is the honest read; "forgot to log" and "did not do the thing"
+ *      look the same to this counter.
+ *    • If today is not yet logged, the streak is measured from yesterday
+ *      backwards. A fresh-at-noon streak of 3 should not read "0" just
+ *      because the user hasn't logged today yet.
+ *    • Paused days do not count — the whole counter is 0 while paused.
+ *      Resuming does not restore the streak; the user is starting fresh
+ *      from today, and that is the honest read too.
+ *  Returns a non-negative integer. */
+export function streakDays(p: ReductionProgram, now = new Date()): number {
+  if (isPaused(p)) return 0;
+  // Walk back from today. If today has no log yet, start at yesterday.
+  const cursor = new Date(now);
+  const todayKey = todayISO(cursor);
+  if (!(todayKey in p.logs)) cursor.setDate(cursor.getDate() - 1);
+  let count = 0;
+  // Hard cap at the program's elapsed length so a user who edits the
+  // system clock backwards can't manufacture arbitrary numbers.
+  const cap = daysSinceStart(p, now) + 1;
+  while (count < cap) {
+    const key = todayISO(cursor);
+    const log = p.logs[key];
+    if (!log || log.state !== "well") break;
+    count++;
+    cursor.setDate(cursor.getDate() - 1);
+  }
+  return count;
+}
+
 /** The last 14 days of logs as an array, newest last. Missing days become
  *  null so the renderer can show "no log" cells without re-fetching. */
 export function last14Days(p: ReductionProgram, now = new Date()): Array<{ day: string; log: DayLog | null }> {

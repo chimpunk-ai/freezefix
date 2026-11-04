@@ -33,6 +33,9 @@ import {
   weekNumber,
   progressFor,
   last14Days,
+  readStreakPref,
+  writeStreakPref,
+  streakDays,
   type ReductionProgram,
   type DayState,
 } from "../lib/program";
@@ -315,6 +318,102 @@ for (const locale of LOCALES) {
     phrases.notFailure.some((p) => toughBody.includes(p)),
     `expected tough-day body to say one of ${JSON.stringify(phrases.notFailure)}; got: ${c.logStates.tough.body}`
   );
+}
+
+// ───────────────── optional streak counter (Lars's audit) ─────────────────
+// The default is OFF — the user has to explicitly turn it on. "Well" days
+// count; "mixed", "tough", and missing days end it. Paused programs always
+// read 0.
+{
+  store.clear();
+
+  // Default-off guarantee: fresh user never has a streak preference set.
+  check("STREAK-pref-default-off", readStreakPref() === false);
+
+  // Round-trip the pref.
+  writeStreakPref(true);
+  check("STREAK-pref-write-read", readStreakPref() === true);
+  writeStreakPref(false);
+  check("STREAK-pref-write-read-off", readStreakPref() === false);
+
+  // Build a program with three "well" days ending today; streak should be 3.
+  const base = minimalProgram();
+  const today = new Date();
+  const dayISO = (d: Date) => {
+    const y = d.getFullYear();
+    const m = String(d.getMonth() + 1).padStart(2, "0");
+    const dd = String(d.getDate()).padStart(2, "0");
+    return `${y}-${m}-${dd}`;
+  };
+  const dayOffset = (n: number) => {
+    const d = new Date(today);
+    d.setDate(d.getDate() - n);
+    return dayISO(d);
+  };
+  const threeWell: ReductionProgram = {
+    ...base,
+    startedAt: today.getTime() - 86_400_000 * 10,
+    logs: {
+      [dayOffset(0)]: { state: "well", loggedAt: today.getTime() },
+      [dayOffset(1)]: { state: "well", loggedAt: today.getTime() },
+      [dayOffset(2)]: { state: "well", loggedAt: today.getTime() },
+    },
+  };
+  check("STREAK-three-consecutive-well", streakDays(threeWell, today) === 3);
+
+  // A tough day in the middle breaks the streak.
+  const broken: ReductionProgram = {
+    ...threeWell,
+    logs: {
+      [dayOffset(0)]: { state: "well", loggedAt: today.getTime() },
+      [dayOffset(1)]: { state: "tough", loggedAt: today.getTime() },
+      [dayOffset(2)]: { state: "well", loggedAt: today.getTime() },
+    },
+  };
+  check("STREAK-tough-breaks", streakDays(broken, today) === 1);
+
+  // A missing day (user did not log) also breaks the streak.
+  const missing: ReductionProgram = {
+    ...threeWell,
+    logs: {
+      [dayOffset(0)]: { state: "well", loggedAt: today.getTime() },
+      // day -1 missing
+      [dayOffset(2)]: { state: "well", loggedAt: today.getTime() },
+    },
+  };
+  check("STREAK-missing-day-breaks", streakDays(missing, today) === 1);
+
+  // No log for today yet — the streak should measure from yesterday back.
+  const noTodayYet: ReductionProgram = {
+    ...threeWell,
+    logs: {
+      [dayOffset(1)]: { state: "well", loggedAt: today.getTime() },
+      [dayOffset(2)]: { state: "well", loggedAt: today.getTime() },
+    },
+  };
+  check("STREAK-measures-from-yesterday-when-today-unlogged",
+    streakDays(noTodayYet, today) === 2);
+
+  // Paused programs always read 0.
+  const paused: ReductionProgram = {
+    ...threeWell,
+    pausedAt: today.getTime(),
+  };
+  check("STREAK-zero-while-paused", streakDays(paused, today) === 0);
+
+  // Fresh program with no logs reads 0.
+  check("STREAK-zero-when-no-logs", streakDays(base, today) === 0);
+}
+
+// ───────────────── streak copy shape across all locales ─────────────────
+for (const locale of LOCALES) {
+  const c = PROGRAM_COPY[locale];
+  const prefix = `COPY-${locale.toUpperCase()}-streak`;
+  check(`${prefix}-toggleOnLabel`, nonEmpty(c.streakToggleOnLabel));
+  check(`${prefix}-toggleOffLabel`, nonEmpty(c.streakToggleOffLabel));
+  check(`${prefix}-toggleHint`, nonEmpty(c.streakToggleHint));
+  check(`${prefix}-daysLine-has-placeholder`, c.streakDaysLine.includes("%d"));
+  check(`${prefix}-daysZero`, nonEmpty(c.streakDaysZero));
 }
 
 // ─────────────────────────────── report ─────────────────────────────
