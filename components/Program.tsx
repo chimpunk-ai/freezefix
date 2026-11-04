@@ -21,6 +21,9 @@ import {
   todayISO,
   progressFor,
   last14Days,
+  readStreakPref,
+  writeStreakPref,
+  streakDays,
   type ReductionProgram,
   type Goal,
   type Weeks,
@@ -55,11 +58,15 @@ type Phase =
 export default function Program() {
   const [locale, setLocale] = useState<Locale>("en");
   const [phase, setPhase] = useState<Phase>({ kind: "loading" });
+  // Optional streak counter (Lars's audit item). Default OFF for everyone —
+  // the counter only appears once the user explicitly turns it on.
+  const [showStreak, setShowStreak] = useState<boolean>(false);
 
   // Mount: pick locale from region, load any existing program.
   useEffect(() => {
     const region = detectRegion();
     setLocale(pickLandingLocale(region));
+    setShowStreak(readStreakPref());
     const p = readProgram();
     if (!p) {
       setPhase({ kind: "intro" });
@@ -116,6 +123,11 @@ export default function Program() {
     a.click();
     a.remove();
     setTimeout(() => URL.revokeObjectURL(url), 0);
+  };
+  const onToggleStreak = () => {
+    const next = !showStreak;
+    setShowStreak(next);
+    writeStreakPref(next);
   };
   const onDelete = () => {
     // Native confirm is honest and does not need design review. The copy
@@ -175,6 +187,8 @@ export default function Program() {
         <TodaySection
           t={t}
           program={phase.program}
+          showStreak={showStreak}
+          onToggleStreak={onToggleStreak}
           onLog={(s, n) => onLogToday(s, n, phase.program)}
           onClear={() => onClearToday(phase.program)}
           onReflect={(text) => onSaveReflection(text, phase.program)}
@@ -509,6 +523,8 @@ function SetupPickWeeks({
 function TodaySection({
   t,
   program,
+  showStreak,
+  onToggleStreak,
   onLog,
   onClear,
   onReflect,
@@ -518,6 +534,8 @@ function TodaySection({
 }: {
   t: Copy;
   program: ReductionProgram;
+  showStreak: boolean;
+  onToggleStreak: () => void;
   onLog: (state: DayState, note: string) => void;
   onClear: () => void;
   onReflect: (text: string) => void;
@@ -525,6 +543,7 @@ function TodaySection({
   onExport: () => void;
   onDelete: () => void;
 }) {
+  const streak = useMemo(() => (showStreak ? streakDays(program) : 0), [program, showStreak]);
   const day = todayISO();
   const existing = program.logs[day];
   const totalDays = program.weeks * 7;
@@ -554,6 +573,23 @@ function TodaySection({
       >
         {t.todayH1}
       </h1>
+
+      {/* Optional streak banner — rendered only when the user has
+       *  explicitly turned the streak counter on in settings. Lars's
+       *  15-persona audit item. The counter uses "well" days only and
+       *  breaks on missed logs; the hint under it explains that calmly
+       *  rather than treating a zero as a failure. */}
+      {showStreak ? (
+        <div
+          className="rounded-[1.25rem] border border-accent/40 bg-accent/10 p-4"
+          aria-live="polite"
+        >
+          <p className="text-xs uppercase tracking-wider text-ink-soft">Streak</p>
+          <p className="mt-1 text-base text-ink">
+            {streak > 0 ? sprintf(t.streakDaysLine, streak) : t.streakDaysZero}
+          </p>
+        </div>
+      ) : null}
 
       {/* Plan line */}
       <div className="rounded-[1.25rem] border border-line bg-card p-4">
@@ -716,12 +752,21 @@ function TodaySection({
           </button>
           <button
             type="button"
+            onClick={onToggleStreak}
+            className="min-h-[40px] rounded-full border border-line px-4 text-sm text-ink-soft transition hover:text-ink"
+            aria-pressed={showStreak}
+          >
+            {showStreak ? t.streakToggleOffLabel : t.streakToggleOnLabel}
+          </button>
+          <button
+            type="button"
             onClick={onDelete}
             className="min-h-[40px] rounded-full border border-frost/50 px-4 text-sm text-frost transition hover:border-frost hover:bg-frost/10"
           >
             {t.deleteLabel}
           </button>
         </div>
+        <p className="text-xs leading-relaxed text-ink-faint">{t.streakToggleHint}</p>
       </div>
     </section>
   );

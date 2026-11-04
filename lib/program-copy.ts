@@ -103,6 +103,20 @@ export type ProgramCopy = {
   deleteLabel: string;
   deleteConfirm: string;
 
+  // ────────── Optional streak counter (opt-in) ──────────
+  // Added 4 Nov 2026 for Lars's audit item — the default is OFF for
+  // everyone (preserving the "no streaks" posture), visible only when
+  // the user explicitly turns it on in Program settings. These strings
+  // only appear once the toggle has been flipped.
+  streakToggleOnLabel: string;  // button label when OFF: "Show streak counter"
+  streakToggleOffLabel: string; // button label when ON: "Hide streak counter"
+  streakToggleHint: string;     // one-line hint under the toggle in settings
+  /** "{n}-day streak" / "{n} days" — rendered on Today when the toggle is on.
+   *  The %d placeholder is replaced at render time; keep it as a single line. */
+  streakDaysLine: string;
+  /** Rendered when the count is zero. Calm wording, never shaming. */
+  streakDaysZero: string;
+
   // ────────── Goal description helpers ──────────
   /** Human-readable one-line description of a goal, used on Today and
    *  Progress. The number tokens %d / %s are replaced by the component. */
@@ -237,6 +251,12 @@ export const PROGRAM_COPY: Record<Locale, ProgramCopy> = {
     deleteConfirm:
       "This clears the whole plan from this device. There is no undo. Delete?",
 
+    streakToggleOnLabel: "Show streak counter",
+    streakToggleOffLabel: "Hide streak counter",
+    streakToggleHint: "Off by default. Only days that went well count — missed logs break it.",
+    streakDaysLine: "%d-day streak",
+    streakDaysZero: "No streak yet — today starts fresh.",
+
     goalLine: {
       days_per_week: "From %d days a week to %d",
       sessions_per_day: "From %d times a day to %d",
@@ -367,6 +387,12 @@ export const PROGRAM_COPY: Record<Locale, ProgramCopy> = {
     deleteConfirm:
       "Das löscht den ganzen Plan von diesem Gerät. Kein Rückgängig. Löschen?",
 
+    streakToggleOnLabel: "Streak-Zähler anzeigen",
+    streakToggleOffLabel: "Streak-Zähler ausblenden",
+    streakToggleHint: "Standardmäßig aus. Zählt nur gute Tage — vergessene Logs brechen ihn.",
+    streakDaysLine: "%d-Tage-Streak",
+    streakDaysZero: "Noch kein Streak — heute fängt frisch an.",
+
     goalLine: {
       days_per_week: "Von %d Tagen die Woche auf %d",
       sessions_per_day: "Von %d Mal am Tag auf %d",
@@ -475,6 +501,12 @@ export const PROGRAM_COPY: Record<Locale, ProgramCopy> = {
     deleteConfirm:
       "Cela supprime le plan entier de cet appareil. Pas de retour en arrière. Supprimer ?",
 
+    streakToggleOnLabel: "Afficher le compteur de streak",
+    streakToggleOffLabel: "Masquer le compteur de streak",
+    streakToggleHint: "Désactivé par défaut. Seuls les jours qui vont bien comptent — un log manqué le casse.",
+    streakDaysLine: "Streak de %d jours",
+    streakDaysZero: "Pas encore de streak — aujourd'hui repart à neuf.",
+
     goalLine: {
       days_per_week: "De %d jours par semaine à %d",
       sessions_per_day: "De %d fois par jour à %d",
@@ -580,6 +612,12 @@ export const PROGRAM_COPY: Record<Locale, ProgramCopy> = {
     deleteLabel: "Dit plan verwijderen",
     deleteConfirm:
       "Dit wist het hele plan van dit apparaat. Geen ongedaan maken. Verwijderen?",
+
+    streakToggleOnLabel: "Streakteller tonen",
+    streakToggleOffLabel: "Streakteller verbergen",
+    streakToggleHint: "Standaard uit. Alleen dagen die goed gingen tellen — gemiste logs breken hem.",
+    streakDaysLine: "Streak van %d dagen",
+    streakDaysZero: "Nog geen streak — vandaag begint fris.",
 
     goalLine: {
       days_per_week: "Van %d dagen per week naar %d",
@@ -691,6 +729,12 @@ export const PROGRAM_COPY: Record<Locale, ProgramCopy> = {
     deleteConfirm:
       "Esto borra todo el plan de este dispositivo. No se puede deshacer. ¿Borrar?",
 
+    streakToggleOnLabel: "Mostrar contador de racha",
+    streakToggleOffLabel: "Ocultar contador de racha",
+    streakToggleHint: "Desactivado por defecto. Solo los días que fueron bien cuentan — un registro olvidado la rompe.",
+    streakDaysLine: "Racha de %d días",
+    streakDaysZero: "Sin racha todavía — hoy empieza limpio.",
+
     goalLine: {
       days_per_week: "De %d días por semana a %d",
       sessions_per_day: "De %d veces al día a %d",
@@ -797,6 +841,12 @@ export const PROGRAM_COPY: Record<Locale, ProgramCopy> = {
     deleteLabel: "Cancella questo piano",
     deleteConfirm:
       "Questo cancella tutto il piano da questo dispositivo. Non si può annullare. Cancellare?",
+
+    streakToggleOnLabel: "Mostra contatore streak",
+    streakToggleOffLabel: "Nascondi contatore streak",
+    streakToggleHint: "Disattivato di default. Contano solo i giorni andati bene — un log mancato lo rompe.",
+    streakDaysLine: "Streak di %d giorni",
+    streakDaysZero: "Ancora nessuno streak — oggi riparte da zero.",
 
     goalLine: {
       days_per_week: "Da %d giorni a settimana a %d",
