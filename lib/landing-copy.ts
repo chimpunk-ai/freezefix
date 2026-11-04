@@ -22,9 +22,9 @@
 //   öffnen". Pretending the whole product is German would be worse than
 //   admitting the chat is English and shipping the German chat later.
 
-export type Locale = "en" | "de" | "fr" | "nl";
+export type Locale = "en" | "de" | "fr" | "nl" | "es" | "it";
 
-export const LOCALES: Locale[] = ["en", "de", "fr", "nl"];
+export const LOCALES: Locale[] = ["en", "de", "fr", "nl", "es", "it"];
 
 /** The locale a visitor sees when their region doesn't match any of
  *  LOCALES. English is the pivot — every alt-locale header "switch"
@@ -44,6 +44,12 @@ export function pickLandingLocale(region: string): Locale {
   if (r === "DE" || r === "AT" || r === "CH") return "de";
   if (r === "FR" || r === "LU" || r === "BE") return "fr";
   if (r === "NL") return "nl";
+  // Spanish (Maria, Madrid) and Italian (Nina, Milan) — added 4 Nov 2026
+  // for the 15-persona audit. AD/UY/other Spanish-speaking regions pivot
+  // here too; a UY visitor would prefer Castilian over English. IT covers
+  // SM and VA as neighbouring Italian-speaking states.
+  if (r === "ES" || r === "AD" || r === "UY") return "es";
+  if (r === "IT" || r === "SM" || r === "VA") return "it";
   return "en";
 }
 
@@ -144,6 +150,8 @@ export const LANDING_COPY: Record<Locale, LandingCopy> = {
       { href: "/de", label: "Auf Deutsch", lang: "de" },
       { href: "/fr", label: "En français", lang: "fr" },
       { href: "/nl", label: "In het Nederlands", lang: "nl" },
+      { href: "/es", label: "En español", lang: "es" },
+      { href: "/it", label: "In italiano", lang: "it" },
     ],
     kicker: "GetFreezeFix · for adults 18+",
     heroHeadlineLine1: "More control,",
@@ -520,6 +528,202 @@ export const LANDING_COPY: Record<Locale, LandingCopy> = {
       { href: "/patterns", label: "Patronen" },
       { href: "/terms", label: "Voorwaarden" },
       { href: "/refunds", label: "Terugbetalingen" },
+      { href: "mailto:hello@getfreezefix.com", label: "hello@getfreezefix.com" },
+    ],
+  },
+
+  // ───────────────────────────── Spanish ─────────────────────────────
+  // Added 4 November 2026 for the 15-persona audit (Maria, Madrid, 28).
+  // Written Spanish-first — not an auto-translation. "Craving" stays as
+  // "craving" because that is what Maria actually says; Spanish does not
+  // have a one-word equivalent that lands as softly as the anglicism in
+  // a youth register. Spanish chat is on the waitlist (same posture as
+  // French and Dutch).
+  es: {
+    htmlLang: "es",
+    metaTitle: "FreezeFix — el compañero para cuando un porro te deja clavado",
+    metaDescription:
+      "Un acompañante privado para adultos que quieren entender su relación con el cannabis y encontrar un siguiente paso que les cuadre. Mayores de 18. Confidencial.",
+    getHelpNow: "Ayuda ahora",
+    openReturning: "Abrir",
+    switchTo: { href: "/", label: "English" },
+    languageLinks: [{ href: "/", label: "English", lang: "en" }],
+    kicker: "GetFreezeFix · para adultos 18+",
+    heroHeadlineLine1: "Más control,",
+    heroHeadlineLine2: "momento a momento.",
+    heroBody:
+      "Un acompañante privado para adultos que quieren entender sus hábitos con el cannabis y dar un siguiente paso que les cuadre.",
+    ctaOpen: "Abrir Fix",
+    ctaPrivacy: "Cómo funciona la privacidad",
+    chatIsEnglishNote:
+      "Fix en sí está ahora mismo en inglés. El español viene — si prefieres esperar, deja tu correo abajo y te avisamos.",
+    features: [
+      { title: "Sin juicio", body: "Reflexionar, reducir, parar — o simplemente pasar esta noche." },
+      { title: "Tú eliges tu meta", body: "Sin rachas. Todo se puede saltar." },
+      { title: "Fix es una herramienta de IA y puede equivocarse.", body: "" },
+    ],
+    exampleHeading: "Ejemplo",
+    exampleKicker: "Ejemplo",
+    exampleSubtitle: "No es una conversación real",
+    exampleSteps: [
+      { index: "1", label: "Elige una situación", body: "Tengo un craving" },
+      {
+        index: "2",
+        label: "Unas palabras",
+        body: "Había decidido no fumar esta noche pero me apetece un montón.",
+      },
+      {
+        index: "3",
+        label: "Una pequeña sugerencia",
+        body: "«Un craving puede parecer urgente. No tienes que decidir todo tu futuro ahora mismo. ¿Quieres hacer una pausa de diez minutos, cambiar de sitio, o escribir qué te está tirando hacia ahí?»",
+      },
+      { index: "4", label: "Tú eliges — probar, otra idea, o irte", body: null },
+    ],
+    tutorial: {
+      kicker: "El bucle a largo plazo",
+      heading: "Cómo se va sumando semana a semana",
+      patternsExampleCaption: "Ejemplo — tus semanas, no las de otra persona.",
+      steps: [
+        {
+          title: "Abrir Fix en un momento duro",
+          body: "Un siguiente paso seguro en menos de sesenta segundos. Sin registro, sin cuenta, sin nombre.",
+        },
+        {
+          title: "Apuntar una línea en Diario",
+          body: "Tus propias palabras, sólo en tu dispositivo. El sentimiento, el detonante, lo que probaste — suficiente para que tu semana tenga forma después.",
+        },
+        {
+          title: "Ver tus Patrones",
+          body: "Formas semanales honestas — qué días fumas más, a qué hora, qué estados de ánimo llegan antes. Sin rachas, sin marcadores.",
+        },
+        {
+          title: "Construir un Plan de Reducción",
+          body: "Un plan de 2, 4 o 6 semanas que tú mismo ajustas — pausar, reducir, o cambiar la hora. Puedes pausar y retomar cuando quieras.",
+        },
+      ],
+    },
+    waitlist: {
+      label: "¿Quieres saber cuándo llega lo próximo? Deja un correo.",
+      placeholder: "tu@donde-sea.es",
+      submit: "Apúntame",
+      submitting: "Apuntando…",
+      footnote:
+        "Sólo el correo. Sin nombre, sin teléfono, nada vinculado a tus sesiones con Fix. Escribimos como mucho una vez al mes y sólo cuando hay algo que te interese saber.",
+      error: "No ha pasado. Revisa la dirección e inténtalo otra vez.",
+      throttled:
+        "Ya apuntado. Si te has apuntado varias veces hoy, con eso vale — te avisaremos cuando haya algo que contar.",
+      done:
+        "Gracias — estás en la lista. Sólo escribimos cuando hay algo que te interese saber. Baja fácil en cada correo.",
+      notCollecting:
+        "La lista de espera no está conectada ahora mismo — vuelve a probar en un momento. No se ha perdido nada; es que no podemos guardarlo ahora.",
+    },
+    footerBlurb:
+      "GetFreezeFix.com es software de apoyo para adultos mayores de 18. No es terapia, ni consejo médico, ni un servicio de emergencia.",
+    footerPricingPosture:
+      "Gratis hoy. Si algún día llega un plan de pago, verás el precio y las condiciones antes de que te pidamos una tarjeta.",
+    footerLinks: [
+      { href: "/help", label: "Ayuda" },
+      { href: "/privacy", label: "Privacidad" },
+      { href: "/patterns", label: "Patrones" },
+      { href: "/terms", label: "Términos" },
+      { href: "/refunds", label: "Reembolsos" },
+      { href: "mailto:hello@getfreezefix.com", label: "hello@getfreezefix.com" },
+    ],
+  },
+
+  // ───────────────────────────── Italian ─────────────────────────────
+  // Added 4 November 2026 for the 15-persona audit (Nina, Milan, 26).
+  // Written Italian-first. "Craving" stays as "craving" — the Italian
+  // youth register uses the anglicism; "voglia impellente" would sound
+  // like a textbook. Italian chat is on the waitlist.
+  it: {
+    htmlLang: "it",
+    metaTitle: "FreezeFix — il compagno per quando una canna ti lascia bloccato",
+    metaDescription:
+      "Un accompagnatore privato per adulti che vogliono capire le proprie abitudini con la cannabis e trovare un prossimo passo che gli torni. Dai 18 anni. Riservato.",
+    getHelpNow: "Aiuto ora",
+    openReturning: "Apri",
+    switchTo: { href: "/", label: "English" },
+    languageLinks: [{ href: "/", label: "English", lang: "en" }],
+    kicker: "GetFreezeFix · per adulti 18+",
+    heroHeadlineLine1: "Più controllo,",
+    heroHeadlineLine2: "un momento alla volta.",
+    heroBody:
+      "Un accompagnatore privato per adulti che vogliono capire le proprie abitudini con la cannabis e trovare un prossimo passo che gli torni davvero.",
+    ctaOpen: "Apri Fix",
+    ctaPrivacy: "Come funziona la privacy",
+    chatIsEnglishNote:
+      "Fix al momento è in inglese. L'italiano sta arrivando — se preferisci aspettare, lascia una mail qui sotto e ti avvisiamo.",
+    features: [
+      { title: "Nessun giudizio", body: "Riflettere, ridurre, fermarsi — o semplicemente passare questa sera." },
+      { title: "Scegli tu l'obiettivo", body: "Niente streak. Si può saltare tutto." },
+      { title: "Fix è uno strumento IA e può sbagliare.", body: "" },
+    ],
+    exampleHeading: "Esempio",
+    exampleKicker: "Esempio",
+    exampleSubtitle: "Non è una conversazione vera",
+    exampleSteps: [
+      { index: "1", label: "Scegli una situazione", body: "Ho un craving" },
+      {
+        index: "2",
+        label: "Due parole",
+        body: "Avevo deciso di non fumare stasera ma ne ho davvero voglia.",
+      },
+      {
+        index: "3",
+        label: "Un piccolo suggerimento",
+        body: "«Un craving può sembrare urgente. Non devi decidere tutto il tuo futuro adesso. Vuoi fare una pausa di dieci minuti, cambiare ambiente, o scrivere cosa ti sta tirando lì?»",
+      },
+      { index: "4", label: "Scegli tu — provare, un'altra idea, o andare via", body: null },
+    ],
+    tutorial: {
+      kicker: "Il loop sul lungo periodo",
+      heading: "Come si somma settimana dopo settimana",
+      patternsExampleCaption: "Esempio — le tue settimane, non quelle di qualcun altro.",
+      steps: [
+        {
+          title: "Aprire Fix in un momento difficile",
+          body: "Un prossimo passo sicuro in meno di sessanta secondi. Senza registrazione, senza account, senza nome.",
+        },
+        {
+          title: "Scrivere una riga in Diario",
+          body: "Le tue parole, solo sul tuo dispositivo. La sensazione, l'innesco, cosa hai provato — abbastanza perché la tua settimana prenda forma dopo.",
+        },
+        {
+          title: "Vedere i Pattern",
+          body: "Forme settimanali oneste — in che giorni fumi di più, a che ora, quali stati d'animo arrivano prima. Niente streak, niente classifiche.",
+        },
+        {
+          title: "Costruire un Piano di Riduzione",
+          body: "Un piano di 2, 4 o 6 settimane che imposti tu — fermarsi, ridurre, o spostare l'orario. Metti in pausa e riprendi quando vuoi.",
+        },
+      ],
+    },
+    waitlist: {
+      label: "Vuoi sapere quando arriva la prossima cosa? Lascia una mail.",
+      placeholder: "tu@dovunque.it",
+      submit: "Aggiungimi",
+      submitting: "Aggiungo…",
+      footnote:
+        "Solo la mail. Niente nome, niente telefono, niente collegato alle tue sessioni con Fix. Scriviamo al massimo una volta al mese e solo quando c'è qualcosa che vorresti davvero sapere.",
+      error: "Non è andata. Controlla l'indirizzo e riprova.",
+      throttled:
+        "Già segnato. Se ti sei iscritto più volte oggi, basta così — ti contattiamo quando c'è qualcosa da dire.",
+      done:
+        "Grazie — sei nella lista. Scriviamo solo quando c'è qualcosa che vorresti davvero sapere. Link per disiscriversi in ogni mail.",
+      notCollecting:
+        "La lista d'attesa non è ancora collegata — riprova tra un minuto. Non si è perso nulla; è che non riusciamo a salvarlo ora.",
+    },
+    footerBlurb:
+      "GetFreezeFix.com è software di supporto per adulti dai 18 anni. Non è terapia, non è consiglio medico, non è un servizio di emergenza.",
+    footerPricingPosture:
+      "Gratis oggi. Se un giorno arriva un piano a pagamento, vedrai prezzo e condizioni prima che ti venga mai chiesta una carta.",
+    footerLinks: [
+      { href: "/help", label: "Aiuto" },
+      { href: "/privacy", label: "Privacy" },
+      { href: "/patterns", label: "Pattern" },
+      { href: "/terms", label: "Termini" },
+      { href: "/refunds", label: "Rimborsi" },
       { href: "mailto:hello@getfreezefix.com", label: "hello@getfreezefix.com" },
     ],
   },

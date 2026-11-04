@@ -588,4 +588,221 @@ export const PROGRAM_COPY: Record<Locale, ProgramCopy> = {
       shift_time: "Verschuiven van %s naar %s",
     },
   },
+
+  // ───────────────────────────── Spanish ─────────────────────────────
+  // Added 4 Nov 2026 for the audit (Maria, Madrid). Spanish-first; not a
+  // DeepL of English. "Streak" keeps the Spanish idiom "racha" since
+  // "sin streak" would read as techbro; "sin rachas" is what Spanish
+  // users actually say about habit trackers.
+  es: {
+    metaTitle: "El Programa de Reducción — un plan de 2 / 4 / 6 semanas que montas tú",
+    metaDescription:
+      "Un plan tranquilo y autoguiado para reducir, pausar o cambiar el momento en el que recurres al cannabis. En tu dispositivo, sin registro, sin rachas, sin vergüenza. Mayores de 18.",
+
+    introKicker: "El Programa de Reducción",
+    introH1: "Sin dejarlo. Sin racha. Un plan que montas tú.",
+    introBody:
+      "Un plan corto y honesto — dos, cuatro o seis semanas — que te ayuda a reducir, hacer una pausa, o cambiar el momento en el que recurres a un porro. Tú eliges la meta. Con un toque registras cómo fue el día. Fix está los días que quieras hablar.",
+    introBullets: [
+      "Sin rachas. Un día duro no borra los de antes.",
+      "Sólo en tu dispositivo. Nada se sube, nada lleva tu nombre.",
+      "Pausa y retoma cuando quieras. Borra todo con dos toques.",
+    ],
+    introStartLabel: "Empezar un plan",
+    introPauseFixLink: "Prefiero sólo hablar → Fix",
+
+    setupStepKicker: "Nuevo plan",
+    pickGoalH2: "Elige una meta",
+    pickGoalIntro:
+      "Con una basta. Puedes ajustar el plan después. Si no encaja ninguna, elige la más cercana y ajusta los números.",
+    goalOptions: [
+      { kind: "days_per_week", title: "Menos días por semana", body: "Reduce el número de días que fumas en una semana." },
+      { kind: "sessions_per_day", title: "Menos veces al día", body: "En los días que sí fumas, pasa de varias veces a menos." },
+      { kind: "pause_for", title: "Hacer una pausa", body: "Sin cannabis durante los días que elijas." },
+      { kind: "shift_time", title: "Cambiar la hora", body: "Mueve tu hora habitual — p. ej. no antes de las 20:00 o no a primera hora." },
+    ],
+    currentLabel: "Dónde estás ahora",
+    targetLabel: "A dónde quieres llegar",
+    daysLabel: "Días",
+    fromTimeLabel: "Desde",
+    toTimeLabel: "Hasta",
+    nextLabel: "Siguiente",
+    backLabel: "Atrás",
+
+    pickWeeksH2: "Elige una duración",
+    pickWeeksIntro:
+      "Un plan que vas alargando sin parar se vuelve una obligación. Elige la duración más corta que te resulte honesta para el cambio que quieres.",
+    weeksOptions: [
+      { weeks: 2, title: "2 semanas", body: "Un reset. Suficiente para ver una forma, no tanto como para distraerte." },
+      { weeks: 4, title: "4 semanas", body: "Un trozo real. Bueno para reducir sin dar la vuelta a tu vida." },
+      { weeks: 6, title: "6 semanas", body: "Un plan más largo para un cambio más grande. Pausa tantas veces como necesites." },
+    ],
+    startLabel: "Empezar plan",
+
+    todayKicker: "Día %d de %d",
+    todayH1: "Hoy",
+    todayGoalPrefix: "Tu plan:",
+    logQuestion: "¿Cómo fue hoy?",
+    logStates: {
+      well: { title: "Bien", body: "Lo mantuviste, o casi. Con eso basta — no hace falta vuelta de honor." },
+      mixed: { title: "Mixto", body: "Parte funcionó. Parte no. Ambas cosas se pueden decir." },
+      tough: { title: "Día duro", body: "Un día duro es un registro real, no un fallo. Reconocerlo es el objetivo." },
+    },
+    noteLabel: "Una línea, si quieres",
+    notePlaceholder: "p. ej. día ajetreado, me acordé sólo a las 23:00",
+    saveLabel: "Guardar hoy",
+    loggedLabel: "Guardado",
+    editLabel: "Editar",
+    clearLabel: "Borrar hoy",
+
+    reflectionKicker: "Reflexión semanal",
+    reflectionH2: "Una pregunta tranquila",
+    reflectionIntro:
+      "Una vez por semana, una línea para ti. Puedes saltártela; no pasa nada si no lo haces.",
+    reflectionPlaceholder: "¿Qué fue más fácil de lo que esperabas?",
+    reflectionSaveLabel: "Guardar reflexión",
+    reflectionDoneLabel: "Guardado",
+    reflectionSkipLabel: "Saltar esta semana",
+
+    progressH2: "Tu plan hasta ahora",
+    progressLogged: "%d de %d días registrados",
+    progressStateLegend: {
+      well: "Bien",
+      mixed: "Mixto",
+      tough: "Día duro",
+    },
+
+    finishedKicker: "Plan completado",
+    finishedH1: "Has llegado al final de tu plan.",
+    finishedBody:
+      "Nada que demostrar. Si el plan ha hecho su trabajo, tú lo sabes. Puedes alargarlo dos semanas, o cerrarlo y guardar el registro para después.",
+    finishedExtendLabel: "Alargar 2 semanas",
+    finishedWrapLabel: "Cerrar este plan",
+
+    pausedKicker: "En pausa",
+    pausedH1: "Tu plan está en pausa.",
+    pausedBody: "Ahora mismo no cuenta nada. Retoma cuando quieras — tus registros se quedan.",
+    resumeLabel: "Retomar plan",
+
+    settingsH2: "Este plan",
+    pauseLabel: "Pausar",
+    exportLabel: "Exportar mis registros (JSON)",
+    deleteLabel: "Borrar este plan",
+    deleteConfirm:
+      "Esto borra todo el plan de este dispositivo. No se puede deshacer. ¿Borrar?",
+
+    goalLine: {
+      days_per_week: "De %d días por semana a %d",
+      sessions_per_day: "De %d veces al día a %d",
+      pause_for: "%d días de pausa",
+      shift_time: "Mover de %s a %s",
+    },
+  },
+
+  // ───────────────────────────── Italian ─────────────────────────────
+  // Added 4 Nov 2026 for the audit (Nina, Milan). Italian-first.
+  it: {
+    metaTitle: "Il Programma di Riduzione — un piano di 2 / 4 / 6 settimane che costruisci tu",
+    metaDescription:
+      "Un piano tranquillo e autoguidato per ridurre, fare una pausa, o spostare il momento in cui prendi uno spinello. Sul tuo dispositivo, senza registrazione, senza streak, senza vergogna. Dai 18 anni.",
+
+    introKicker: "Il Programma di Riduzione",
+    introH1: "Non smettere. Niente streak. Un piano che costruisci tu.",
+    introBody:
+      "Un piano breve e onesto — due, quattro o sei settimane — che ti aiuta a ridurre, a fermarti, o a spostare il momento in cui prendi una canna. Scegli tu l'obiettivo. Con un tocco registri com'è andata la giornata. Fix c'è nei giorni in cui vuoi parlare.",
+    introBullets: [
+      "Niente streak. Una giornata dura non cancella quelle prima.",
+      "Solo sul tuo dispositivo. Niente viene caricato, niente porta il tuo nome.",
+      "Metti in pausa e riprendi quando vuoi. Cancella tutto con due tocchi.",
+    ],
+    introStartLabel: "Iniziare un piano",
+    introPauseFixLink: "Preferisco solo parlare → Fix",
+
+    setupStepKicker: "Nuovo piano",
+    pickGoalH2: "Scegli un obiettivo",
+    pickGoalIntro:
+      "Ne basta uno. Puoi aggiustare il piano dopo. Se nessuno torna, scegli il più vicino e cambia i numeri.",
+    goalOptions: [
+      { kind: "days_per_week", title: "Meno giorni a settimana", body: "Riduci il numero di giorni in cui fumi in una settimana." },
+      { kind: "sessions_per_day", title: "Meno volte al giorno", body: "Nei giorni in cui fumi, passa da più volte a meno." },
+      { kind: "pause_for", title: "Fare una pausa", body: "Niente cannabis per i giorni che scegli." },
+      { kind: "shift_time", title: "Spostare l'orario", body: "Sposta il tuo orario abituale — es. non prima delle 20:00 o non appena sveglio." },
+    ],
+    currentLabel: "Dove sei ora",
+    targetLabel: "Dove vuoi arrivare",
+    daysLabel: "Giorni",
+    fromTimeLabel: "Da",
+    toTimeLabel: "A",
+    nextLabel: "Avanti",
+    backLabel: "Indietro",
+
+    pickWeeksH2: "Scegli una durata",
+    pickWeeksIntro:
+      "Un piano che continui ad allungare diventa un dovere. Scegli la durata più corta che ti sembra onesta per il cambiamento che vuoi.",
+    weeksOptions: [
+      { weeks: 2, title: "2 settimane", body: "Un reset. Abbastanza per vedere una forma, non tanto da perderti per strada." },
+      { weeks: 4, title: "4 settimane", body: "Un pezzo vero. Buono per ridurre senza ribaltare la vita." },
+      { weeks: 6, title: "6 settimane", body: "Un piano più lungo per un cambiamento più grande. Metti in pausa quando serve." },
+    ],
+    startLabel: "Iniziare il piano",
+
+    todayKicker: "Giorno %d di %d",
+    todayH1: "Oggi",
+    todayGoalPrefix: "Il tuo piano:",
+    logQuestion: "Com'è andata oggi?",
+    logStates: {
+      well: { title: "Bene", body: "L'hai tenuto, o quasi. Basta così — niente giro d'onore." },
+      mixed: { title: "Misto", body: "Una parte ha funzionato. Una parte no. Entrambe si possono dire." },
+      tough: { title: "Giornata dura", body: "Una giornata dura è un log vero, non un fallimento. Notarla è il punto." },
+    },
+    noteLabel: "Una riga, se vuoi",
+    notePlaceholder: "es. giornata piena, mi sono ricordato solo alle 23:00",
+    saveLabel: "Salva oggi",
+    loggedLabel: "Salvato",
+    editLabel: "Modifica",
+    clearLabel: "Cancella oggi",
+
+    reflectionKicker: "Riflessione settimanale",
+    reflectionH2: "Una domanda tranquilla",
+    reflectionIntro:
+      "Una volta a settimana, una riga per te. Saltare va bene; non succede niente se non lo fai.",
+    reflectionPlaceholder: "Cosa è stato più facile di quanto pensassi?",
+    reflectionSaveLabel: "Salva riflessione",
+    reflectionDoneLabel: "Salvato",
+    reflectionSkipLabel: "Salta questa settimana",
+
+    progressH2: "Il tuo piano finora",
+    progressLogged: "%d di %d giorni registrati",
+    progressStateLegend: {
+      well: "Bene",
+      mixed: "Misto",
+      tough: "Giornata dura",
+    },
+
+    finishedKicker: "Piano completato",
+    finishedH1: "Sei arrivato alla fine del tuo piano.",
+    finishedBody:
+      "Niente da dimostrare. Se il piano ha fatto il suo lavoro, lo sai tu. Puoi allungare di due settimane, o chiudere e tenere il log per dopo.",
+    finishedExtendLabel: "Allunga di 2 settimane",
+    finishedWrapLabel: "Chiudi questo piano",
+
+    pausedKicker: "In pausa",
+    pausedH1: "Il tuo piano è in pausa.",
+    pausedBody: "Ora niente conta. Riprendi quando vuoi — i tuoi log restano.",
+    resumeLabel: "Riprendi il piano",
+
+    settingsH2: "Questo piano",
+    pauseLabel: "Pausa",
+    exportLabel: "Esporta i miei log (JSON)",
+    deleteLabel: "Cancella questo piano",
+    deleteConfirm:
+      "Questo cancella tutto il piano da questo dispositivo. Non si può annullare. Cancellare?",
+
+    goalLine: {
+      days_per_week: "Da %d giorni a settimana a %d",
+      sessions_per_day: "Da %d volte al giorno a %d",
+      pause_for: "%d giorni di pausa",
+      shift_time: "Sposta da %s a %s",
+    },
+  },
 };

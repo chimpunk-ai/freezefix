@@ -112,32 +112,40 @@ for (const locale of LOCALES) {
 check("COPY-DE-chatIsEnglishNote-present", nonEmpty(LANDING_COPY.de.chatIsEnglishNote));
 check("COPY-FR-chatIsEnglishNote-present", nonEmpty(LANDING_COPY.fr.chatIsEnglishNote));
 check("COPY-NL-chatIsEnglishNote-present", nonEmpty(LANDING_COPY.nl.chatIsEnglishNote));
+check("COPY-ES-chatIsEnglishNote-present", nonEmpty(LANDING_COPY.es.chatIsEnglishNote));
+check("COPY-IT-chatIsEnglishNote-present", nonEmpty(LANDING_COPY.it.chatIsEnglishNote));
 check("COPY-EN-chatIsEnglishNote-null", LANDING_COPY.en.chatIsEnglishNote === null);
 
 // Switcher wiring: EN points to /de (primary alt); every alt locale pivots
 // back to EN rather than to another alt. One tap, no dropdown. Extended
-// 3 Nov 2026 for audit P3.11.
+// 3 Nov 2026 for audit P3.11; 4 Nov 2026 for ES/IT.
 check("COPY-EN-switcher-points-to-de", LANDING_COPY.en.switchTo.href === "/de");
 check("COPY-DE-switcher-points-to-en", LANDING_COPY.de.switchTo.href === "/");
 check("COPY-FR-switcher-points-to-en", LANDING_COPY.fr.switchTo.href === "/");
 check("COPY-NL-switcher-points-to-en", LANDING_COPY.nl.switchTo.href === "/");
+check("COPY-ES-switcher-points-to-en", LANDING_COPY.es.switchTo.href === "/");
+check("COPY-IT-switcher-points-to-en", LANDING_COPY.it.switchTo.href === "/");
 
-// languageLinks shape: EN has 3 (de, fr, nl); every alt locale has 1 (en).
-check("COPY-EN-languageLinks-3", LANDING_COPY.en.languageLinks.length === 3);
+// languageLinks shape: EN has 5 (de, fr, nl, es, it); every alt locale has 1 (en).
+check("COPY-EN-languageLinks-5", LANDING_COPY.en.languageLinks.length === 5);
 check("COPY-DE-languageLinks-1-en", LANDING_COPY.de.languageLinks.length === 1 && LANDING_COPY.de.languageLinks[0].href === "/");
 check("COPY-FR-languageLinks-1-en", LANDING_COPY.fr.languageLinks.length === 1 && LANDING_COPY.fr.languageLinks[0].href === "/");
 check("COPY-NL-languageLinks-1-en", LANDING_COPY.nl.languageLinks.length === 1 && LANDING_COPY.nl.languageLinks[0].href === "/");
+check("COPY-ES-languageLinks-1-en", LANDING_COPY.es.languageLinks.length === 1 && LANDING_COPY.es.languageLinks[0].href === "/");
+check("COPY-IT-languageLinks-1-en", LANDING_COPY.it.languageLinks.length === 1 && LANDING_COPY.it.languageLinks[0].href === "/");
 
 // Hard regression: no alt-locale field accidentally left in English. A short
 // allowlist of words that are the same across languages (brand name, placeholder
 // stub, email) means we can't just do a strict "no English" check — instead we
 // look for English stop-words that would never appear in natural copy.
-const ENGLISH_LEAKS: Record<"de" | "fr" | "nl", RegExp> = {
+const ENGLISH_LEAKS: Record<"de" | "fr" | "nl" | "es" | "it", RegExp> = {
   de: /\b(the|please|your|here|would|get help now|open fix|email only)\b/i,
   fr: /\b(the|please|your|would|get help now|open fix|email only)\b/i,
   nl: /\b(the|please|your|here|would|get help now|open fix|email only)\b/i,
+  es: /\b(the|please|your|here|would|get help now|open fix|email only)\b/i,
+  it: /\b(the|please|your|here|would|get help now|open fix|email only)\b/i,
 };
-for (const loc of ["de", "fr", "nl"] as const) {
+for (const loc of ["de", "fr", "nl", "es", "it"] as const) {
   for (const [key, value] of Object.entries(LANDING_COPY[loc]) as Array<[string, unknown]>) {
     if (typeof value === "string" && ENGLISH_LEAKS[loc].test(value)) {
       check(`COPY-${loc.toUpperCase()}-${key}-english-leak`, false,
