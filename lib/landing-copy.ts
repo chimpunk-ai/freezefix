@@ -337,7 +337,7 @@ export const LANDING_COPY: Record<Locale, LandingCopy> = {
     htmlLang: "fr",
     metaTitle: "FreezeFix — un allié pour quand un joint te laisse bloqué",
     metaDescription:
-      "Un compagnon privé pour les adultes qui veulent comprendre leurs habitudes avec le cannabis et trouver un prochain pas qui leur parle. Ados exclus. Confidentiel.",
+      "Un accompagnement privé pour les adultes qui veulent comprendre leurs habitudes avec le cannabis et trouver un prochain pas qui leur parle. Ados exclus. Confidentiel.",
     getHelpNow: "Aide maintenant",
     openReturning: "Ouvrir",
     switchTo: { href: "/", label: "English" },
@@ -346,7 +346,7 @@ export const LANDING_COPY: Record<Locale, LandingCopy> = {
     heroHeadlineLine1: "Plus de contrôle,",
     heroHeadlineLine2: "un moment à la fois.",
     heroBody:
-      "Un compagnon privé pour les adultes qui veulent comprendre leurs habitudes avec le cannabis et trouver un prochain pas qui leur parle vraiment.",
+      "Un accompagnement privé pour les adultes qui veulent comprendre leurs habitudes avec le cannabis et trouver un prochain pas qui leur parle vraiment.",
     ctaOpen: "Ouvrir Fix",
     ctaPrivacy: "Comment la vie privée fonctionne",
     chatIsEnglishNote:
@@ -436,7 +436,7 @@ export const LANDING_COPY: Record<Locale, LandingCopy> = {
     htmlLang: "nl",
     metaTitle: "FreezeFix — voor als een joint je laat vastlopen",
     metaDescription:
-      "Een stille metgezel voor volwassenen die hun cannabisgebruik willen begrijpen en een volgende stap willen vinden die bij hen past. Vanaf 18. Privé.",
+      "Rustige ondersteuning voor volwassenen die hun cannabisgebruik willen begrijpen en een volgende stap willen vinden die bij hen past. Vanaf 18. Privé.",
     getHelpNow: "Hulp nu",
     openReturning: "Openen",
     switchTo: { href: "/", label: "English" },
@@ -445,7 +445,7 @@ export const LANDING_COPY: Record<Locale, LandingCopy> = {
     heroHeadlineLine1: "Meer grip,",
     heroHeadlineLine2: "moment voor moment.",
     heroBody:
-      "Een stille metgezel voor volwassenen die hun cannabisgebruik willen begrijpen en een volgende stap willen vinden die goed voelt voor hen.",
+      "Rustige ondersteuning voor volwassenen die hun cannabisgebruik willen begrijpen en een volgende stap willen vinden die goed voelt.",
     ctaOpen: "Fix openen",
     ctaPrivacy: "Hoe privacy werkt",
     chatIsEnglishNote:
@@ -453,7 +453,7 @@ export const LANDING_COPY: Record<Locale, LandingCopy> = {
     features: [
       { title: "Geen oordeel", body: "Nadenken, minderen, pauzeren — of gewoon vanavond doorkomen." },
       { title: "Jij kiest je doel", body: "Geen streaks. Alles mag overgeslagen worden." },
-      { title: "Fix is een AI-tool en kan ongelijk hebben.", body: "" },
+      { title: "Fix is een AI-tool en kan het mis hebben.", body: "" },
     ],
     exampleHeading: "Voorbeeld",
     exampleKicker: "Voorbeeld",
