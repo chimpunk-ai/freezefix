@@ -39,6 +39,20 @@ export default function sitemap(): MetadataRoute.Sitemap {
       priority: 0.9,
     },
     {
+      // Spanish landing (added 4 Nov 2026, feat/es-it-locales — 15-persona audit).
+      url: `${SITE_URL}/es`,
+      lastModified: now,
+      changeFrequency: "weekly",
+      priority: 0.9,
+    },
+    {
+      // Italian landing (added 4 Nov 2026, feat/es-it-locales — 15-persona audit).
+      url: `${SITE_URL}/it`,
+      lastModified: now,
+      changeFrequency: "weekly",
+      priority: 0.9,
+    },
+    {
       // SEO landing pages (added 3 Nov 2026, feat/seo-landing-pages — audit
       // P1.7). Prioritised below / and /de because they're funnels INTO the
       // product, not the product itself. monthly change-frequency because

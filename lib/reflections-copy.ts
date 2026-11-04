@@ -125,4 +125,50 @@ export const REFLECTIONS_COPY: Record<Locale, ReflectionsCopy> = {
       "Wat wil je als kleine ding meenemen naar volgende week?",
     ],
   },
+
+  // Spanish. Added 4 Nov 2026 for the audit (Maria).
+  es: {
+    cardKicker: "Esta semana",
+    cardHeading: "Una pregunta tranquila",
+    savedLabel: "Guardado",
+    skipLabel: "Saltar esta semana",
+    saveLabel: "Guardar",
+    savingLabel: "Guardando…",
+    placeholder: "Una línea, si quieres",
+    oneLineHint:
+      "Sólo en tu dispositivo. Nada se sube. La pregunta cambia cada semana.",
+    prompts: [
+      "¿Qué fue más fácil de lo que esperabas esta semana?",
+      "¿A qué hora del día te sentiste más tú?",
+      "Un momento que salió mejor de lo que pensabas — ¿cuál fue?",
+      "¿A qué dijiste que no esta semana, grande o pequeño?",
+      "¿Qué cosa buena no te costó nada?",
+      "¿Con quién pasaste tiempo del que quieres más?",
+      "¿Qué te enseñó un momento duro, si te enseñó algo?",
+      "¿Qué cosa pequeña quieres llevarte a la próxima semana?",
+    ],
+  },
+
+  // Italian. Added 4 Nov 2026 for the audit (Nina).
+  it: {
+    cardKicker: "Questa settimana",
+    cardHeading: "Una domanda tranquilla",
+    savedLabel: "Salvato",
+    skipLabel: "Salta questa settimana",
+    saveLabel: "Salva",
+    savingLabel: "Salvo…",
+    placeholder: "Una riga, se vuoi",
+    oneLineHint:
+      "Solo sul tuo dispositivo. Niente viene caricato. La domanda cambia ogni settimana.",
+    prompts: [
+      "Cosa è stato più facile di quanto pensassi questa settimana?",
+      "A che ora del giorno ti sei sentito più te stesso?",
+      "Un momento andato meglio del previsto — cos'era?",
+      "A cosa hai detto no questa settimana, grande o piccolo?",
+      "Cosa di buono non ti è costato niente?",
+      "Con chi hai passato del tempo di cui ne vuoi ancora?",
+      "Cosa ti ha mostrato un momento difficile, se ti ha mostrato qualcosa?",
+      "Quale piccola cosa vuoi portarti nella prossima settimana?",
+    ],
+  },
 };

@@ -23,8 +23,26 @@
 //   Kids Helpline      — 1800 55 1800, 24/7, FREE confidential (ages up to 25)
 //   13YARN             — 13 92 76, 24/7, FREE (Aboriginal + Torres Strait Islander)
 //   Suicide Call Back  — 1300 659 467, 24/7
+//
+// Spain + Italy added 4 November 2026 (feat/es-it-locales) from the 15-persona
+// audit — Maria (Madrid) and Nina (Milan) were previously served OTHER with
+// only findahelpline.com, which is a shrug for a Spanish or Italian user at
+// 2am. Verified 4 November 2026:
+//   ES — 024, Spain's national suicide-prevention line, run by the Ministry
+//        of Health. 24/7, free. Telephone interpreting for other languages
+//        and video interpreting for sign language. Source: prevencionsuicidio
+//        .som360.org / sanidad.gob.es.
+//   ES — Teléfono de la Esperanza, 717 003 717. Listening line, free, long
+//        running Spanish non-profit. Source: same page.
+//   IT — Telefono Amico Italia, 02 2327 2327. Confidential anonymous emotional-
+//        support line run by volunteers; covers anxiety, loneliness, self-harm,
+//        suicide. Source: findahelpline.com/organizations/telefono-amico-italia.
+//   IT — Telefono Azzurro, 19696. Free line for minors. Source: Il Sole 24 Ore
+//        feature on Telefono Azzurro's 39th anniversary.
+//   IT — 114. 24/7 emergency line for situations of immediate danger to a
+//        child. Source: same.
 
-export type CountryCode = "GB" | "US" | "IE" | "NL" | "DE" | "FR" | "AU" | "IN" | "OTHER";
+export type CountryCode = "GB" | "US" | "IE" | "NL" | "DE" | "FR" | "ES" | "IT" | "AU" | "IN" | "OTHER";
 
 export type Contact = {
   label: string; // what the line is, shown to the user
@@ -174,6 +192,42 @@ export const RESOURCES: Record<CountryCode, CountryResources> = {
     ],
     youthNightBackup: { label: "3114", display: "3114", tel: "3114", note: "24/7, free, confidential" },
   },
+  ES: {
+    name: "Spain",
+    emergency: { label: "Emergency", display: "112", tel: "112", note: "24/7, free" },
+    crisis: [
+      { label: "024 — Línea de atención al suicidio", display: "024", tel: "024", note: "24/7, free, confidential", blurb: "Spain's national suicide-prevention line, run by the Ministry of Health." },
+      { label: "Teléfono de la Esperanza", display: "717 003 717", tel: "717003717", note: "Free", blurb: "A long-running Spanish listening line run by a non-profit." },
+    ],
+    urgentMentalHealth: [
+      { label: "024 — Línea de atención al suicidio", display: "024", tel: "024", note: "24/7, free, confidential", blurb: "Spain's national suicide-prevention line, run by the Ministry of Health." },
+    ],
+    substances: [
+      { label: "024 — Línea de atención al suicidio", display: "024", tel: "024", note: "24/7, free, confidential", blurb: "Spain's national suicide-prevention line, run by the Ministry of Health." },
+      { label: "Teléfono de la Esperanza", display: "717 003 717", tel: "717003717", note: "Free" },
+    ],
+    youth: [
+      { label: "024 (all ages)", display: "024", tel: "024", note: "24/7, free, confidential", blurb: "Spain's national suicide-prevention line." },
+    ],
+    youthNightBackup: { label: "024", display: "024", tel: "024", note: "24/7, free" },
+  },
+  IT: {
+    name: "Italy",
+    emergency: { label: "Emergency", display: "112", tel: "112", note: "24/7, free" },
+    crisis: [
+      { label: "Telefono Amico Italia", display: "02 2327 2327", tel: "0223272327", note: "Anonymous, confidential", blurb: "An Italian emotional-support line run by volunteers; anxiety, loneliness, self-harm, suicide." },
+    ],
+    urgentMentalHealth: [
+      { label: "Telefono Amico Italia", display: "02 2327 2327", tel: "0223272327", note: "Anonymous, confidential", blurb: "An Italian emotional-support line run by volunteers." },
+    ],
+    substances: [
+      { label: "Telefono Amico Italia", display: "02 2327 2327", tel: "0223272327", note: "Anonymous, confidential", blurb: "An Italian emotional-support line run by volunteers." },
+    ],
+    youth: [
+      { label: "Telefono Azzurro (under 18)", display: "19696", tel: "19696", note: "Free", blurb: "Italy's main free listening line for minors, run by a national non-profit." },
+    ],
+    youthNightBackup: { label: "114 — Emergency line for children", display: "114", tel: "114", note: "24/7", blurb: "Italy's emergency line for situations of immediate danger to a child." },
+  },
   AU: {
     name: "Australia",
     emergency: { label: "Emergency", display: "000", tel: "000", note: "24/7, free, national" },
@@ -238,7 +292,7 @@ export const OTHER_EMERGENCY_NUMBERS: Record<string, string> = {
   AU: "000", NZ: "111", ZA: "112",
 };
 
-export const VERIFIED_COUNTRIES: CountryCode[] = ["GB", "US", "IE", "NL", "DE", "FR", "AU", "IN"];
+export const VERIFIED_COUNTRIES: CountryCode[] = ["GB", "US", "IE", "NL", "DE", "FR", "ES", "IT", "AU", "IN"];
 
 export type ResolvedResources = CountryResources & { code: CountryCode; region: string };
 
