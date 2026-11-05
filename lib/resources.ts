@@ -41,8 +41,44 @@
 //        feature on Telefono Azzurro's 39th anniversary.
 //   IT — 114. 24/7 emergency line for situations of immediate danger to a
 //        child. Source: same.
+//
+// Sweden + Poland + Switzerland added 5 November 2026 (feat/resources-se-pl-ch)
+// as Stage 1 of the Calm-grade redesign plan. Previously served as OTHER
+// with findahelpline.com, which is a shrug at 2am for a Swedish, Polish,
+// or Swiss user. Verified 5 November 2026:
+//   SE — Mind Självmordslinjen (90101): 24/7 free, anonymous, calls and
+//        chat, Mind's volunteers cannot see phone/IP. Source: TherapyRoute
+//        Sweden hotlines directory (verified Aug 2026).
+//   SE — Hjälplinjen (90390): 24/7 free, adults 18+, anonymous. Source:
+//        same.
+//   SE — BRIS (116 111): free youth line, SMS + chat, every day incl.
+//        nights. Source: same.
+//   PL — 116sos.pl (116 123): 24/7 free, confidential, adults + anyone.
+//        Source: findahelpline.com Poland directory.
+//   PL — Telefon Zaufania dla Dzieci (116 111): free, confidential youth
+//        line. Source: findahelpline.com (source does not list hours;
+//        we omit the hours claim).
+//   CH — Die Dargebotene Hand / La Main Tendue / Telefono Amico (143):
+//        24/7, DE/FR/IT/EN, free + anonymous + confidential (service-
+//        wide statement on publicai Switzerland resource page). Covers
+//        all three Swiss language regions.
+//   CH — Pro Juventute (147): 24/7, free, under-25. Source: same.
 
-export type CountryCode = "GB" | "US" | "IE" | "NL" | "DE" | "FR" | "ES" | "IT" | "AU" | "IN" | "OTHER";
+export type CountryCode =
+  | "GB"
+  | "US"
+  | "IE"
+  | "NL"
+  | "DE"
+  | "FR"
+  | "ES"
+  | "IT"
+  | "SE"
+  | "PL"
+  | "CH"
+  | "AU"
+  | "IN"
+  | "OTHER";
 
 export type Contact = {
   label: string; // what the line is, shown to the user
@@ -228,6 +264,66 @@ export const RESOURCES: Record<CountryCode, CountryResources> = {
     ],
     youthNightBackup: { label: "114 — Emergency line for children", display: "114", tel: "114", note: "24/7", blurb: "Italy's emergency line for situations of immediate danger to a child." },
   },
+  SE: {
+    name: "Sweden",
+    emergency: { label: "Emergency", display: "112", tel: "112", note: "24/7, free" },
+    crisis: [
+      { label: "Självmordslinjen (Mind)", display: "90101", tel: "90101", note: "24/7, free, anonymous", blurb: "Sweden's suicide-prevention line run by Mind; volunteers can't see your phone or IP." },
+      { label: "Självmordslinjen chat", display: "mind.se", url: "https://mind.se", note: "24/7, free, anonymous" },
+      { label: "Hjälplinjen", display: "90390", tel: "90390", note: "24/7, free, anonymous", blurb: "A Swedish support line for adults 18+ struggling mentally, whether or not it's an emergency." },
+    ],
+    urgentMentalHealth: [
+      { label: "Självmordslinjen (Mind)", display: "90101", tel: "90101", note: "24/7, free, anonymous", blurb: "Sweden's suicide-prevention line run by Mind." },
+      { label: "Hjälplinjen", display: "90390", tel: "90390", note: "24/7, free, anonymous", blurb: "A Swedish support line for adults 18+." },
+    ],
+    substances: [
+      { label: "Självmordslinjen (Mind)", display: "90101", tel: "90101", note: "24/7, free, anonymous" },
+      { label: "Hjälplinjen", display: "90390", tel: "90390", note: "24/7, free, anonymous" },
+    ],
+    youth: [
+      { label: "BRIS (under 18)", display: "116 111", tel: "116111", note: "Free, every day incl. nights", blurb: "Sweden's free listening line for anyone under 18." },
+    ],
+    youthNightBackup: { label: "Självmordslinjen (Mind)", display: "90101", tel: "90101", note: "24/7, free, anonymous" },
+  },
+  PL: {
+    name: "Poland",
+    emergency: { label: "Emergency", display: "112", tel: "112", note: "24/7, free" },
+    crisis: [
+      { label: "116 123 — Telefon dla Osób w Kryzysie Emocjonalnym", display: "116 123", tel: "116123", note: "24/7, free, confidential", blurb: "Poland's free 24/7 line for adults in emotional crisis, run by Instytut Psychologii Zdrowia." },
+    ],
+    urgentMentalHealth: [
+      { label: "116 123 — Telefon dla Osób w Kryzysie Emocjonalnym", display: "116 123", tel: "116123", note: "24/7, free, confidential", blurb: "Poland's free 24/7 line for adults in emotional crisis." },
+    ],
+    substances: [
+      { label: "116 123 — Telefon dla Osób w Kryzysie Emocjonalnym", display: "116 123", tel: "116123", note: "24/7, free, confidential" },
+    ],
+    youth: [
+      { label: "Telefon Zaufania dla Dzieci i Młodzieży", display: "116 111", tel: "116111", note: "Free, confidential", blurb: "Poland's youth listening line, for children and teens." },
+    ],
+    youthNightBackup: { label: "116 123", display: "116 123", tel: "116123", note: "24/7, free" },
+  },
+  CH: {
+    name: "Switzerland",
+    emergency: { label: "Emergency (medical)", display: "144 (police 117)", tel: "144", note: "24/7, free" },
+    crisis: [
+      // The Dargebotene Hand / Main Tendue / Telefono Amico serves all three
+      // Swiss language regions on a single number (143). DE+FR+IT are all
+      // answered from the same service; we show the German name first
+      // because the DE landing locale is live and FR/IT share the number.
+      { label: "Die Dargebotene Hand / La Main Tendue / Telefono Amico", display: "143", tel: "143", note: "24/7, free, anonymous, confidential", blurb: "Switzerland's main listening line; answered in German, French, Italian, and English." },
+      { label: "143 chat", display: "143.ch", url: "https://www.143.ch/", note: "Free, anonymous" },
+    ],
+    urgentMentalHealth: [
+      { label: "Die Dargebotene Hand", display: "143", tel: "143", note: "24/7, free, anonymous", blurb: "Switzerland's main listening line; DE/FR/IT/EN." },
+    ],
+    substances: [
+      { label: "Die Dargebotene Hand", display: "143", tel: "143", note: "24/7, free, anonymous" },
+    ],
+    youth: [
+      { label: "Pro Juventute (under 25)", display: "147", tel: "147", note: "24/7, free", blurb: "Switzerland's free 24/7 listening line for anyone under 25." },
+    ],
+    youthNightBackup: { label: "Die Dargebotene Hand", display: "143", tel: "143", note: "24/7, free, anonymous" },
+  },
   AU: {
     name: "Australia",
     emergency: { label: "Emergency", display: "000", tel: "000", note: "24/7, free, national" },
@@ -292,7 +388,7 @@ export const OTHER_EMERGENCY_NUMBERS: Record<string, string> = {
   AU: "000", NZ: "111", ZA: "112",
 };
 
-export const VERIFIED_COUNTRIES: CountryCode[] = ["GB", "US", "IE", "NL", "DE", "FR", "ES", "IT", "AU", "IN"];
+export const VERIFIED_COUNTRIES: CountryCode[] = ["GB", "US", "IE", "NL", "DE", "FR", "ES", "IT", "SE", "PL", "CH", "AU", "IN"];
 
 export type ResolvedResources = CountryResources & { code: CountryCode; region: string };
 
