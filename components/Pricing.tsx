@@ -8,21 +8,25 @@ import { PRICING_COPY, PRICING_CURRENCY_LABELS, currencyKey } from "@/lib/pricin
 import { pickLandingLocale, type Locale } from "@/lib/landing-copy";
 import { detectRegion } from "@/lib/country";
 
-// Pricing page — the founding-member PRE-SELL.
+// Pricing page — the Pro PRE-LAUNCH page.
 //
-// Added 5 November 2026 (feat/pricing-founding-member) as Stage 1 of the
-// Calm-grade redesign + revenue plan. This is NOT a checkout page. It is
-// a waitlist capture with an honest price card that locks in $29.99 / €27,99
-// / £24.99 for the first year once Pro ships. Paddle wiring + real billing
-// is a later, approval-gated stage (see FreezeFix_Redesign_Plan_2026-11.md).
+// First shipped 5 November 2026 (feat/pricing-founding-member) as Stage 1
+// of the Calm-grade redesign + revenue plan. Simplified same day in
+// fix/pricing-39-99-from-launch after the owner confirmed the launch
+// price is $39.99 / €39,99 / £39.99 flat — no founding-member discount,
+// no "first year" strike-through, no two-tier pricing.
+//
+// This is still NOT a checkout page. It is a waitlist capture with a
+// visible launch price. Paddle wiring + real billing is a later,
+// approval-gated stage (PR I in FreezeFix_Redesign_Plan_2026-11.md),
+// blocked until the Paddle account exists.
 //
 // Why it exists now
 //   Fix #6 from the audit: "Pre-sell before you build the full paywall.
-//   A pricing page with 'Founding member — $29.99 first year, launching
-//   soon' + waitlist validates willingness to pay in weeks instead of
-//   months." The visible pricing is also fix #3 (surface hidden features)
-//   — the comparison table is where Journal, Insights, and the Reduction
-//   Program finally show up on a marketing surface.
+//   A pricing page + waitlist validates willingness to pay in weeks
+//   instead of months." The visible pricing is also fix #3 (surface
+//   hidden features) — the comparison table is where Journal, Insights,
+//   and the Reduction Program finally show up on a marketing surface.
 //
 // Posture
 //   • No countdown. No "last 24 hours." No manipulative urgency.
@@ -123,38 +127,43 @@ export default function Pricing({ locale: initialLocale = "en" }: Props) {
         </p>
       </section>
 
-      {/* ── Founding-member pre-sell card ─────────────────────────────── */}
+      {/* ── Pre-launch hero card ──────────────────────────────────────
+       *  Simplified in fix/pricing-39-99-from-launch after the owner
+       *  confirmed the price is $39.99 flat from launch — no founding-
+       *  member discount, no "first year" strike. Keeps the card visible
+       *  (the number sits above the comparison table) and the waitlist
+       *  capture (Paddle is being created; until it exists /pricing is
+       *  pre-sell, not checkout). */}
       <section
-        aria-labelledby="founding-heading"
-        className="rounded-[1.75rem] border border-accent/40 bg-card p-6 shadow-[0_18px_40px_-20px_rgba(175,215,182,0.18)] sm:p-8"
+        aria-labelledby="prelaunch-heading"
+        className="rounded-[1.75rem] border border-accent/40 bg-card p-6 shadow-[0_18px_40px_-20px_rgba(156,175,136,0.18)] sm:p-8"
       >
         <div className="flex items-center gap-2">
           <span className="rounded-full bg-accent/15 px-3 py-1 text-xs font-medium uppercase tracking-[0.18em] text-accent">
-            {copy.foundingMemberBadge}
+            {copy.preLaunchBadge}
           </span>
         </div>
         <h2
-          id="founding-heading"
+          id="prelaunch-heading"
           className="mt-4 text-[clamp(1.75rem,4.5vw,2.5rem)] leading-[1.1] text-ink"
           style={{ fontFamily: "var(--font-display)", fontWeight: 400 }}
         >
-          {/* Replace $29.99 default with the region-correct currency at render
-           *  time — the copy pack carries the USD string, we substitute from
-           *  PRICING_CURRENCY_LABELS when we have a GB / EU bucket. */}
-          {copy.foundingMemberHeadline.replace("$29.99", currency.founding).replace("€27,99", currency.founding).replace("27,99 €", currency.founding)}
+          {/* Region currency substitution — the copy pack carries the USD
+           *  string, we swap in €/£ from PRICING_CURRENCY_LABELS. */}
+          {copy.preLaunchHeadline
+            .replace("$39.99", currency.pro)
+            .replace("€39,99", currency.pro)
+            .replace("39,99 €", currency.pro)}
         </h2>
-        <p className="mt-1 text-sm text-ink-faint">
-          <s>{copy.foundingMemberStrike.replace("$39.99", currency.pro).replace("€39,99", currency.pro).replace("39,99 €", currency.pro)}</s>
-        </p>
         <p className="mt-4 max-w-[52ch] text-base leading-relaxed text-ink-soft">
-          {copy.foundingMemberHint}
+          {copy.preLaunchHint}
         </p>
 
         <div className="mt-6">
           <WaitlistCapture source="pricing" variant="full" locale={locale} />
         </div>
 
-        <p className="mt-3 text-xs text-ink-faint">{copy.foundingMemberNote}</p>
+        <p className="mt-3 text-xs text-ink-faint">{copy.preLaunchNote}</p>
       </section>
 
       {/* ── Comparison table ───────────────────────────────────────────── */}
