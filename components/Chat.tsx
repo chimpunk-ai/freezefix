@@ -398,9 +398,7 @@ export default function Chat({
             role="status"
             aria-live="polite"
           >
-            <span className="h-2 w-2 animate-bounce rounded-full bg-frost [animation-delay:-0.3s]" />
-            <span className="h-2 w-2 animate-bounce rounded-full bg-frost [animation-delay:-0.15s]" />
-            <span className="h-2 w-2 animate-bounce rounded-full bg-frost" />
+            <span className="text-sm text-frost" aria-hidden="true">···</span>
             {/* Progressive patience copy: cold-start + retry chain can run up to ~15 s
                 server-side. Static "Fix is thinking…" starts to read as "frozen" past
                 about 6 s, so the wording softens, then acknowledges the longer wait,

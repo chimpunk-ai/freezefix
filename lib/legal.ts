@@ -1,8 +1,5 @@
-// Legal pages. SOURCE: Setup & Legal's FreezeFix Legal Pack (draft v1, 15 Oct 2026, with
-// Safety & Trust's review applied in T30). PB filled the [bracketed] items on 16 Oct 2026
-// (AI provider and retention from HQ T24; database region; merchant named at checkout).
-// Good enough to launch; a lawyer reviews at 10 paying users (founder decision).
-// Any wording change goes through Setup & Legal first.
+// Legal pages. This is operational disclosure, not a substitute for a qualified legal review.
+// Reconcile provider retention, consent, data exports/deletion, and payment terms before launch.
 
 // Bumped 2 November 2026: Terms Section 5 and the Refunds page rewritten to
 // honestly state that no paid plan, trial, or payment flow is active today —
@@ -10,10 +7,8 @@
 // that does not exist) from creating UK CPUTR 2008 / EU UCPD 2005/29/EC
 // unfair-commercial-practice exposure. Privacy data-table rows for Account
 // details, Payment details and Payment provider updated to match. The dormant
-// payment code (components/Paywall.tsx, lib/plans.ts, /api/paywall, Paddle
-// webhook) is untouched: it is gated by paymentsOn() which stays off, so it is
-// unreachable until payments are turned back on and the copy here is updated
-// in the same change.
+// Payment code remains in the repository for a reviewed future release, but
+// paymentsOn() is hard-disabled in lib/plans.ts and checkout cannot activate.
 export const LAST_UPDATED = "2 November 2026";
 
 export const PRIVACY = `
@@ -23,11 +18,11 @@ Last updated: ${LAST_UPDATED}
 
 ## The short version
 
-- FreezeFix helps adults 18+ get unstuck when they freeze after using cannabis. It is not therapy, medical advice or an emergency service.
-- You can use the core flow without an account. We collect as little as we can.
-- Your notes stay on your phone. What you type goes to our AI to get your moves and isn't stored.
-- We never sell your data, never use it for ads, and never share it without your clear consent.
-- You can delete everything in one tap: Settings → Delete everything.
+- Fix is a private, device-local pattern mirror for adults 18+. It is not therapy, medical advice or an emergency service.
+- Your daily cannabis check-ins, mood, selected contexts, optional goal, nickname and transcript are stored in this browser on this device. They are not uploaded or synced by the daily log.
+- Fix chat is separate. Only when you choose to use it, the text and any attachments you submit there are sent to our AI provider to generate a response.
+- Optional daily speech recognition is supplied by your browser; its provider may process audio. FreezeFix receives and stores only the transcript text, not a recording.
+- We never sell your data or use it for ads. You can clear on-device data in Settings; waitlist email and provider-side chat retention are separate.
 
 ## 1. Who we are
 
@@ -40,7 +35,8 @@ Contact for anything about your data: **privacy@getfreezefix.com**.
 | What | Examples | Why we use it | Legal basis (UK/EU) |
 | --- | --- | --- | --- |
 | Age confirmation | You confirm you are 18 or over | To keep FreezeFix adults-only | Legal obligation; legitimate interests |
-| Session details (health data) | The moment you pick (around people, alone and spiralling, stuck on a task, can't reply), what you type in the chat, an optional voice note, and an optional image you choose to share | To work out your next steps and to show crisis help when you need it | **Your explicit consent** (you tick a box before your first session) |
+| Daily log (health data) | Cannabis use yes/no, mood rating, up to three selected contexts, an optional user-defined goal check-off, optional voice transcript | To create the weekly mirror you asked for; calculated locally in this browser | **Your explicit consent** before the first log; the daily-log data is not uploaded or synced by Fix |
+| Fix chat session details (health data) | The moment you pick, what you type in chat, and any optional voice note or image you choose to submit | To generate a response and show safety help when needed | **Your explicit consent** before using chat; submitted content is sent to the AI provider |
 | Feedback | "Did it help?" thumbs up or down, which move you picked | To learn which moves help and improve them | Your explicit consent |
 | Account details | Not collected — FreezeFix is anonymous. No email address, no sign-in. If a paid plan launches, this row will describe what it uses then | Not applicable | Not applicable |
 | Payment details | Not collected — no payment flow exists on this site today. If a paid plan launches, our chosen payment provider will handle card details; we will never see them | Not applicable | Not applicable |
@@ -48,17 +44,17 @@ Contact for anything about your data: **privacy@getfreezefix.com**.
 | Messages to us | Emails to hello@, privacy@ or safety@ | To reply and help you | Legitimate interests |
 | Safety counts | When the safety check shows crisis help: the risk level, time and country only, never your words | To count safety incidents and improve crisis help | Legitimate interests; protecting your vital interests |
 
-**Health data.** What you share in a session can reveal your mental health and substance use. The law treats this as special (sensitive) data. We only process it with your explicit consent, and you can withdraw consent at any time in Settings. Withdrawing stops future sessions; it does not undo what was lawful before.
+**Health data.** Your daily log and anything you choose to share with Fix can reveal substance use or mental health. The law treats this as special (sensitive) data. The daily log is stored only in this browser on this device; Fix chat content is sent to the AI provider only after you choose to use chat. You can withdraw consent in Settings. Withdrawing stops future sessions; it does not undo what was lawful before.
 
 **Images you choose to share.** You can attach a chat screenshot, or a photo of a place or object, if it helps explain what's going on. Our AI reads it once to pull out the text or a short description, and that is all it is used for. We never store the image, and it is deleted from our AI provider as described below. We refuse images of people, ID documents, bank or card details, and sexual images, and we do not describe a refused image back to you.
 
-**Voice notes.** Most browsers turn your voice into text on your own device, so the audio never reaches us at all. Where your browser can't do that, the audio goes once to our transcription provider and is not stored by us. Only the text is used.
+**Voice notes.** The optional daily-log note uses browser-provided speech recognition. The browser or its speech provider may process the audio; FreezeFix does not record or upload audio from this control and stores only the recognized text locally. The separate Fix chat voice control, when enabled, may send audio once to our configured transcription provider; it is not stored by FreezeFix. Check your browser/provider privacy information before using speech, or skip it.
 
 **Never collected:** contacts, precise location, camera or microphone access without you starting it, or data from anyone under 18.
 
 ## 3. How the AI part works
 
-To work out your next steps, what you type, any voice transcript and any image you attach are sent to our AI model provider, Anthropic (the Claude API), which processes them for us under contract. Anthropic does not use this data to train its models and deletes it within 30 days. If Anthropic's automated safety systems flag a message as breaking its usage policy, Anthropic may keep that message for up to 2 years.
+Only when you choose Fix chat, the message you type and any image you attach are sent to our AI model provider, Anthropic (the Claude API), which processes them for us under contract. The daily log, its mood/context selections, goal and transcript are not attached automatically. Anthropic does not use chat content to train its models and deletes it within 30 days. If Anthropic's automated safety systems flag a message as breaking its usage policy, Anthropic may keep that message for up to 2 years.
 
 The AI suggests ideas; it does not make decisions about you with legal or similarly significant effects. Its suggestions can be wrong. Use your own judgment, and get real help if you are unsafe.
 
@@ -88,12 +84,13 @@ We are based in India and our providers operate in several countries, including 
 | Data | How long |
 | --- | --- |
 | Chat messages, voice notes and images | Not stored by FreezeFix at all. Our AI provider deletes them within 30 days (see section 3). Notes you save stay on your phone |
+| Daily log, goal, nickname and transcript | Until you clear this browser's site data or use Settings → Delete all my data on this device; no server copy is created by the daily log |
 | Feedback ("Did it help?") | 24 months, not linked to your name |
 | Account details | Not applicable today (no account is created). If a paid plan launches, we will keep account details until you delete your account, or 12 months after your last sign-in |
 | Payment and tax records | Not applicable today (no payments are taken). If a paid plan launches, we will keep payment and tax records as long as tax law requires |
 | Security logs | 30 days at most |
 
-**Delete everything:** Settings → Delete everything removes anything FreezeFix holds about you on this device and asks our providers to delete it too. There is no account to delete today; if a paid plan launches, payment records we must keep by law are kept, then deleted.
+**Delete everything:** Settings → Delete all my data on this device clears the app's local check-ins, goal, journal, and related browser data. It does not erase a separately submitted waitlist email or change the AI provider's retention for chat content already submitted. For those requests, email **privacy@getfreezefix.com**; there is no account to delete today.
 
 ## 7. Security
 
@@ -169,15 +166,15 @@ We may suspend or close access if you break these rules or put others at risk. C
 
 The moves you see are created by an AI model. They can be unhelpful, wrong or not right for your situation. You choose whether to follow a suggestion, and you are responsible for that choice. Never follow a suggestion that feels unsafe.
 
-## 5. Free today, paid plans may come later
+## 5. Current access and planned launch offer
 
 **Everything on getfreezefix.com is free right now and does not ask for a card.** The chat with Fix, the home check-in, the journal, the plans, the insights, crisis help and every other surface are open to use without paying anything, without creating an account, and without entering payment details.
 
-**There is no "FreezeFix Plus" to buy today.** No price, no trial, no subscription, no checkout, no card capture exists on this site. Anything you may have read elsewhere about a $9.99 monthly or $39.99 yearly plan was a draft of a possible future product. Those terms are not in force and no one can be charged.
+**The planned paid product is not available to buy today.** The intended launch prices shown on the [pricing page](/pricing) are $39.99 per year or $9.99 per month in USD, £39.99 per year or £9.99 per month in GBP, and €39.99 per year or €9.99 per month in the euro area. A seven-day full-access trial with no card required to start is planned. These are planned launch terms, not an active offer. The pricing page is a launch waitlist only: joining it does not start a trial, create a subscription, agree to future terms or authorize a payment.
 
-**If a paid plan launches in the future** — tiered features, prices, trial length, the merchant of record, the automatic-renewal rules, the price-change notice and the cancellation flow will all be published here **before** the first payment is taken. Nothing retroactively applies to people who used FreezeFix for free before that date.
+Before any paid plan opens, the final features, currency, applicable taxes, merchant of record, trial and renewal terms, cancellation flow and refund terms will be published clearly at signup. No one will be charged based on this preview or their use of the current free version.
 
-See the public [future plan preview](/future-plan) for the current thinking on what might one day be paid and what will always be free. That page is not a sales page, has no "buy" button, and nothing on it is a commitment.
+The current app and the planned pattern-mirror product are not the same offer. The current app is free to use today; the planned launch offer is described on the [pricing page](/pricing) and is not yet available.
 
 ## 6. Cancelling and refunds
 ${REFUNDS_SECTION}

@@ -22,7 +22,7 @@ export const metadata: Metadata = {
   },
 };
 
-// The public front door. The app itself lives at /app.
+// Public front door. The private daily log lives at /home; /app remains the separately opened Fix tool.
 export default function Page() {
   return <Landing />;
 }

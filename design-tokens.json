@@ -73,12 +73,11 @@
     "pill":  { "value": "9999px", "type": "dimension" }
   },
   "motion": {
-    "_comment": "Brief: 200–350ms, transform/opacity only, cubic-bezier(0.22,1,0.36,1). Reduced-motion stops everything.",
-    "easing":   { "value": "cubic-bezier(0.22, 1, 0.36, 1)", "type": "cubicBezier" },
-    "fast":     { "value": "200ms", "type": "duration" },
-    "default":  { "value": "260ms", "type": "duration" },
-    "slow":     { "value": "350ms", "type": "duration" },
-    "stagger":  { "value": "40ms",  "type": "duration", "description": "Delay between entrance-rise children." },
+    "_comment": "Exactly three product motions: 4s-in/6s-out breathing, 350ms mirror sheet with an 800ms weekly graph, and a 600ms goal pulse. Reduced-motion disables them.",
+    "easing":   { "value": "cubic-bezier(0.22, 0.72, 0.2, 1)", "type": "cubicBezier" },
+    "mirror_sheet": { "value": "350ms", "type": "duration" },
+    "mirror_graph": { "value": "800ms", "type": "duration" },
+    "goal_pulse": { "value": "600ms", "type": "duration" },
     "breathe_in":  { "value": "4000ms", "type": "duration", "description": "SOS breathing circle inhale." },
     "breathe_out": { "value": "6000ms", "type": "duration", "description": "SOS breathing circle exhale." }
   },

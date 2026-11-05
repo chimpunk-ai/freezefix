@@ -50,9 +50,9 @@ const CHIPS: Chip[] = [
     hint: "A tiny way in. Nothing dramatic.",
   },
   {
-    label: "I want to make a small change",
-    href: "/plans",
-    hint: "Opens Plan — one tiny if–then for tomorrow.",
+    label: "I want to choose one small goal",
+    href: "/home",
+    hint: "Set a small thing you want to do more of this week. It stays optional.",
   },
   {
     label: "Something else",

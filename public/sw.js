@@ -5,8 +5,8 @@
 // can ship to the iOS App Store and Google Play as a native shell.
 //
 // What this service worker does
-//   1. On install: pre-caches the four landing pages, the three SEO pages,
-//      the Reduction Program shell, and the small set of assets that make
+//   1. On install: pre-caches the public pages, the daily log and mirror,
+//      and the small set of assets that make
 //      the first offline open calm instead of broken.
 //   2. On fetch:
 //      - For HTML navigations, tries the network first (so users always
@@ -35,7 +35,7 @@
 //   CACHE_NAME includes a date-tagged version. Bump it to force an
 //   immediate refresh of pre-cached pages on next activate.
 
-const VERSION = "v1-2026-11-03";
+const VERSION = "v3-2026-11-06";
 const CACHE_NAME = `freezefix-${VERSION}`;
 
 // Pre-cached shells — pages a user is most likely to open first, and the
@@ -43,10 +43,11 @@ const CACHE_NAME = `freezefix-${VERSION}`;
 // the service worker is not a universal mirror of the site.
 const PRECACHE = [
   "/",
+  "/home",
+  "/patterns",
   "/de",
   "/fr",
   "/nl",
-  "/program",
   "/too-high-what-to-do",
   "/zu-high-was-tun",
   "/greened-out",

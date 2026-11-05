@@ -17,29 +17,25 @@ import "./globals.css";
 
 const SITE_URL = "https://getfreezefix.com";
 const DESCRIPTION =
-  "FreezeFix is the mate for when a smoke leaves you frozen — too self-conscious to be in the room, stuck on a task, can't reply, can't start. One safe next step in under 60 seconds. No lectures, no judgment. Adults 18+. Crisis help is always free.";
+  "Fix is a private pattern mirror for adults who want to notice how cannabis fits into their week. A small daily check-in, a weekly reflection, and no quit counter or lecture. The redesigned product is in development.";
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
   title: {
-    default: "FreezeFix — the mate for when a smoke leaves you frozen",
-    template: "%s · FreezeFix",
+    default: "Fix — a private mirror for your cannabis habits",
+    template: "%s · Fix",
   },
   description: DESCRIPTION,
-  applicationName: "FreezeFix",
-  authors: [{ name: "FreezeFix" }],
+  applicationName: "Fix",
+  authors: [{ name: "Fix by FreezeFix" }],
   // A short keyword list helps older crawlers and some chat-link previews pick a sensible category.
   // Deliberately avoids anything that could be read as encouraging use.
   keywords: [
-    "anxiety support",
-    "overthinking help",
-    "task avoidance",
-    "paranoia support",
-    "self-care for adults",
-    "mental health support app",
-    "harm-reduction support",
-    "stuck replying",
-    "AI mate",
+    "cannabis use reflection",
+    "private cannabis tracker",
+    "weekly cannabis patterns",
+    "adult wellbeing",
+    "private habit reflection",
     "18+ wellbeing",
   ],
   category: "health",
@@ -60,8 +56,8 @@ export const metadata: Metadata = {
   alternates: { canonical: SITE_URL },
   openGraph: {
     type: "website",
-    siteName: "FreezeFix",
-    title: "FreezeFix — the mate for when a smoke leaves you frozen",
+    siteName: "Fix by FreezeFix",
+    title: "Fix — a private mirror for your cannabis habits",
     description: DESCRIPTION,
     url: SITE_URL,
     locale: "en_GB",
@@ -70,23 +66,23 @@ export const metadata: Metadata = {
         url: "/og-image.png",
         width: 1200,
         height: 630,
-        alt: "FreezeFix — the mate for when a smoke leaves you frozen. One safe next step in under 60 seconds.",
+        alt: "Fix by FreezeFix — a private weekly mirror for adults reflecting on cannabis habits.",
         type: "image/png",
       },
     ],
   },
   twitter: {
     card: "summary_large_image",
-    title: "FreezeFix — the mate for when a smoke leaves you frozen",
+    title: "Fix — a private mirror for your cannabis habits",
     description: DESCRIPTION,
     site: "@getfreezefix",
     creator: "@getfreezefix",
     images: ["/og-image.png"],
   },
-  // Add-to-home-screen, so it sits on the phone like an app and opens straight into /app.
+  // Add-to-home-screen; returning users open directly to the daily log at /home.
   manifest: "/manifest.webmanifest",
   icons: { icon: "/icon.svg", apple: "/icon.svg" },
-  appleWebApp: { capable: true, statusBarStyle: "black-translucent", title: "FreezeFix" },
+  appleWebApp: { capable: true, statusBarStyle: "black-translucent", title: "Fix" },
   // Help search engines verify the publisher without needing a second site. 'Organization'
   // (not a MedicalBusiness or HealthClinic) because FreezeFix is a software product, not a
   // clinical service — same wording as the Terms "FreezeFix is not therapy, medical advice
@@ -116,7 +112,7 @@ const jsonLd = {
     {
       "@type": "Organization",
       "@id": `${SITE_URL}#org`,
-      name: "FreezeFix",
+      name: "Fix by FreezeFix",
       url: SITE_URL,
       logo: `${SITE_URL}/icon.svg`,
       email: "hello@getfreezefix.com",
@@ -126,13 +122,13 @@ const jsonLd = {
       "@type": "WebSite",
       "@id": `${SITE_URL}#site`,
       url: SITE_URL,
-      name: "FreezeFix",
+      name: "Fix by FreezeFix",
       inLanguage: "en-GB",
       publisher: { "@id": `${SITE_URL}#org` },
     },
     {
       "@type": "SoftwareApplication",
-      name: "FreezeFix",
+      name: "Fix by FreezeFix",
       applicationCategory: "HealthApplication",
       operatingSystem: "Web, iOS add-to-home-screen",
       description: DESCRIPTION,

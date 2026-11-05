@@ -1,478 +1,294 @@
-// Pricing-page strings, keyed by locale.
-//
-// Added 5 November 2026 (feat/pricing-founding-member) as Stage 1 of the
-// Calm-grade redesign + revenue plan. This is the founding-member PRE-SELL
-// page — it validates willingness to pay before Paddle is wired, and it is
-// explicitly a WAITLIST, not a checkout. No charge, no card entry, no VAT.
-//
-// Posture — matches the project rules
-//   • Honest about scope: "Fix is free. Pro is coming." We do not promise
-//     a specific launch date; we promise to email when it ships.
-//   • The founding-member $29.99 first-year price is a commitment the user
-//     locks in by joining the waitlist; charging and gating happen in a
-//     later stage (see FreezeFix_Redesign_Plan_2026-11.md).
-//   • No countdown timers, no "last 24 hours," no manipulative urgency.
-//   • The free column is what Fix is TODAY, so a visitor who never upgrades
-//     reads the whole product honestly.
-//   • Crisis help stays free for everyone, forever. The free column says so.
-
 import type { Locale } from "@/lib/landing-copy";
 
 export type PricingCopy = {
   htmlLang: string;
   metaTitle: string;
   metaDescription: string;
-
-  // Hero
   kicker: string;
   headlineLine1: string;
   headlineLine2: string;
   subhead: string;
-
-  // Pre-sell card
-  foundingMemberBadge: string;   // "Founding member"
-  foundingMemberHeadline: string; // "$29.99 for your first year"
-  foundingMemberStrike: string;  // "$39.99/yr after"
-  foundingMemberHint: string;    // "Launching soon. No charge today."
-  foundingMemberCtaLabel: string; // "Join the founding-member list"
-  foundingMemberNote: string;    // "Email only. Unsubscribe in every email."
-
-  // Comparison table
-  comparisonHeading: string;
-  columnFree: string;
-  columnPro: string;
-  columnFreePrice: string;       // "$0"
-  columnProPrice: string;        // "$39.99 / year" (set per region)
-  columnProPriceHint: string;    // "$3.33/month, billed yearly"
-
-  /** Each row: a human-readable feature + what free gives + what pro gives.
-   *  freeHas / proHas are shown either as a word ("Yes", "3 a day", "—") or
-   *  the component renders a check / limit / dash. */
-  rows: Array<{
-    feature: string;
-    freeHas: string;
-    proHas: string;
-  }>;
-
-  // Trust
+  plannedLabel: string;
+  yearlyLabel: string;
+  monthlyLabel: string;
+  yearlyPriceFormat: string;
+  monthlyPriceFormat: string;
+  yearlyEquivalentFormat: string;
+  trialLabel: string;
+  trialBody: string;
+  availabilityHeading: string;
+  availabilityBody: string;
+  featureHeading: string;
+  features: string[];
   trustHeading: string;
-  trustBullets: string[]; // 3 short bullets
-
-  // Honest FAQ for pre-sell
+  trustBullets: string[];
   faqHeading: string;
   faqs: Array<{ q: string; a: string }>;
-
-  // Footer-ish
   backToHome: string;
 };
 
-/** Prefixes for the €/£/$ display; keeps all strings calm. Paddle charges in
- *  local currency at checkout time when the paywall ships; this file is
- *  display-only, matching lib/plans.ts's posture. */
-export const PRICING_CURRENCY_LABELS: Record<string, { founding: string; pro: string; proPerMonth: string }> = {
-  GB: { founding: "£24.99", pro: "£39.99", proPerMonth: "£3.33" },
-  EU: { founding: "€27.99", pro: "€39.99", proPerMonth: "€3.33" },
-  US: { founding: "$29.99", pro: "$39.99", proPerMonth: "$3.33" },
+export const PRICING_CURRENCY_LABELS: Record<string, { yearly: string; monthly: string; yearlyPerMonth: string }> = {
+  GB: { yearly: "£39.99", monthly: "£9.99", yearlyPerMonth: "£3.33" },
+  EU: { yearly: "39,99 €", monthly: "9,99 €", yearlyPerMonth: "3,33 €" },
+  US: { yearly: "$39.99", monthly: "$9.99", yearlyPerMonth: "$3.33" },
 };
+
+const EURO_AREA = new Set([
+  "AT", "BE", "CY", "DE", "EE", "ES", "FI", "FR", "GR", "HR",
+  "IE", "IT", "LT", "LU", "LV", "MT", "NL", "PT", "SI", "SK",
+]);
 
 export function currencyKey(region?: string): keyof typeof PRICING_CURRENCY_LABELS {
   const r = (region || "").toUpperCase();
   if (r === "GB") return "GB";
-  // Rough EU bucket — the visible value for every DE/FR/NL/ES/IT/SE/PL/CH
-  // user reads in euros on the landing. Paddle applies real local currency
-  // at checkout when that stage ships, so this is honest display only.
-  const EU = new Set(["DE", "AT", "FR", "LU", "BE", "NL", "ES", "IT", "SE", "PL", "CH", "IE", "PT", "FI", "DK", "NO", "GR", "CZ", "SK", "SI", "HU", "RO", "BG", "HR", "EE", "LT", "LV", "MT", "CY"]);
-  if (EU.has(r)) return "EU";
+  if (EURO_AREA.has(r)) return "EU";
   return "US";
 }
 
 export const PRICING_COPY: Record<Locale, PricingCopy> = {
   en: {
     htmlLang: "en",
-    metaTitle: "Pricing — FreezeFix",
-    metaDescription:
-      "Fix is free. Pro is coming. Lock in the founding-member price before launch — email only, no charge today.",
-    kicker: "Pricing",
-    headlineLine1: "Fix is free.",
-    headlineLine2: "Pro is coming.",
-    subhead:
-      "Everything the product does today stays free, forever. Pro is the deeper layer — unlimited Fix sessions, journal history, insights, the Reduction Program — coming soon. Lock in the founding-member price now.",
-    foundingMemberBadge: "Founding member",
-    foundingMemberHeadline: "$29.99 for your first year",
-    foundingMemberStrike: "$39.99/year after",
-    foundingMemberHint: "Launching soon. No charge today — you'll be the first to know when it ships.",
-    foundingMemberCtaLabel: "Join the founding-member list",
-    foundingMemberNote: "Email only. No card. Unsubscribe in every email.",
-    comparisonHeading: "What's in each",
-    columnFree: "Free",
-    columnPro: "Pro",
-    columnFreePrice: "$0",
-    columnProPrice: "$39.99 / year",
-    columnProPriceHint: "$3.33/month, billed yearly",
-    rows: [
-      { feature: "Crisis help, always one tap away", freeHas: "Yes", proHas: "Yes" },
-      { feature: "Fix chat sessions", freeHas: "3 a day", proHas: "Unlimited" },
-      { feature: "Guides (too high, greened out, cravings)", freeHas: "Yes", proHas: "Yes" },
-      { feature: "Journal — on-device, your own words", freeHas: "This week only", proHas: "Full history" },
-      { feature: "Weekly check-in", freeHas: "Yes", proHas: "Yes" },
-      { feature: "Check-in insights across weeks", freeHas: "—", proHas: "Yes" },
-      { feature: "Reduction Program (2 / 4 / 6-week plan)", freeHas: "—", proHas: "Yes" },
-      { feature: "Pattern view", freeHas: "Last 14 days", proHas: "Full history" },
-      { feature: "Export your data (JSON)", freeHas: "Yes", proHas: "Yes" },
+    metaTitle: "Planned pricing — Fix",
+    metaDescription: "See the planned Fix launch price and seven-day trial. No payment or trial starts from this pre-launch waitlist.",
+    kicker: "PRICING · PLANNED FOR LAUNCH",
+    headlineLine1: "One plan.",
+    headlineLine2: "A week to see your week.",
+    subhead: "The planned launch price is {yearly} a year or {monthly} a month, with seven days to try the full product. No card to start the trial. Fix is not taking payments yet; this page is only a launch waitlist.",
+    plannedLabel: "Planned launch price · not available to buy yet",
+    yearlyLabel: "Yearly",
+    monthlyLabel: "Monthly",
+    yearlyPriceFormat: "{price} / year",
+    monthlyPriceFormat: "{price} / month",
+    yearlyEquivalentFormat: "{price} a month, billed yearly",
+    trialLabel: "7-day free trial at launch",
+    trialBody: "The planned trial includes full access and won’t ask for a card to start. Joining this list does not start a trial or authorize a payment.",
+    availabilityHeading: "Not open yet",
+    availabilityBody: "The nightly log and weekly mirror are in development. This page is only a launch waitlist. Leave an email and we’ll send a note when the product is ready. No early-bird price, countdown, checkout, or charge today.",
+    featureHeading: "What the launch plan is being built around",
+    features: [
+      "A short, optional daily check-in for cannabis, mood and context",
+      "A weekly mirror that reflects your own pattern without a score",
+      "One small goal you choose, with no pressure to change it",
+      "Fix as a brief tool for questions about your own week — not a therapist or companion",
     ],
-    trustHeading: "How Pro stays honest",
+    trustHeading: "A clear line between now and launch",
     trustBullets: [
-      "No card today. We only email when Pro ships; you decide then.",
-      "Cancel anytime once Pro is live. 7-day refund, no questions.",
-      "Free stays free — crisis help, guides, and daily Fix will never move behind a paywall.",
+      "The current app is free to use. This page does not take payment or card details.",
+      "Prices shown are the planned launch prices, not a discount.",
+      "Safety and crisis-help information stays available without a subscription.",
     ],
-    faqHeading: "Honest questions",
+    faqHeading: "A few straight answers",
     faqs: [
-      {
-        q: "When does Pro actually launch?",
-        a: "When it's ready. We will not ship a paywall that breaks anything that is free today. Realistic window: the first half of 2027. If you are on the founding-member list, you will be emailed before anyone else.",
-      },
-      {
-        q: "Will the free version get worse?",
-        a: "No. Crisis help, guides, the three daily Fix sessions, this-week journal, and the weekly check-in stay free forever. That is a promise we would rather close the product than break.",
-      },
-      {
-        q: "Why email now if there is no product to sell?",
-        a: "Two reasons. You lock in $29.99 for your first year instead of $39.99. And we only build Pro if enough people want it — this list is how we check.",
-      },
-      {
-        q: "Is this a trial?",
-        a: "No. There is no card entry, no automatic charge, no countdown. It is an email list. When Pro ships, you will get an email with a checkout link; you decide then.",
-      },
-      {
-        q: "What about my country's currency and VAT?",
-        a: "Paddle handles both at checkout when Pro ships. The number you see on this page is a display, not the final amount; your own currency and local tax land at that moment.",
-      },
+      { q: "Can I start the trial now?", a: "No. The planned product and its seven-day trial are not open yet. Joining the email list only asks us to send a launch update; it starts no trial and creates no payment agreement." },
+      { q: "What will it cost?", a: "The planned launch price is {yearly} per year or {monthly} per month. These are the intended prices, not an early-bird discount. There is nothing to buy on this page." },
+      { q: "How is the trial meant to work?", a: "At launch, the plan is seven days of full access without a card required to start. Any renewal, cancellation and tax details will be shown clearly before a trial is available." },
+      { q: "Do I have to quit or set a goal?", a: "No. Fix is being built to help you notice your own pattern. You decide whether you want to change anything; a goal is optional." },
+      { q: "Is Fix therapy or medical advice?", a: "No. Fix is supportive software, not a diagnostic tool, therapist or emergency service. Safety information remains accessible from the site." },
     ],
     backToHome: "Back home",
   },
-
   de: {
     htmlLang: "de",
-    metaTitle: "Preise — FreezeFix",
-    metaDescription:
-      "Fix ist kostenlos. Pro kommt bald. Sichere dir den Founding-Member-Preis vor dem Start — nur E-Mail, keine Zahlung heute.",
-    kicker: "Preise",
-    headlineLine1: "Fix ist kostenlos.",
-    headlineLine2: "Pro kommt bald.",
-    subhead:
-      "Alles, was das Produkt heute kann, bleibt kostenlos. Pro ist die tiefere Ebene — unbegrenzte Fix-Sitzungen, Journal-Historie, Insights, das Reduktions-Programm — kommt bald. Sichere dir den Founding-Member-Preis jetzt.",
-    foundingMemberBadge: "Founding Member",
-    foundingMemberHeadline: "€27,99 im ersten Jahr",
-    foundingMemberStrike: "Danach €39,99/Jahr",
-    foundingMemberHint: "Startet bald. Heute nichts zu zahlen — du erfährst als Erstes, wenn es so weit ist.",
-    foundingMemberCtaLabel: "Auf die Founding-Member-Liste",
-    foundingMemberNote: "Nur E-Mail. Keine Karte. Abmelden in jeder Mail.",
-    comparisonHeading: "Was in jedem drin ist",
-    columnFree: "Kostenlos",
-    columnPro: "Pro",
-    columnFreePrice: "€0",
-    columnProPrice: "€39,99 / Jahr",
-    columnProPriceHint: "€3,33/Monat, jährlich abgerechnet",
-    rows: [
-      { feature: "Hilfe jetzt, immer einen Tap entfernt", freeHas: "Ja", proHas: "Ja" },
-      { feature: "Fix-Gespräche", freeHas: "3 pro Tag", proHas: "Unbegrenzt" },
-      { feature: "Guides (zu high, abgeschossen, Cravings)", freeHas: "Ja", proHas: "Ja" },
-      { feature: "Journal — auf deinem Gerät, deine Worte", freeHas: "Nur diese Woche", proHas: "Volle Historie" },
-      { feature: "Wochen-Check-in", freeHas: "Ja", proHas: "Ja" },
-      { feature: "Check-in-Insights über Wochen", freeHas: "—", proHas: "Ja" },
-      { feature: "Reduktions-Programm (2 / 4 / 6 Wochen)", freeHas: "—", proHas: "Ja" },
-      { feature: "Muster-Ansicht", freeHas: "Letzte 14 Tage", proHas: "Volle Historie" },
-      { feature: "Daten exportieren (JSON)", freeHas: "Ja", proHas: "Ja" },
+    metaTitle: "Geplante Preise — Fix",
+    metaDescription: "Der geplante Startpreis und die siebentägige Testphase von Fix. Über diese Warteliste beginnen weder Testphase noch Zahlung.",
+    kicker: "PREISE · FÜR DEN START GEPLANT",
+    headlineLine1: "Ein Plan.",
+    headlineLine2: "Eine Woche, um deine Woche zu sehen.",
+    subhead: "Zum Start sind {yearly} pro Jahr oder {monthly} pro Monat geplant, mit sieben Tagen zum Ausprobieren des vollen Produkts. Für den Start der Testphase ist keine Karte vorgesehen. Fix nimmt noch keine Zahlungen an; diese Seite ist nur eine Start-Warteliste.",
+    plannedLabel: "Geplanter Startpreis · noch nicht erhältlich",
+    yearlyLabel: "Jährlich",
+    monthlyLabel: "Monatlich",
+    yearlyPriceFormat: "{price} / Jahr",
+    monthlyPriceFormat: "{price} / Monat",
+    yearlyEquivalentFormat: "{price} pro Monat, jährlich abgerechnet",
+    trialLabel: "7 Tage kostenlos testen – zum Start geplant",
+    trialBody: "Die geplante Testphase umfasst den vollen Zugang und soll ohne Karte beginnen. Mit dem Eintrag in die Liste startest du weder eine Testphase noch erlaubst du eine Zahlung.",
+    availabilityHeading: "Noch nicht verfügbar",
+    availabilityBody: "Der kurze Abend-Log und der Wochen-Spiegel sind in Arbeit. Diese Seite ist nur eine Warteliste. Hinterlass eine E-Mail, dann melden wir uns zum Start. Heute gibt es weder Frühbucherpreis noch Countdown, Checkout oder Abbuchung.",
+    featureHeading: "Darauf wird der Startplan ausgerichtet",
+    features: [
+      "Ein kurzer, freiwilliger Tages-Check-in zu Cannabis, Stimmung und Umfeld",
+      "Ein Wochen-Spiegel, der dein eigenes Muster ohne Bewertung zeigt",
+      "Ein kleines Ziel, das du selbst wählst — ohne Änderungsdruck",
+      "Fix als kurzes Werkzeug für Fragen zu deiner Woche — keine Therapie und kein Begleiter",
     ],
-    trustHeading: "Wie Pro ehrlich bleibt",
+    trustHeading: "Jetzt und später klar getrennt",
     trustBullets: [
-      "Heute keine Karte. Wir mailen nur, wenn Pro live ist; dann entscheidest du.",
-      "Jederzeit kündbar, sobald Pro live ist. 7 Tage Rückerstattung, keine Fragen.",
-      "Kostenlos bleibt kostenlos — Hilfe jetzt, Guides und tägliches Fix wandern nie hinter eine Paywall.",
+      "Die aktuelle App ist kostenlos nutzbar. Diese Seite erfasst weder Zahlung noch Kartendaten.",
+      "Die angezeigten Beträge sind die geplanten Startpreise — kein Rabatt.",
+      "Sicherheits- und Krisenhilfe bleibt ohne Abo erreichbar.",
     ],
-    faqHeading: "Ehrliche Fragen",
+    faqHeading: "Kurz und ehrlich",
     faqs: [
-      {
-        q: "Wann startet Pro wirklich?",
-        a: "Wenn es so weit ist. Wir shippen keine Paywall, die etwas Kostenloses kaputt macht. Realistisches Fenster: erstes Halbjahr 2027. Wer auf der Founding-Member-Liste steht, bekommt die Mail zuerst.",
-      },
-      {
-        q: "Wird die kostenlose Version schlechter?",
-        a: "Nein. Hilfe jetzt, Guides, die drei täglichen Fix-Gespräche, das Wochen-Journal und der Wochen-Check-in bleiben für immer kostenlos. Ein Versprechen, das wir lieber nicht brechen.",
-      },
-      {
-        q: "Warum jetzt E-Mail, wenn es noch nichts zu kaufen gibt?",
-        a: "Zwei Gründe. Du sicherst dir €27,99 im ersten Jahr statt €39,99. Und wir bauen Pro nur, wenn genug Leute es wollen — diese Liste ist unsere Prüfung.",
-      },
-      {
-        q: "Ist das ein Probe-Abo?",
-        a: "Nein. Keine Karte, keine automatische Abbuchung, kein Countdown. Es ist eine E-Mail-Liste. Wenn Pro startet, bekommst du eine Mail mit einem Checkout-Link; dann entscheidest du.",
-      },
-      {
-        q: "Was ist mit meiner Währung und MwSt.?",
-        a: "Paddle erledigt beides beim Checkout, wenn Pro live ist. Die Zahl auf dieser Seite ist eine Anzeige, nicht der endgültige Betrag; deine Währung und lokale Steuer landen dann.",
-      },
+      { q: "Kann ich die Testphase jetzt starten?", a: "Nein. Das geplante Produkt und die siebentägige Testphase sind noch nicht verfügbar. Mit der E-Mail-Liste bittest du nur um eine Startnachricht; sie startet keine Testphase und vereinbart keine Zahlung." },
+      { q: "Was wird es kosten?", a: "Geplant sind {yearly} pro Jahr oder {monthly} pro Monat. Das sind die vorgesehenen Preise, kein Frühbucherrabatt. Auf dieser Seite kannst du nichts kaufen." },
+      { q: "Wie soll die Testphase funktionieren?", a: "Zum Start sind sieben Tage voller Zugang ohne Karte zum Beginn geplant. Angaben zu Verlängerung, Kündigung und Steuern stehen klar da, bevor eine Testphase startet." },
+      { q: "Muss ich aufhören oder ein Ziel festlegen?", a: "Nein. Fix soll dir helfen, dein eigenes Muster zu bemerken. Ob du etwas ändern willst, entscheidest du; ein Ziel ist freiwillig." },
+      { q: "Ist Fix Therapie oder medizinische Beratung?", a: "Nein. Fix ist unterstützende Software, kein Diagnosewerkzeug, keine Therapie und kein Notdienst. Sicherheitsinformationen bleiben auf der Website zugänglich." },
     ],
-    backToHome: "Zurück zur Startseite",
+    backToHome: "Zur Startseite",
   },
-
   fr: {
     htmlLang: "fr",
-    metaTitle: "Prix — FreezeFix",
-    metaDescription:
-      "Fix est gratuit. Pro arrive. Réserve le prix membre-fondateur avant le lancement — email seulement, rien à payer aujourd'hui.",
-    kicker: "Prix",
-    headlineLine1: "Fix est gratuit.",
-    headlineLine2: "Pro arrive.",
-    subhead:
-      "Tout ce que le produit fait aujourd'hui reste gratuit, pour toujours. Pro est la couche plus profonde — sessions Fix illimitées, historique de journal, insights, le Programme de Réduction — arrive bientôt. Réserve le prix membre-fondateur maintenant.",
-    foundingMemberBadge: "Membre fondateur",
-    foundingMemberHeadline: "27,99 € la première année",
-    foundingMemberStrike: "39,99 €/an ensuite",
-    foundingMemberHint: "Lancement bientôt. Rien à payer aujourd'hui — tu seras le premier au courant.",
-    foundingMemberCtaLabel: "Rejoindre la liste membre-fondateur",
-    foundingMemberNote: "Email seulement. Pas de carte. Désinscription dans chaque mail.",
-    comparisonHeading: "Ce qu'il y a dans chaque",
-    columnFree: "Gratuit",
-    columnPro: "Pro",
-    columnFreePrice: "0 €",
-    columnProPrice: "39,99 € / an",
-    columnProPriceHint: "3,33 €/mois, facturé annuellement",
-    rows: [
-      { feature: "Aide maintenant, toujours à un tap", freeHas: "Oui", proHas: "Oui" },
-      { feature: "Sessions Fix", freeHas: "3 par jour", proHas: "Illimitées" },
-      { feature: "Guides (trop high, greened out, cravings)", freeHas: "Oui", proHas: "Oui" },
-      { feature: "Journal — sur ton appareil, tes mots", freeHas: "Cette semaine", proHas: "Historique complet" },
-      { feature: "Check-in hebdomadaire", freeHas: "Oui", proHas: "Oui" },
-      { feature: "Insights sur plusieurs semaines", freeHas: "—", proHas: "Oui" },
-      { feature: "Programme de Réduction (2 / 4 / 6 semaines)", freeHas: "—", proHas: "Oui" },
-      { feature: "Vue des Motifs", freeHas: "14 derniers jours", proHas: "Historique complet" },
-      { feature: "Exporter mes données (JSON)", freeHas: "Oui", proHas: "Oui" },
+    metaTitle: "Tarifs prévus — Fix",
+    metaDescription: "Le prix de lancement et l’essai de sept jours prévus pour Fix. Cette liste d’attente ne démarre ni essai ni paiement.",
+    kicker: "TARIFS · PRÉVUS AU LANCEMENT",
+    headlineLine1: "Un seul plan.",
+    headlineLine2: "Une semaine pour voir ta semaine.",
+    subhead: "Le tarif de lancement prévu est de {yearly} par an ou {monthly} par mois, avec sept jours pour essayer le produit complet. Aucune carte ne sera demandée pour commencer l’essai. Fix n’accepte pas encore de paiement ; cette page est seulement une liste d’attente.",
+    plannedLabel: "Tarif prévu au lancement · pas encore disponible",
+    yearlyLabel: "Annuel",
+    monthlyLabel: "Mensuel",
+    yearlyPriceFormat: "{price} / an",
+    monthlyPriceFormat: "{price} / mois",
+    yearlyEquivalentFormat: "{price} par mois, facturé à l’année",
+    trialLabel: "Essai gratuit de 7 jours prévu au lancement",
+    trialBody: "L’essai prévu donnera accès au produit complet et commencera sans carte. L’inscription à cette liste ne démarre aucun essai et n’autorise aucun paiement.",
+    availabilityHeading: "Pas encore ouvert",
+    availabilityBody: "Le suivi du soir et le miroir hebdomadaire sont en cours de création. Cette page n’est qu’une liste d’attente. Laisse ton email et on t’enverra une nouvelle au lancement. Aujourd’hui : ni tarif de lancement anticipé, ni compte à rebours, ni paiement.",
+    featureHeading: "Ce que le plan de lancement doit réunir",
+    features: [
+      "Un bref check-in quotidien, facultatif, sur le cannabis, l’humeur et le contexte",
+      "Un miroir hebdomadaire de ton propre motif, sans note",
+      "Un petit objectif choisi par toi, sans pression de changement",
+      "Fix comme outil bref pour parler de ta semaine — ni thérapeute ni compagnon",
     ],
-    trustHeading: "Comment Pro reste honnête",
+    trustHeading: "Une distinction nette entre aujourd’hui et plus tard",
     trustBullets: [
-      "Pas de carte aujourd'hui. On n'écrit que quand Pro sort ; tu décides à ce moment-là.",
-      "Annule quand tu veux, une fois Pro en ligne. Remboursement 7 jours, pas de questions.",
-      "Le gratuit reste gratuit — aide maintenant, guides, et le Fix du jour ne passeront jamais derrière un paywall.",
+      "L’application actuelle est gratuite. Cette page ne demande ni paiement ni carte.",
+      "Les montants affichés sont les tarifs prévus au lancement, pas une remise ni une offre fondateur.",
+      "Les informations de sécurité et d’aide de crise restent accessibles sans abonnement.",
     ],
-    faqHeading: "Questions honnêtes",
+    faqHeading: "Réponses sans détour",
     faqs: [
-      {
-        q: "Pro sort quand, vraiment ?",
-        a: "Quand c'est prêt. On ne shippe pas un paywall qui casse ce qui est gratuit aujourd'hui. Fenêtre réaliste : premier semestre 2027. Sur la liste membre-fondateur, tu reçois le mail en premier.",
-      },
-      {
-        q: "La version gratuite va-t-elle empirer ?",
-        a: "Non. Aide maintenant, guides, les trois Fix du jour, le journal de la semaine et le check-in hebdomadaire restent gratuits pour toujours. On préférerait fermer le produit que casser cette promesse.",
-      },
-      {
-        q: "Pourquoi l'email maintenant s'il n'y a rien à vendre ?",
-        a: "Deux raisons. Tu réserves 27,99 € la première année au lieu de 39,99 €. Et on ne construit Pro que si assez de gens le veulent — cette liste est notre vérification.",
-      },
-      {
-        q: "C'est un essai ?",
-        a: "Non. Pas de carte, pas de prélèvement auto, pas de compte à rebours. C'est une liste email. Quand Pro sort, tu reçois un mail avec un lien de paiement ; tu décides à ce moment-là.",
-      },
-      {
-        q: "Et ma devise et la TVA ?",
-        a: "Paddle gère les deux au moment du paiement, quand Pro sera en ligne. Le chiffre sur cette page est un affichage, pas le montant final ; ta devise et ta TVA locale arrivent à ce moment-là.",
-      },
+      { q: "Puis-je commencer l’essai maintenant ?", a: "Non. Le produit prévu et son essai de sept jours ne sont pas encore disponibles. La liste demande seulement une nouvelle au lancement ; elle ne démarre pas d’essai et ne vaut pas accord de paiement." },
+      { q: "Quel sera le prix ?", a: "Le tarif prévu est de {yearly} par an ou {monthly} par mois. Ce sont les tarifs envisagés, pas une remise de pré-lancement. Aucun achat n’est possible ici." },
+      { q: "Comment l’essai devrait-il fonctionner ?", a: "Au lancement, l’idée est d’offrir sept jours d’accès complet sans carte au démarrage. Le renouvellement, la résiliation et les taxes seront indiqués clairement avant tout essai." },
+      { q: "Dois-je arrêter ou me fixer un objectif ?", a: "Non. Fix est conçu pour t’aider à remarquer ton propre motif. Tu décides si tu veux changer quelque chose ; l’objectif est facultatif." },
+      { q: "Fix est-il une thérapie ou un conseil médical ?", a: "Non. Fix est un logiciel de soutien, pas un outil de diagnostic, un thérapeute ou un service d’urgence. Les informations de sécurité restent accessibles sur le site." },
     ],
-    backToHome: "Retour à l'accueil",
+    backToHome: "Retour à l’accueil",
   },
-
   nl: {
     htmlLang: "nl",
-    metaTitle: "Prijzen — FreezeFix",
-    metaDescription:
-      "Fix is gratis. Pro komt eraan. Leg de founding-member-prijs vast vóór de lancering — alleen e-mail, vandaag niets te betalen.",
-    kicker: "Prijzen",
-    headlineLine1: "Fix is gratis.",
-    headlineLine2: "Pro komt eraan.",
-    subhead:
-      "Alles wat het product vandaag doet blijft gratis, voor altijd. Pro is de diepere laag — onbeperkte Fix-sessies, journalgeschiedenis, insights, het Reductieprogramma — komt eraan. Leg de founding-member-prijs nu vast.",
-    foundingMemberBadge: "Founding member",
-    foundingMemberHeadline: "€27,99 voor je eerste jaar",
-    foundingMemberStrike: "Daarna €39,99/jaar",
-    foundingMemberHint: "Komt eraan. Vandaag niets te betalen — jij hoort het als eerste.",
-    foundingMemberCtaLabel: "Op de founding-member-lijst",
-    foundingMemberNote: "Alleen e-mail. Geen kaart. Afmelden in elke mail.",
-    comparisonHeading: "Wat zit er in elk",
-    columnFree: "Gratis",
-    columnPro: "Pro",
-    columnFreePrice: "€0",
-    columnProPrice: "€39,99 / jaar",
-    columnProPriceHint: "€3,33/maand, jaarlijks gefactureerd",
-    rows: [
-      { feature: "Hulp nu, altijd één tap weg", freeHas: "Ja", proHas: "Ja" },
-      { feature: "Fix-gesprekken", freeHas: "3 per dag", proHas: "Onbeperkt" },
-      { feature: "Gidsen (te high, greened out, cravings)", freeHas: "Ja", proHas: "Ja" },
-      { feature: "Journal — op je apparaat, jouw woorden", freeHas: "Deze week", proHas: "Volledige geschiedenis" },
-      { feature: "Wekelijkse check-in", freeHas: "Ja", proHas: "Ja" },
-      { feature: "Check-in-insights over weken", freeHas: "—", proHas: "Ja" },
-      { feature: "Reductieprogramma (2 / 4 / 6 weken)", freeHas: "—", proHas: "Ja" },
-      { feature: "Patroonweergave", freeHas: "Laatste 14 dagen", proHas: "Volledige geschiedenis" },
-      { feature: "Gegevens exporteren (JSON)", freeHas: "Ja", proHas: "Ja" },
+    metaTitle: "Geplande prijzen — Fix",
+    metaDescription: "De geplande lanceringsprijs en proefperiode van zeven dagen. Deze wachtlijst start geen proefperiode en brengt niets in rekening.",
+    kicker: "PRIJZEN · GEPLAND VOOR DE START",
+    headlineLine1: "Eén plan.",
+    headlineLine2: "Een week om je week te zien.",
+    subhead: "De geplande startprijs is {yearly} per jaar of {monthly} per maand, met zeven dagen om het volledige product te proberen. Voor de start van de proefperiode is geen kaart nodig. Fix neemt nog geen betalingen aan; deze pagina is alleen een wachtlijst voor de start.",
+    plannedLabel: "Geplande startprijs · nog niet te koop",
+    yearlyLabel: "Per jaar",
+    monthlyLabel: "Per maand",
+    yearlyPriceFormat: "{price} / jaar",
+    monthlyPriceFormat: "{price} / maand",
+    yearlyEquivalentFormat: "{price} per maand, jaarlijks betaald",
+    trialLabel: "Gratis proefperiode van 7 dagen gepland",
+    trialBody: "De geplande proefperiode geeft volledige toegang en begint zonder kaart. Aanmelden voor deze lijst start geen proefperiode en geeft geen toestemming voor betaling.",
+    availabilityHeading: "Nog niet beschikbaar",
+    availabilityBody: "De korte avondcheck en weekspiegel zijn in ontwikkeling. Deze pagina is alleen een wachtlijst. Laat je e-mailadres achter voor een bericht bij de start. Vandaag is er geen vroege korting, aftelklok, checkout of afschrijving.",
+    featureHeading: "Waar het startplan om draait",
+    features: [
+      "Een korte, optionele dagelijkse check-in over cannabis, stemming en context",
+      "Een weekspiegel die je eigen patroon laat zien, zonder cijfer",
+      "Eén klein doel dat je zelf kiest, zonder druk om te veranderen",
+      "Fix als kort hulpmiddel voor vragen over je week — geen therapeut of maatje",
     ],
-    trustHeading: "Hoe Pro eerlijk blijft",
+    trustHeading: "Nu en later duidelijk gescheiden",
     trustBullets: [
-      "Vandaag geen kaart. We mailen alleen als Pro live is; dan beslis jij.",
-      "Opzeggen wanneer je wilt zodra Pro live is. 7 dagen terugbetaling, geen vragen.",
-      "Gratis blijft gratis — hulp nu, gidsen en de dagelijkse Fix gaan nooit achter een betaalmuur.",
+      "De huidige app is gratis. Deze pagina vraagt niet om betaling of kaartgegevens.",
+      "De bedragen zijn de geplande startprijzen, geen korting of aanbod voor oprichters.",
+      "Veiligheidsinformatie en hulp bij crisis blijven zonder abonnement beschikbaar.",
     ],
-    faqHeading: "Eerlijke vragen",
+    faqHeading: "Een paar heldere antwoorden",
     faqs: [
-      {
-        q: "Wanneer gaat Pro echt live?",
-        a: "Als het klaar is. We shippen geen betaalmuur die iets breekt dat vandaag gratis is. Reëel venster: eerste helft van 2027. Op de founding-member-lijst krijg je de mail als eerste.",
-      },
-      {
-        q: "Wordt de gratis versie slechter?",
-        a: "Nee. Hulp nu, gidsen, de drie dagelijkse Fix-gesprekken, het weekjournal en de wekelijkse check-in blijven voor altijd gratis. Een belofte die we liever niet breken.",
-      },
-      {
-        q: "Waarom nu e-mail als er niks te kopen is?",
-        a: "Twee redenen. Je legt €27,99 voor je eerste jaar vast in plaats van €39,99. En we bouwen Pro alleen als genoeg mensen het willen — deze lijst is onze check.",
-      },
-      {
-        q: "Is dit een proefperiode?",
-        a: "Nee. Geen kaart, geen automatische afschrijving, geen aftelklok. Het is een e-maillijst. Als Pro live gaat krijg je een mail met een afrekenlink; dan beslis jij.",
-      },
-      {
-        q: "En mijn valuta en btw?",
-        a: "Paddle regelt beide bij de afrekening, zodra Pro live is. Het bedrag op deze pagina is een weergave, niet het eindbedrag; je eigen valuta en lokale btw landen op dat moment.",
-      },
+      { q: "Kan ik nu met de proefperiode beginnen?", a: "Nee. Het geplande product en de proefperiode van zeven dagen zijn nog niet beschikbaar. Met de e-maillijst vraag je alleen om startnieuws; er begint geen proefperiode en je gaat geen betalingsverplichting aan." },
+      { q: "Wat gaat het kosten?", a: "De geplande prijs is {yearly} per jaar of {monthly} per maand. Dit zijn de beoogde prijzen, geen vroegboekkorting. Op deze pagina kun je niets kopen." },
+      { q: "Hoe moet de proefperiode werken?", a: "Bij de start zijn zeven dagen volledige toegang gepland, zonder kaart bij aanvang. Verlenging, opzegging en eventuele belastingen worden helder getoond voordat een proefperiode begint." },
+      { q: "Moet ik stoppen of een doel kiezen?", a: "Nee. Fix wordt gebouwd om je je eigen patroon te laten opmerken. Jij beslist of je iets wilt veranderen; een doel is optioneel." },
+      { q: "Is Fix therapie of medisch advies?", a: "Nee. Fix is ondersteunende software, geen diagnosehulpmiddel, therapeut of spoeddienst. Veiligheidsinformatie blijft op de website beschikbaar." },
     ],
     backToHome: "Terug naar home",
   },
-
   es: {
     htmlLang: "es",
-    metaTitle: "Precios — FreezeFix",
-    metaDescription:
-      "Fix es gratis. Pro está en camino. Reserva el precio de miembro fundador antes del lanzamiento — sólo correo, hoy no se cobra nada.",
-    kicker: "Precios",
-    headlineLine1: "Fix es gratis.",
-    headlineLine2: "Pro está en camino.",
-    subhead:
-      "Todo lo que el producto hace hoy sigue gratis, para siempre. Pro es la capa más profunda — sesiones de Fix ilimitadas, historial de diario, insights, el Programa de Reducción — llega pronto. Reserva el precio de miembro fundador ahora.",
-    foundingMemberBadge: "Miembro fundador",
-    foundingMemberHeadline: "27,99 € el primer año",
-    foundingMemberStrike: "Después 39,99 €/año",
-    foundingMemberHint: "Lanzamiento pronto. Hoy no se cobra nada — serás el primero en saberlo.",
-    foundingMemberCtaLabel: "Apuntarme a la lista de miembros fundadores",
-    foundingMemberNote: "Sólo correo. Sin tarjeta. Baja en cada correo.",
-    comparisonHeading: "Qué incluye cada uno",
-    columnFree: "Gratis",
-    columnPro: "Pro",
-    columnFreePrice: "0 €",
-    columnProPrice: "39,99 € / año",
-    columnProPriceHint: "3,33 €/mes, facturado anualmente",
-    rows: [
-      { feature: "Ayuda ahora, siempre a un toque", freeHas: "Sí", proHas: "Sí" },
-      { feature: "Sesiones de Fix", freeHas: "3 al día", proHas: "Ilimitadas" },
-      { feature: "Guías (muy high, greened out, craving)", freeHas: "Sí", proHas: "Sí" },
-      { feature: "Diario — en tu dispositivo, tus palabras", freeHas: "Esta semana", proHas: "Historial completo" },
-      { feature: "Check-in semanal", freeHas: "Sí", proHas: "Sí" },
-      { feature: "Insights de check-in entre semanas", freeHas: "—", proHas: "Sí" },
-      { feature: "Programa de Reducción (2 / 4 / 6 semanas)", freeHas: "—", proHas: "Sí" },
-      { feature: "Vista de patrones", freeHas: "Últimos 14 días", proHas: "Historial completo" },
-      { feature: "Exportar tus datos (JSON)", freeHas: "Sí", proHas: "Sí" },
+    metaTitle: "Precios previstos — Fix",
+    metaDescription: "El precio previsto de lanzamiento y la prueba de siete días de Fix. Esta lista de espera no inicia una prueba ni cobra nada.",
+    kicker: "PRECIOS · PREVISTOS PARA EL LANZAMIENTO",
+    headlineLine1: "Un plan.",
+    headlineLine2: "Una semana para ver tu semana.",
+    subhead: "El precio previsto al lanzamiento es {yearly} al año o {monthly} al mes, con siete días para probar el producto completo. No hará falta una tarjeta para empezar la prueba. Fix todavía no acepta pagos; esta página es solo una lista de espera para el lanzamiento.",
+    plannedLabel: "Precio previsto al lanzamiento · aún no disponible",
+    yearlyLabel: "Anual",
+    monthlyLabel: "Mensual",
+    yearlyPriceFormat: "{price} / año",
+    monthlyPriceFormat: "{price} / mes",
+    yearlyEquivalentFormat: "{price} al mes, con pago anual",
+    trialLabel: "Prueba gratis de 7 días prevista al lanzamiento",
+    trialBody: "La prueba prevista incluirá acceso completo y empezará sin pedir una tarjeta. Apuntarse a esta lista no inicia ninguna prueba ni autoriza un pago.",
+    availabilityHeading: "Aún no está abierto",
+    availabilityBody: "El registro nocturno y el espejo semanal están en desarrollo. Esta página es solo una lista de espera. Déjanos tu correo y te avisamos cuando esté listo. Hoy no hay descuento anticipado, cuenta atrás, pago ni cobro.",
+    featureHeading: "En torno a esto se está construyendo el plan de lanzamiento",
+    features: [
+      "Un registro diario breve y opcional sobre cannabis, ánimo y contexto",
+      "Un espejo semanal que refleja tu patrón sin ponerle nota",
+      "Un objetivo pequeño elegido por ti, sin presión para cambiar",
+      "Fix como herramienta breve para preguntar por tu semana — no es terapeuta ni compañero",
     ],
-    trustHeading: "Cómo Pro sigue siendo honesto",
+    trustHeading: "Lo de ahora y lo del lanzamiento, sin confundirlo",
     trustBullets: [
-      "Hoy sin tarjeta. Sólo escribimos cuando Pro esté listo; tú decides entonces.",
-      "Cancela cuando quieras una vez Pro esté activo. 7 días de reembolso, sin preguntas.",
-      "Lo gratis sigue gratis — ayuda ahora, guías y la Fix diaria nunca pasarán detrás de un muro de pago.",
+      "La aplicación actual es gratuita. Esta página no pide pagos ni datos de tarjeta.",
+      "Los importes son los precios previstos al lanzamiento, no un descuento ni una oferta fundadora.",
+      "La información de seguridad y ayuda en crisis seguirá disponible sin suscripción.",
     ],
-    faqHeading: "Preguntas honestas",
+    faqHeading: "Respuestas claras",
     faqs: [
-      {
-        q: "¿Cuándo sale Pro de verdad?",
-        a: "Cuando esté listo. No lanzaremos un muro de pago que rompa nada de lo que es gratis hoy. Ventana realista: primera mitad de 2027. En la lista de miembros fundadores, recibes el correo primero.",
-      },
-      {
-        q: "¿La versión gratis va a empeorar?",
-        a: "No. Ayuda ahora, guías, las tres sesiones diarias de Fix, el diario de la semana y el check-in semanal siguen gratis para siempre. Antes cerramos el producto que romper esa promesa.",
-      },
-      {
-        q: "¿Por qué el correo si aún no hay nada que vender?",
-        a: "Dos razones. Reservas 27,99 € el primer año en lugar de 39,99 €. Y sólo construimos Pro si bastante gente lo quiere — esta lista es nuestra forma de comprobarlo.",
-      },
-      {
-        q: "¿Es una prueba?",
-        a: "No. Sin tarjeta, sin cobro automático, sin cuenta atrás. Es una lista de correo. Cuando Pro salga, recibes un correo con un enlace de pago; decides en ese momento.",
-      },
-      {
-        q: "¿Y mi divisa y el IVA?",
-        a: "Paddle se ocupa de ambos al pagar, cuando Pro esté activo. El número en esta página es un indicador, no el importe final; tu divisa e IVA local llegan en ese momento.",
-      },
+      { q: "¿Puedo empezar la prueba ahora?", a: "No. El producto previsto y su prueba de siete días aún no están disponibles. Apuntarte al correo solo sirve para recibir noticias del lanzamiento; no inicia una prueba ni crea un compromiso de pago." },
+      { q: "¿Cuánto costará?", a: "El precio previsto es {yearly} al año o {monthly} al mes. Son los precios previstos, no un descuento anticipado. Aquí no se puede comprar nada." },
+      { q: "¿Cómo funcionará la prueba?", a: "Al lanzamiento, el plan es ofrecer siete días de acceso completo sin pedir una tarjeta al empezar. La renovación, cancelación e impuestos se explicarán claramente antes de que se pueda iniciar." },
+      { q: "¿Tengo que dejarlo o elegir un objetivo?", a: "No. Fix se está construyendo para ayudarte a observar tu propio patrón. Tú decides si quieres cambiar algo; el objetivo es opcional." },
+      { q: "¿Fix es terapia o consejo médico?", a: "No. Fix es software de apoyo, no una herramienta de diagnóstico, terapeuta ni servicio de emergencia. La información de seguridad seguirá disponible en la web." },
     ],
     backToHome: "Volver al inicio",
   },
-
   it: {
     htmlLang: "it",
-    metaTitle: "Prezzi — FreezeFix",
-    metaDescription:
-      "Fix è gratis. Pro sta arrivando. Blocca il prezzo da membro fondatore prima del lancio — solo email, oggi niente addebito.",
-    kicker: "Prezzi",
-    headlineLine1: "Fix è gratis.",
-    headlineLine2: "Pro sta arrivando.",
-    subhead:
-      "Tutto quello che il prodotto fa oggi resta gratis, per sempre. Pro è lo strato più profondo — sessioni di Fix illimitate, cronologia del diario, insights, il Programma di Riduzione — in arrivo. Blocca ora il prezzo da membro fondatore.",
-    foundingMemberBadge: "Membro fondatore",
-    foundingMemberHeadline: "€27,99 per il primo anno",
-    foundingMemberStrike: "Dopo €39,99/anno",
-    foundingMemberHint: "Lancio in arrivo. Oggi nessun addebito — ti avvisiamo per primo.",
-    foundingMemberCtaLabel: "Entrare nella lista membri fondatori",
-    foundingMemberNote: "Solo email. Niente carta. Disiscrizione in ogni mail.",
-    comparisonHeading: "Cosa c'è in ciascuno",
-    columnFree: "Gratis",
-    columnPro: "Pro",
-    columnFreePrice: "€0",
-    columnProPrice: "€39,99 / anno",
-    columnProPriceHint: "€3,33/mese, fatturato annualmente",
-    rows: [
-      { feature: "Aiuto ora, sempre a un tocco", freeHas: "Sì", proHas: "Sì" },
-      { feature: "Sessioni di Fix", freeHas: "3 al giorno", proHas: "Illimitate" },
-      { feature: "Guide (troppo high, greened out, craving)", freeHas: "Sì", proHas: "Sì" },
-      { feature: "Diario — sul tuo dispositivo, le tue parole", freeHas: "Questa settimana", proHas: "Cronologia completa" },
-      { feature: "Check-in settimanale", freeHas: "Sì", proHas: "Sì" },
-      { feature: "Insights di check-in tra settimane", freeHas: "—", proHas: "Sì" },
-      { feature: "Programma di Riduzione (2 / 4 / 6 settimane)", freeHas: "—", proHas: "Sì" },
-      { feature: "Vista pattern", freeHas: "Ultimi 14 giorni", proHas: "Cronologia completa" },
-      { feature: "Esporta i tuoi dati (JSON)", freeHas: "Sì", proHas: "Sì" },
+    metaTitle: "Prezzi previsti — Fix",
+    metaDescription: "Il prezzo previsto al lancio e la prova di sette giorni. Questa lista d’attesa non avvia prove e non comporta pagamenti.",
+    kicker: "PREZZI · PREVISTI AL LANCIO",
+    headlineLine1: "Un piano.",
+    headlineLine2: "Una settimana per vedere la tua settimana.",
+    subhead: "Il prezzo previsto al lancio è {yearly} l’anno o {monthly} al mese, con sette giorni per provare il prodotto completo. Per iniziare la prova non servirà una carta. Fix non accetta ancora pagamenti; questa pagina è solo una lista d’attesa per il lancio.",
+    plannedLabel: "Prezzo previsto al lancio · non ancora disponibile",
+    yearlyLabel: "Annuale",
+    monthlyLabel: "Mensile",
+    yearlyPriceFormat: "{price} / anno",
+    monthlyPriceFormat: "{price} / mese",
+    yearlyEquivalentFormat: "{price} al mese, con addebito annuale",
+    trialLabel: "Prova gratuita di 7 giorni prevista al lancio",
+    trialBody: "La prova prevista darà accesso completo e inizierà senza carta. Iscriversi a questa lista non avvia una prova né autorizza un pagamento.",
+    availabilityHeading: "Non è ancora disponibile",
+    availabilityBody: "Il check-in serale e lo specchio settimanale sono in sviluppo. Questa pagina è solo una lista d’attesa. Lascia un’email e ti avvisiamo quando il prodotto è pronto. Oggi non ci sono sconti anticipati, conto alla rovescia, checkout o addebiti.",
+    featureHeading: "Su cosa si basa il piano di lancio",
+    features: [
+      "Un breve check-in quotidiano e facoltativo su cannabis, umore e contesto",
+      "Uno specchio settimanale che riflette il tuo schema senza dargli un voto",
+      "Un piccolo obiettivo scelto da te, senza pressione a cambiare",
+      "Fix come strumento breve per chiedere della tua settimana — non un terapeuta o un compagno",
     ],
-    trustHeading: "Come Pro resta onesto",
+    trustHeading: "Una distinzione chiara tra oggi e il lancio",
     trustBullets: [
-      "Oggi niente carta. Scriviamo solo quando Pro è live; decidi tu in quel momento.",
-      "Disdici quando vuoi una volta che Pro è attivo. Rimborso 7 giorni, senza domande.",
-      "Gratis resta gratis — aiuto ora, guide e Fix quotidiano non passeranno mai dietro un paywall.",
+      "L’app attuale è gratuita. Questa pagina non chiede pagamenti o dati della carta.",
+      "Gli importi sono i prezzi previsti al lancio, non uno sconto o un’offerta fondatori.",
+      "Le informazioni di sicurezza e di aiuto in caso di crisi restano accessibili senza abbonamento.",
     ],
-    faqHeading: "Domande oneste",
+    faqHeading: "Risposte chiare",
     faqs: [
-      {
-        q: "Quando esce davvero Pro?",
-        a: "Quando è pronto. Non lanciamo un paywall che rompe qualcosa che è gratis oggi. Finestra realistica: prima metà del 2027. Chi è nella lista membri fondatori riceve la mail per primo.",
-      },
-      {
-        q: "La versione gratis peggiorerà?",
-        a: "No. Aiuto ora, guide, le tre sessioni quotidiane di Fix, il diario della settimana e il check-in settimanale restano gratis per sempre. Prima chiudiamo il prodotto che rompere quella promessa.",
-      },
-      {
-        q: "Perché una mail ora se non c'è niente da vendere?",
-        a: "Due motivi. Blocchi €27,99 per il primo anno invece di €39,99. E costruiamo Pro solo se abbastanza persone lo vogliono — questa lista è la nostra verifica.",
-      },
-      {
-        q: "È una prova?",
-        a: "No. Niente carta, niente addebito automatico, niente conto alla rovescia. È una lista email. Quando Pro esce, ricevi una mail con un link al checkout; decidi tu in quel momento.",
-      },
-      {
-        q: "E la mia valuta e l'IVA?",
-        a: "Paddle gestisce entrambi al checkout, quando Pro è live. Il numero su questa pagina è una visualizzazione, non il totale finale; la tua valuta e l'IVA locale arrivano in quel momento.",
-      },
+      { q: "Posso iniziare la prova adesso?", a: "No. Il prodotto previsto e la prova di sette giorni non sono ancora disponibili. Iscriverti alla lista serve solo a ricevere una notizia sul lancio; non avvia una prova e non crea un impegno di pagamento." },
+      { q: "Quanto costerà?", a: "Il prezzo previsto è {yearly} l’anno o {monthly} al mese. Sono i prezzi previsti, non uno sconto anticipato. Da questa pagina non si può acquistare." },
+      { q: "Come funzionerà la prova?", a: "Al lancio, il piano è offrire sette giorni di accesso completo senza chiedere una carta all’inizio. Rinnovo, cancellazione e tasse saranno spiegati chiaramente prima dell’avvio." },
+      { q: "Devo smettere o scegliere un obiettivo?", a: "No. Fix si sta costruendo per aiutarti a notare il tuo schema. Decidi tu se vuoi cambiare qualcosa; l’obiettivo è facoltativo." },
+      { q: "Fix è terapia o un consiglio medico?", a: "No. Fix è un software di supporto, non uno strumento diagnostico, un terapeuta o un servizio di emergenza. Le informazioni di sicurezza restano disponibili sul sito." },
     ],
     backToHome: "Torna alla home",
   },

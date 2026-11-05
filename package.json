@@ -22,6 +22,7 @@
     "test:reflections": "tsx scripts/test-reflections.ts",
     "test:pwa": "tsx scripts/test-pwa.ts",
     "test:plans": "tsx scripts/test-plans.ts",
+    "test:daily-log": "tsx scripts/test-daily-log.ts",
     "test:demo": "tsx scripts/test-demo.ts",
     "test:wins": "tsx scripts/test-wins.ts",
     "test:facts": "tsx scripts/test-facts.ts",

@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
-// Persistent bottom tab bar for the in-app surfaces (Home · Journal · Fix · Insights · Plan).
+// Persistent secondary navigation for the in-app surfaces (Log · Journal · Fix · Mirror).
 // Mirrors the reference prototype's shape so the whole app reads as one piece.
 //
 // All SVG icons use proper React camelCase attribute names (strokeWidth, strokeLinecap,
@@ -23,7 +23,7 @@ type Item = {
 const ITEMS: Item[] = [
   {
     href: "/home",
-    label: "Home",
+    label: "Log",
     icon: (
       <svg
         viewBox="0 0 24 24"
@@ -89,7 +89,7 @@ const ITEMS: Item[] = [
   },
   {
     href: "/patterns",
-    label: "Insights",
+    label: "Mirror",
     icon: (
       <svg
         viewBox="0 0 24 24"
@@ -106,27 +106,6 @@ const ITEMS: Item[] = [
         <path d="M10 18V11" />
         <path d="M16 18V9" />
         <path d="M4 18h18" />
-      </svg>
-    ),
-  },
-  {
-    href: "/plans",
-    label: "Plan",
-    icon: (
-      <svg
-        viewBox="0 0 24 24"
-        width="22"
-        height="22"
-        aria-hidden="true"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth={1.75}
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      >
-        <rect x="4" y="6" width="16" height="14" rx="2.5" />
-        <path d="M4 10h16" />
-        <path d="M9 4v3M15 4v3" />
       </svg>
     ),
   },

@@ -208,7 +208,7 @@ export default function VoiceRecorder({ onText, onLimit }: Props) {
           onClick={stopEverything}
           className="flex items-center justify-center gap-3 rounded-2xl border border-accent bg-card px-4 py-4 text-lg font-semibold text-ink"
         >
-          <span className="h-3 w-3 animate-pulse rounded-full bg-accent" />
+          <span className="h-3 w-3 rounded-full bg-accent" />
           Stop · {seconds}s / {MAX_SECONDS}s
         </button>
       ) : (

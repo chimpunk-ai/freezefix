@@ -5,7 +5,8 @@
 // in the payment provider's dashboard, and the provider applies local currency and VAT at
 // checkout. If the two ever disagree, the provider wins and this file is wrong.
 
-export const TRIAL_DAYS = Number(process.env.TRIAL_DAYS) || 4;
+// Planned launch term from the product brief. Checkout remains hard-disabled below.
+export const TRIAL_DAYS = 7;
 
 type Prices = { currency: string; yearly: string; monthly: string; yearlyPerMonth: string };
 
@@ -79,6 +80,7 @@ export function checkoutConfig() {
 }
 
 export function paymentsOn(): boolean {
-  const c = checkoutConfig();
-  return Boolean(c.clientToken && c.prices.yearly && c.prices.monthly);
+  // The current public pricing route is a waitlist only. Do not allow an old
+  // Cloudflare secret to expose checkout or charge anyone before launch review.
+  return false;
 }
