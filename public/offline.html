@@ -3,20 +3,24 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta name="theme-color" content="#0F1F1A" />
+    <meta name="theme-color" content="#12100E" />
     <title>Offline — FreezeFix</title>
     <style>
+      /* Hard-coded hex values (not tokens) — this page is served by the
+         service worker and never goes through Tailwind. Values must match
+         app/globals.css + design-tokens.json Calm palette. Updated
+         2026-11-05 (Stage 2). */
       :root {
         color-scheme: dark;
-        background: #0F1F1A;
+        background: #12100E;
       }
-      html, body { margin: 0; padding: 0; min-height: 100%; background: #0F1F1A; color: #E6ECE8; font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
+      html, body { margin: 0; padding: 0; min-height: 100%; background: #12100E; color: rgba(255,255,255,0.87); font-family: Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
       main { max-width: 36rem; margin: 0 auto; padding: 2rem 1.25rem; }
-      h1 { font-family: ui-serif, Georgia, "Times New Roman", serif; font-weight: 400; font-size: clamp(1.6rem, 5vw, 2.25rem); letter-spacing: -0.01em; line-height: 1.1; }
-      p { line-height: 1.6; color: #B6C2BC; }
-      a { color: #AFD7B6; text-decoration: underline; text-underline-offset: 0.2em; }
-      .kicker { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; text-transform: uppercase; letter-spacing: 0.22em; font-size: 0.75rem; color: #8699A1; margin: 0 0 1.25rem; }
-      ul { padding-left: 1.1rem; color: #B6C2BC; }
+      h1 { font-family: Newsreader, ui-serif, Georgia, "Times New Roman", serif; font-weight: 400; font-size: clamp(1.6rem, 5vw, 2.25rem); letter-spacing: -0.015em; line-height: 1.1; }
+      p { line-height: 1.6; color: rgba(255,255,255,0.60); }
+      a { color: #9CAF88; text-decoration: underline; text-underline-offset: 0.2em; }
+      .kicker { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; text-transform: uppercase; letter-spacing: 0.22em; font-size: 0.75rem; color: rgba(255,255,255,0.38); margin: 0 0 1.25rem; }
+      ul { padding-left: 1.1rem; color: rgba(255,255,255,0.60); }
       li { margin-bottom: 0.5rem; }
     </style>
   </head>
