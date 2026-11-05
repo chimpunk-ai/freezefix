@@ -226,6 +226,7 @@ export const LANDING_COPY: Record<Locale, LandingCopy> = {
     footerPricingPosture:
       "Free today. If a paid plan ships one day, you'll see the price and terms before you're ever asked for a card.",
     footerLinks: [
+      { href: "/pricing", label: "Pricing" },
       { href: "/help", label: "Help" },
       { href: "/privacy", label: "Privacy" },
       { href: "/patterns", label: "Patterns" },
@@ -324,6 +325,7 @@ export const LANDING_COPY: Record<Locale, LandingCopy> = {
     footerPricingPosture:
       "Heute kostenlos. Wenn ein kostenpflichtiger Plan irgendwann kommt, siehst du den Preis und die Bedingungen, bevor jemals nach einer Karte gefragt wird.",
     footerLinks: [
+      { href: "/pricing", label: "Preise" },
       { href: "/help", label: "Hilfe" },
       { href: "/privacy", label: "Datenschutz" },
       { href: "/patterns", label: "Muster" },
@@ -424,6 +426,7 @@ export const LANDING_COPY: Record<Locale, LandingCopy> = {
     footerPricingPosture:
       "Gratuit aujourd'hui. Si un plan payant arrive un jour, tu verras le prix et les conditions avant qu'on ne te demande une carte.",
     footerLinks: [
+      { href: "/pricing", label: "Prix" },
       { href: "/help", label: "Aide" },
       { href: "/privacy", label: "Vie privée" },
       { href: "/patterns", label: "Tendances" },
@@ -523,6 +526,7 @@ export const LANDING_COPY: Record<Locale, LandingCopy> = {
     footerPricingPosture:
       "Vandaag gratis. Als er ooit een betaald plan komt, zie je de prijs en voorwaarden voordat er ooit om een kaart wordt gevraagd.",
     footerLinks: [
+      { href: "/pricing", label: "Prijzen" },
       { href: "/help", label: "Hulp" },
       { href: "/privacy", label: "Privacy" },
       { href: "/patterns", label: "Patronen" },
@@ -622,6 +626,7 @@ export const LANDING_COPY: Record<Locale, LandingCopy> = {
     footerPricingPosture:
       "Gratis hoy. Si algún día llega un plan de pago, verás el precio y las condiciones antes de que te pidamos una tarjeta.",
     footerLinks: [
+      { href: "/pricing", label: "Precios" },
       { href: "/help", label: "Ayuda" },
       { href: "/privacy", label: "Privacidad" },
       { href: "/patterns", label: "Patrones" },
@@ -719,6 +724,7 @@ export const LANDING_COPY: Record<Locale, LandingCopy> = {
     footerPricingPosture:
       "Gratis oggi. Se un giorno arriva un piano a pagamento, vedrai prezzo e condizioni prima che ti venga mai chiesta una carta.",
     footerLinks: [
+      { href: "/pricing", label: "Prezzi" },
       { href: "/help", label: "Aiuto" },
       { href: "/privacy", label: "Privacy" },
       { href: "/patterns", label: "Pattern" },

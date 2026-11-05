@@ -86,6 +86,16 @@ export default function sitemap(): MetadataRoute.Sitemap {
       priority: 0.8,
     },
     {
+      // Pricing pre-sell (added 5 Nov 2026, feat/pricing-founding-member).
+      // Higher than /help because paid-conversion is the whole point of the
+      // page and Google should find it; monthly change-frequency because
+      // the price doesn't drift.
+      url: `${SITE_URL}/pricing`,
+      lastModified: now,
+      changeFrequency: "monthly",
+      priority: 0.85,
+    },
+    {
       url: `${SITE_URL}/help`,
       lastModified: now,
       changeFrequency: "monthly",

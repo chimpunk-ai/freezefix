@@ -31,7 +31,7 @@ type Props = {
   /** Which page this is on — the backend uses it for a per-source daily
    * count on the waitlist_summary view. Must be a known source or the API
    * normalizes it to null (not an error) so the signup still saves. */
-  source: "home" | "future-plan";
+  source: "home" | "future-plan" | "pricing";
   /** Compact: single-line, inline-with-CTAs on the landing page.
    * Full: stacked, with the explanation line, used on /future-plan. */
   variant?: Variant;
