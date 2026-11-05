@@ -1,0 +1,91 @@
+{
+  "$schema": "https://design-tokens.github.io/community-group/format/",
+  "_comment": [
+    "Non-CSS mirror of app/globals.css. Values here are the source of truth",
+    "for Figma, scripts, future React Native, and anywhere else that cannot",
+    "read the @theme block. Every value in this file MUST match the matching",
+    "--color- / --font- token in app/globals.css; a mismatch is a bug.",
+    "",
+    "Stage 2 of the Calm-grade redesign — 2026-11-05 ( feat/design-tokens-calm ).",
+    "Palette: warm-black bg, warm stone surfaces, warm sage accent. Font: Inter",
+    "for the one geometric sans, Newsreader kept only for display H1 + brand mark."
+  ],
+  "color": {
+    "mode": "dark",
+    "bg":        { "value": "#12100E", "type": "color", "description": "Page background. Warm near-black (coffee)." },
+    "card":      { "value": "#1C1917", "type": "color", "description": "Cards, raised surfaces. Stone-900 warm." },
+    "chip":      { "value": "#292524", "type": "color", "description": "Chips, hovered rows." },
+    "line":      { "value": "rgba(255,255,255,0.08)", "type": "color", "description": "1px dividers (brief: borders at 8% white)." },
+    "ink":       { "value": "rgba(255,255,255,0.87)", "type": "color", "description": "Primary body text." },
+    "ink_soft":  { "value": "rgba(255,255,255,0.60)", "type": "color", "description": "Secondary text." },
+    "ink_faint": { "value": "rgba(255,255,255,0.38)", "type": "color", "description": "Tertiary / fine print." },
+    "accent":    { "value": "#9CAF88", "type": "color", "description": "Primary. Warm sage." },
+    "accent_ink":{ "value": "#12100E", "type": "color", "description": "Text on accent (dark bg colour, for contrast)." },
+    "glow":      { "value": "#B6C7A3", "type": "color", "description": "Lighter accent for hover / focus halo." },
+    "frost":     { "value": "#D8927A", "type": "color", "description": "Secondary — muted terracotta for crisis callouts." },
+    "teal":      { "value": "#7A9067", "type": "color", "description": "Deeper sage for emphasis (legacy name kept)." }
+  },
+  "color_light": {
+    "_comment": "Opt-in light theme — applied via data-theme=light or prefers-color-scheme: light.",
+    "bg":        { "value": "#FBF7F1", "type": "color" },
+    "card":      { "value": "#F4EEE4", "type": "color" },
+    "chip":      { "value": "#EADFCC", "type": "color" },
+    "line":      { "value": "rgba(18,16,14,0.10)", "type": "color" },
+    "ink":       { "value": "rgba(18,16,14,0.92)", "type": "color" },
+    "ink_soft":  { "value": "rgba(18,16,14,0.64)", "type": "color" },
+    "ink_faint": { "value": "rgba(18,16,14,0.42)", "type": "color" },
+    "accent":    { "value": "#6B8457", "type": "color" },
+    "accent_ink":{ "value": "#FBF7F1", "type": "color" },
+    "glow":      { "value": "#86A371", "type": "color" },
+    "frost":     { "value": "#B06C52", "type": "color" },
+    "teal":      { "value": "#4F6640", "type": "color" }
+  },
+  "font": {
+    "body":    { "value": "Inter", "type": "fontFamily", "description": "The one geometric sans." },
+    "display": { "value": "Newsreader", "type": "fontFamily", "description": "The one display serif — H1 on landing + brand mark only." }
+  },
+  "fontSize": {
+    "_comment": "Brief's type scale: 12 / 14 / 16 / 20 / 28 / 40 (px).",
+    "xs":   { "value": "12px", "type": "dimension" },
+    "sm":   { "value": "14px", "type": "dimension" },
+    "base": { "value": "16px", "type": "dimension" },
+    "lg":   { "value": "20px", "type": "dimension" },
+    "xl":   { "value": "28px", "type": "dimension" },
+    "2xl":  { "value": "40px", "type": "dimension" }
+  },
+  "spacing": {
+    "_comment": "8pt grid — every value is a multiple of 4px (quarter-pt), rhythm on multiples of 8.",
+    "1":  { "value": "4px",  "type": "dimension" },
+    "2":  { "value": "8px",  "type": "dimension" },
+    "3":  { "value": "12px", "type": "dimension" },
+    "4":  { "value": "16px", "type": "dimension" },
+    "5":  { "value": "20px", "type": "dimension" },
+    "6":  { "value": "24px", "type": "dimension" },
+    "8":  { "value": "32px", "type": "dimension" },
+    "10": { "value": "40px", "type": "dimension" },
+    "12": { "value": "48px", "type": "dimension" },
+    "16": { "value": "64px", "type": "dimension" }
+  },
+  "radius": {
+    "_comment": "Brief: 16 for cards, 20 for sheets, 999 for pills.",
+    "card":  { "value": "16px", "type": "dimension" },
+    "sheet": { "value": "20px", "type": "dimension" },
+    "pill":  { "value": "9999px", "type": "dimension" }
+  },
+  "motion": {
+    "_comment": "Brief: 200–350ms, transform/opacity only, cubic-bezier(0.22,1,0.36,1). Reduced-motion stops everything.",
+    "easing":   { "value": "cubic-bezier(0.22, 1, 0.36, 1)", "type": "cubicBezier" },
+    "fast":     { "value": "200ms", "type": "duration" },
+    "default":  { "value": "260ms", "type": "duration" },
+    "slow":     { "value": "350ms", "type": "duration" },
+    "stagger":  { "value": "40ms",  "type": "duration", "description": "Delay between entrance-rise children." },
+    "breathe_in":  { "value": "4000ms", "type": "duration", "description": "SOS breathing circle inhale." },
+    "breathe_out": { "value": "6000ms", "type": "duration", "description": "SOS breathing circle exhale." }
+  },
+  "elevation": {
+    "_comment": "Shadow tokens for cards and buttons on dark bg. Subtle on dark; stronger on light.",
+    "card":   { "value": "0 1px 2px rgba(0,0,0,0.3), 0 0 0 1px rgba(255,255,255,0.08)", "type": "shadow" },
+    "sheet":  { "value": "0 24px 48px -16px rgba(0,0,0,0.6), 0 0 0 1px rgba(255,255,255,0.08)", "type": "shadow" },
+    "accent": { "value": "0 14px 32px -14px rgba(156,175,136,0.55)", "type": "shadow", "description": "Primary CTA glow." }
+  }
+}

@@ -9,8 +9,11 @@ import "./globals.css";
 // unblocker; when the upstream fix lands we can move back to next/font/google
 // and self-hosted font files. preconnect keeps the perf cost tiny.
 //
-// Body: Plus Jakarta Sans — clean, humanist sans, matches reference prototype.
-// Display: Newsreader — elegant Google-licensed serif for headlines.
+// Body: Inter — the single geometric sans for the whole product (brief:
+//   "one geometric sans, Inter or DM Sans"). Replaced Plus Jakarta Sans
+//   in Stage 2 of the Calm-grade redesign (2026-11-05).
+// Display: Newsreader — kept as the single serif for the H1 on landing and
+//   the brand "f" mark; every other heading is Inter.
 
 const SITE_URL = "https://getfreezefix.com";
 const DESCRIPTION =
@@ -99,8 +102,8 @@ export const viewport: Viewport = {
   // Both dark and light theme-color values so the browser chrome adapts.
   // The inline script below picks the right one before first paint.
   themeColor: [
-    { media: "(prefers-color-scheme: dark)", color: "#0F1F1A" },   /* Grove deep green */
-    { media: "(prefers-color-scheme: light)", color: "#F4F8F5" },  /* Grove cream */
+    { media: "(prefers-color-scheme: dark)", color: "#12100E" },   /* Calm warm-black */
+    { media: "(prefers-color-scheme: light)", color: "#FBF7F1" },  /* Calm warm-cream */
   ],
   viewportFit: "cover",
 };
@@ -149,20 +152,23 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="en">
       <head>
-        {/* Google Fonts: Plus Jakarta Sans (body) + Newsreader (serif).
-            See the comment at the top of this file for why we use the CDN here.
-            preconnect to both hosts first so DNS + TLS happen alongside HTML parse. */}
+        {/* Google Fonts: Inter (body, the one geometric sans) + Newsreader
+            (display serif, used only for the big H1s + brand "f"). See the
+            comment at the top of this file; the preconnect hints make the
+            DNS+TLS happen alongside HTML parse. Inter weights 300/400/500/
+            600/700 cover every type-scale step the brief defines (12/14/16/
+            20/28/40 px). */}
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="" />
         <link
           rel="stylesheet"
-          href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&family=Newsreader:ital,wght@0,300..500;1,300..500&display=swap"
+          href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Newsreader:ital,wght@0,300..500;1,300..500&display=swap"
         />
         {/* Prevent flash of wrong theme: read localStorage before first paint.
             Sets data-theme on <html> and updates the theme-color meta tag. */}
         <script
           dangerouslySetInnerHTML={{
-            __html: `(function(){try{var t=localStorage.getItem("ff_theme");if(t==="light"||t==="dark"){document.documentElement.setAttribute("data-theme",t);var m=document.querySelector('meta[name="theme-color"]');if(m)m.setAttribute("content",t==="light"?"#F4F8F5":"#0F1F1A")}}catch(e){}})()`,
+            __html: `(function(){try{var t=localStorage.getItem("ff_theme");if(t==="light"||t==="dark"){document.documentElement.setAttribute("data-theme",t);var m=document.querySelector('meta[name="theme-color"]');if(m)m.setAttribute("content",t==="light"?"#FBF7F1":"#12100E")}}catch(e){}})()`,
           }}
         />
         <script
