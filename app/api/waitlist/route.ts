@@ -24,7 +24,7 @@ export const dynamic = "force-dynamic";
 // cheap sanity check as a second line of defence.
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
 
-const SOURCES = new Set(["home", "future-plan"]);
+const SOURCES = new Set(["home", "future-plan", "pricing"]);
 
 export async function POST(req: Request) {
   let deviceId = readDeviceId(req);
