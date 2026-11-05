@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import SiteFooter from "@/components/SiteFooter";
 import WaitlistCapture from "@/components/WaitlistCapture";
+import AgeGate from "@/components/AgeGate";
 import { PRICING_COPY, PRICING_CURRENCY_LABELS, currencyKey } from "@/lib/pricing-copy";
 import { pickLandingLocale, type Locale } from "@/lib/landing-copy";
 import { detectRegion } from "@/lib/country";
@@ -60,7 +61,9 @@ export default function Pricing({ locale: initialLocale = "en" }: Props) {
   );
 
   return (
-    <main className="mx-auto w-full max-w-5xl px-5 pb-16">
+    <>
+      <AgeGate locale={locale} />
+      <main className="mx-auto w-full max-w-5xl px-5 pb-16">
       {/* ── Header ─────────────────────────────────────────────────────── */}
       <header className="flex items-center justify-between py-5">
         <Link
@@ -283,6 +286,7 @@ export default function Pricing({ locale: initialLocale = "en" }: Props) {
 
       <SiteFooter locale={locale} />
     </main>
+    </>
   );
 }
 

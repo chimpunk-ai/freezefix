@@ -5,6 +5,7 @@ import Link from "next/link";
 import SiteFooter from "@/components/SiteFooter";
 import WaitlistCapture from "@/components/WaitlistCapture";
 import TutorialCard from "@/components/TutorialCard";
+import AgeGate from "@/components/AgeGate";
 import { LANDING_COPY, type Locale } from "@/lib/landing-copy";
 
 /* Landing page — "Grove" rebuild (2026-10-31).
@@ -47,7 +48,9 @@ export default function Landing({ locale = "en" }: Props) {
   }, []);
 
   return (
-    <main className="mx-auto w-full max-w-6xl px-5 pb-16">
+    <>
+      <AgeGate locale={locale} />
+      <main className="mx-auto w-full max-w-6xl px-5 pb-16">
       {/* ── Header ─────────────────────────────────────────────────────── */}
       <header className="flex items-center justify-between py-5">
         <Link href="/" aria-label="GetFreezeFix home" className="flex items-center gap-2.5">
@@ -224,5 +227,6 @@ export default function Landing({ locale = "en" }: Props) {
 
       <SiteFooter locale={locale} />
     </main>
+    </>
   );
 }

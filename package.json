@@ -17,6 +17,7 @@
     "test:resources": "tsx scripts/test-resources.ts",
     "test:landing-copy": "tsx scripts/test-landing-copy.ts",
     "test:pricing-copy": "tsx scripts/test-pricing-copy.ts",
+    "test:age-gate": "tsx scripts/test-age-gate.ts",
     "test:seo-copy": "tsx scripts/test-seo-copy.ts",
     "test:program": "tsx scripts/test-program.ts",
     "test:reflections": "tsx scripts/test-reflections.ts",
