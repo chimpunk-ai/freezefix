@@ -89,8 +89,8 @@ export default function ChatDemo() {
               key={i}
               className={
                 b.who === "fix"
-                  ? "max-w-[85%] animate-[fade_240ms_ease-out] self-start rounded-[1.2rem] rounded-bl-md bg-card px-3.5 py-2.5 text-[0.95rem] leading-snug text-ink"
-                  : "max-w-[85%] animate-[fade_240ms_ease-out] self-end rounded-[1.2rem] rounded-br-md bg-accent px-3.5 py-2.5 text-[0.95rem] leading-snug text-accent-ink"
+                  ? "max-w-[85%] self-start rounded-[1.2rem] rounded-bl-md bg-card px-3.5 py-2.5 text-[0.95rem] leading-snug text-ink"
+                  : "max-w-[85%] self-end rounded-[1.2rem] rounded-br-md bg-accent px-3.5 py-2.5 text-[0.95rem] leading-snug text-accent-ink"
               }
             >
               {b.text}
@@ -98,9 +98,7 @@ export default function ChatDemo() {
           ))}
           {typing && (
             <div className="flex max-w-[85%] self-start gap-1.5 rounded-[1.2rem] rounded-bl-md bg-card px-3.5 py-3">
-              <span className="h-1.5 w-1.5 animate-bounce rounded-full bg-ink-faint [animation-delay:-0.3s]" />
-              <span className="h-1.5 w-1.5 animate-bounce rounded-full bg-ink-faint [animation-delay:-0.15s]" />
-              <span className="h-1.5 w-1.5 animate-bounce rounded-full bg-ink-faint" />
+              <span className="text-sm text-ink-faint" aria-hidden="true">···</span>
             </div>
           )}
         </div>

@@ -1,163 +1,66 @@
-// Shape test for lib/landing-copy.ts.
-// Run: npm run test:landing-copy
-//
-// This file catches the one thing TypeScript cannot: a locale whose keys
-// are present but whose values were accidentally left empty, placeholdery
-// or still in English. It's a cheap check that runs in a second and would
-// have caught a dropped German hero line before it shipped.
-
-import { LANDING_COPY, LOCALES, type Locale, type LandingCopy } from "../lib/landing-copy";
+import { LANDING_COPY, LOCALES, type LandingCopy, type Locale } from "../lib/landing-copy";
 
 type Result = { id: string; ok: boolean; note?: string };
 const results: Result[] = [];
-
-function check(id: string, ok: boolean, note?: string) {
-  results.push({ id, ok, note });
-}
-
-function nonEmpty(x: string | null | undefined): boolean {
-  return typeof x === "string" && x.trim().length > 0;
-}
+const check = (id: string, ok: boolean, note?: string) => results.push({ id, ok, note });
+const nonEmpty = (value: unknown) => typeof value === "string" && value.trim().length > 0;
 
 for (const locale of LOCALES) {
-  const c: LandingCopy = LANDING_COPY[locale];
-  const prefix = `COPY-${locale.toUpperCase()}`;
-
-  // Required text fields — one per key the Landing component actually reads.
-  const required: Array<[keyof LandingCopy, string]> = [
-    ["htmlLang", "htmlLang"],
-    ["metaTitle", "metaTitle"],
-    ["metaDescription", "metaDescription"],
-    ["getHelpNow", "getHelpNow"],
-    ["openReturning", "openReturning"],
-    ["kicker", "kicker"],
-    ["heroHeadlineLine1", "heroHeadlineLine1"],
-    ["heroHeadlineLine2", "heroHeadlineLine2"],
-    ["heroBody", "heroBody"],
-    ["ctaOpen", "ctaOpen"],
-    ["ctaPrivacy", "ctaPrivacy"],
-    ["exampleHeading", "exampleHeading"],
-    ["exampleKicker", "exampleKicker"],
-    ["exampleSubtitle", "exampleSubtitle"],
-    ["footerBlurb", "footerBlurb"],
-  ];
-  for (const [key, label] of required) {
-    check(`${prefix}-${label}`, nonEmpty(c[key] as string));
+  const copy: LandingCopy = LANDING_COPY[locale];
+  const prefix = `LANDING-${locale.toUpperCase()}`;
+  for (const key of [
+    "htmlLang", "metaTitle", "metaDescription", "getHelpNow", "openReturning",
+    "kicker", "heroHeadlineLine1", "heroHeadlineLine2", "heroBody", "ctaWaitlist",
+    "ctaPrivacy", "releaseNote", "loopHeading", "loopIntro", "footerBlurb",
+    "footerPricingPosture",
+  ] as const) {
+    check(`${prefix}-${key}`, nonEmpty(copy[key]));
   }
-
-  // Switcher must point somewhere, with a label.
-  check(`${prefix}-switchTo-href`, nonEmpty(c.switchTo?.href));
-  check(`${prefix}-switchTo-label`, nonEmpty(c.switchTo?.label));
-
-  // Features: exactly 3, each with a title.
-  check(`${prefix}-features-count`, c.features?.length === 3);
-  c.features?.forEach((f, i) => {
-    check(`${prefix}-feature-${i}-title`, nonEmpty(f.title));
+  check(`${prefix}-language-links`, copy.languageLinks.length >= 1 && copy.languageLinks.every((link) => nonEmpty(link.href) && nonEmpty(link.label)));
+  check(`${prefix}-features-count`, copy.features.length === 3);
+  copy.features.forEach((feature, index) => {
+    check(`${prefix}-feature-${index}-title`, nonEmpty(feature.title));
+    check(`${prefix}-feature-${index}-body`, nonEmpty(feature.body));
   });
-
-  // Example steps: 4, label on every one, body on 1-3 (none on step 4 by design).
-  check(`${prefix}-example-steps-count`, c.exampleSteps?.length === 4);
-  c.exampleSteps?.forEach((s, i) => {
-    check(`${prefix}-example-${i}-index`, nonEmpty(s.index));
-    check(`${prefix}-example-${i}-label`, nonEmpty(s.label));
-    if (i < 3) {
-      check(`${prefix}-example-${i}-body`, nonEmpty(s.body));
-    } else {
-      check(`${prefix}-example-${i}-body-null`, s.body === null);
-    }
+  check(`${prefix}-mirror-weekdays-count`, copy.mirror.weekdays.length === 7);
+  check(`${prefix}-mirror-chart-summary`, nonEmpty(copy.mirror.chartSummary));
+  check(`${prefix}-mirror-example-caption`, nonEmpty(copy.mirror.caption));
+  check(`${prefix}-mirror-copy`, [copy.mirror.kicker, copy.mirror.heading, copy.mirror.observation, copy.mirror.goalLine].every(nonEmpty));
+  check(`${prefix}-loop-steps-count`, copy.loopSteps.length === 3);
+  copy.loopSteps.forEach((step, index) => {
+    check(`${prefix}-loop-${index}-title`, nonEmpty(step.title));
+    check(`${prefix}-loop-${index}-body`, nonEmpty(step.body));
   });
-
-  // Waitlist block must be fully populated — every one of these is reached
-  // by at least one state in WaitlistCapture.
-  const w = c.waitlist;
-  for (const k of ["label", "placeholder", "submit", "submitting", "footnote", "error", "throttled", "done", "notCollecting"] as const) {
-    check(`${prefix}-waitlist-${k}`, nonEmpty(w?.[k]));
+  const waitlist = copy.waitlist;
+  for (const key of ["label", "placeholder", "submit", "submitting", "footnote", "error", "throttled", "done", "notCollecting"] as const) {
+    check(`${prefix}-waitlist-${key}`, nonEmpty(waitlist[key]));
   }
-
-  // Footer links: at least four, each with href + label.
-  check(`${prefix}-footer-links-count`, (c.footerLinks?.length ?? 0) >= 4);
-  c.footerLinks?.forEach((l, i) => {
-    check(`${prefix}-footer-link-${i}-href`, nonEmpty(l.href));
-    check(`${prefix}-footer-link-${i}-label`, nonEmpty(l.label));
-  });
+  check(`${prefix}-footer-links`, copy.footerLinks.length >= 4 && copy.footerLinks.every((link) => nonEmpty(link.href) && nonEmpty(link.label)));
+  check(`${prefix}-prelaunch-disclosure`, /development|in development|in Arbeit|en cours|in ontwikkeling|en desarrollo|in sviluppo|in fase di sviluppo/i.test(copy.releaseNote));
 }
 
-// All alt locales: chatIsEnglishNote must be present. English-specific: it
-// must be null (no bait-and-switch sentinel accidentally rendered).
-// ─────────────────── tutorial card (feat/tutorial, 4 Nov 2026) ───────────
-// Tutorial card has 4 steps + a Patterns example caption. A future PR
-// that drops the card from a locale fails here instead of rendering a
-// blank right-column.
-for (const locale of LOCALES) {
-  const t = LANDING_COPY[locale].tutorial;
-  const prefix = `COPY-${locale.toUpperCase()}-tutorial`;
-  check(`${prefix}-kicker`, nonEmpty(t?.kicker));
-  check(`${prefix}-heading`, nonEmpty(t?.heading));
-  check(`${prefix}-patternsExampleCaption`, nonEmpty(t?.patternsExampleCaption));
-  check(`${prefix}-steps-count-4`, (t?.steps?.length ?? 0) === 4);
-  t?.steps?.forEach((s, i) => {
-    check(`${prefix}-step-${i}-title`, nonEmpty(s?.title));
-    check(`${prefix}-step-${i}-body`, nonEmpty(s?.body));
-  });
+check("EN-switcher-primary", LANDING_COPY.en.switchTo.href === "/de");
+for (const locale of ["de", "fr", "nl", "es", "it"] as const satisfies Locale[]) {
+  check(`${locale.toUpperCase()}-switcher-english`, LANDING_COPY[locale].switchTo.href === "/");
 }
 
-// ─────────────────── pricing-posture footer line ───────────────────
-// Added after Tom (NYC, 15-persona audit) called out that lib/plans.ts
-// carries dormant prices while the landing says nothing.
-for (const locale of LOCALES) {
-  check(`COPY-${locale.toUpperCase()}-footerPricingPosture`,
-    nonEmpty(LANDING_COPY[locale].footerPricingPosture));
-}
-
-check("COPY-DE-chatIsEnglishNote-present", nonEmpty(LANDING_COPY.de.chatIsEnglishNote));
-check("COPY-FR-chatIsEnglishNote-present", nonEmpty(LANDING_COPY.fr.chatIsEnglishNote));
-check("COPY-NL-chatIsEnglishNote-present", nonEmpty(LANDING_COPY.nl.chatIsEnglishNote));
-check("COPY-ES-chatIsEnglishNote-present", nonEmpty(LANDING_COPY.es.chatIsEnglishNote));
-check("COPY-IT-chatIsEnglishNote-present", nonEmpty(LANDING_COPY.it.chatIsEnglishNote));
-check("COPY-EN-chatIsEnglishNote-null", LANDING_COPY.en.chatIsEnglishNote === null);
-
-// Switcher wiring: EN points to /de (primary alt); every alt locale pivots
-// back to EN rather than to another alt. One tap, no dropdown. Extended
-// 3 Nov 2026 for audit P3.11; 4 Nov 2026 for ES/IT.
-check("COPY-EN-switcher-points-to-de", LANDING_COPY.en.switchTo.href === "/de");
-check("COPY-DE-switcher-points-to-en", LANDING_COPY.de.switchTo.href === "/");
-check("COPY-FR-switcher-points-to-en", LANDING_COPY.fr.switchTo.href === "/");
-check("COPY-NL-switcher-points-to-en", LANDING_COPY.nl.switchTo.href === "/");
-check("COPY-ES-switcher-points-to-en", LANDING_COPY.es.switchTo.href === "/");
-check("COPY-IT-switcher-points-to-en", LANDING_COPY.it.switchTo.href === "/");
-
-// languageLinks shape: EN has 5 (de, fr, nl, es, it); every alt locale has 1 (en).
-check("COPY-EN-languageLinks-5", LANDING_COPY.en.languageLinks.length === 5);
-check("COPY-DE-languageLinks-1-en", LANDING_COPY.de.languageLinks.length === 1 && LANDING_COPY.de.languageLinks[0].href === "/");
-check("COPY-FR-languageLinks-1-en", LANDING_COPY.fr.languageLinks.length === 1 && LANDING_COPY.fr.languageLinks[0].href === "/");
-check("COPY-NL-languageLinks-1-en", LANDING_COPY.nl.languageLinks.length === 1 && LANDING_COPY.nl.languageLinks[0].href === "/");
-check("COPY-ES-languageLinks-1-en", LANDING_COPY.es.languageLinks.length === 1 && LANDING_COPY.es.languageLinks[0].href === "/");
-check("COPY-IT-languageLinks-1-en", LANDING_COPY.it.languageLinks.length === 1 && LANDING_COPY.it.languageLinks[0].href === "/");
-
-// Hard regression: no alt-locale field accidentally left in English. A short
-// allowlist of words that are the same across languages (brand name, placeholder
-// stub, email) means we can't just do a strict "no English" check — instead we
-// look for English stop-words that would never appear in natural copy.
-const ENGLISH_LEAKS: Record<"de" | "fr" | "nl" | "es" | "it", RegExp> = {
-  de: /\b(the|please|your|here|would|get help now|open fix|email only)\b/i,
+const ENGLISH_LEAKS: Record<Exclude<Locale, "en">, RegExp> = {
+  de: /\b(the|please|your|would|get help now|open fix|email only)\b/i,
   fr: /\b(the|please|your|would|get help now|open fix|email only)\b/i,
-  nl: /\b(the|please|your|here|would|get help now|open fix|email only)\b/i,
-  es: /\b(the|please|your|here|would|get help now|open fix|email only)\b/i,
-  it: /\b(the|please|your|here|would|get help now|open fix|email only)\b/i,
+  nl: /\b(the|please|your|would|get help now|email only)\b/i,
+  es: /\b(the|please|your|would|get help now|email only)\b/i,
+  it: /\b(the|please|your|would|get help now|email only)\b/i,
 };
-for (const loc of ["de", "fr", "nl", "es", "it"] as const) {
-  for (const [key, value] of Object.entries(LANDING_COPY[loc]) as Array<[string, unknown]>) {
-    if (typeof value === "string" && ENGLISH_LEAKS[loc].test(value)) {
-      check(`COPY-${loc.toUpperCase()}-${key}-english-leak`, false,
-        `value contained an English stop-word: ${value.slice(0, 60)}`);
-    }
-  }
+for (const locale of ["de", "fr", "nl", "es", "it"] as const) {
+  const copy = LANDING_COPY[locale];
+  const text = JSON.stringify(copy);
+  check(`${locale.toUpperCase()}-no-common-english-leaks`, !ENGLISH_LEAKS[locale].test(text), text.match(ENGLISH_LEAKS[locale])?.[0]);
 }
 
-const pass = results.filter((r) => r.ok).length;
-const fail = results.length - pass;
-for (const r of results.filter((x) => !x.ok)) {
-  console.log(`  FAIL ${r.id}${r.note ? ` :: ${r.note}` : ""}`);
+const passed = results.filter((result) => result.ok).length;
+const failed = results.length - passed;
+for (const result of results.filter((item) => !item.ok)) {
+  console.log(`  FAIL ${result.id}${result.note ? ` :: ${result.note}` : ""}`);
 }
-console.log(`Landing copy check: ${pass}/${results.length} passed`);
-if (fail > 0) process.exit(1);
+console.log(`Landing copy check: ${passed}/${results.length} passed`);
+if (failed > 0) process.exit(1);

@@ -2,13 +2,8 @@ import type { Metadata } from "next";
 import Pricing from "@/components/Pricing";
 import { PRICING_COPY } from "@/lib/pricing-copy";
 
-// Pricing page — the founding-member pre-sell.
-//
-// Added 5 November 2026 (feat/pricing-founding-member) as Stage 1 of the
-// Calm-grade redesign + revenue plan. One route, locale-detected at mount
-// time; the same approach the Program route uses. If the brief's follow-up
-// visual-rebuild pass wants per-locale URLs (/de/pricing etc.) that's a
-// cheap follow-up — the copy pack already supports every locale.
+// Pricing page — one clearly labelled planned launch offer and a waitlist.
+// No checkout or trial begins from this route while the new product is in development.
 
 const SITE_URL = "https://getfreezefix.com";
 const enCopy = PRICING_COPY.en;

@@ -16,7 +16,7 @@
 //     two surfaces always agree.
 
 import { allNewestFirst as journalAll, CONTEXTS, type Entry } from "@/lib/journal";
-import { last7Summary, todayISO } from "@/lib/checkins";
+import { getAnswer, last7Summary, todayISO } from "@/lib/checkins";
 import { allWins } from "@/lib/wins";
 
 export type Insight = {
@@ -147,15 +147,6 @@ export function computeInsights(now = new Date()): {
 
 /** Oldest-→newest for the last 4 weeks, counts of 'yes' and 'no' per week. */
 function weeksOfUse(now: Date): WeekBar[] {
-  // Pull all check-ins from storage.
-  let log: Record<string, "yes" | "no"> = {};
-  try {
-    const raw = window.localStorage.getItem("ff_checkins");
-    log = raw ? JSON.parse(raw) : {};
-  } catch {
-    log = {};
-  }
-
   const out: WeekBar[] = [];
   // Walk back 4 week-spans ending today.
   for (let wi = 3; wi >= 0; wi--) {
@@ -165,7 +156,7 @@ function weeksOfUse(now: Date): WeekBar[] {
       const date = new Date(now);
       date.setDate(date.getDate() - (wi * 7 + d));
       const key = isoLocal(date);
-      const ans = log[key];
+      const ans = getAnswer(key);
       if (ans === "yes") {
         use += 1;
         recorded += 1;

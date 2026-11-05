@@ -22,39 +22,46 @@ import { allWins, clearWins } from "@/lib/wins";
 const KEYS_WIPED = [
   "ff_checkins",
   "ff_goal",
+  "ff_weekly_goal_v1",
   "ff_journal_entries",
+  "ff_weekly_reflections",
   "ff_tomorrow_plans",
   "ff_insights_hidden",
   "ff_wins_log",
+  "ff_wins",
   "ff_recent_scenarios",
   "ff_memory",
+  "ff_memory_on",
   "ff_name",
+  "ff_onboarded",
   "ff_session_level",
   "ff_session_mixed",
   "ff_session_ack",
+  "ff_program",
+  "ff_show_streak",
+  "ff_visits",
 ];
 
 const SUB_PAGES: { href: string; label: string; blurb: string }[] = [
   { href: "/sos", label: "Craving SOS", blurb: "A short, started-by-you pause." },
   { href: "/tools", label: "Everyday tools", blurb: "Respectful message, task unfreeze, decision pause." },
   { href: "/privacy", label: "How privacy works", blurb: "What stays on this device, and what gets sent." },
-  { href: "/future-plan", label: "Future plan preview", blurb: "What might be paid one day — and what never will be." },
-  { href: "/scenarios", label: "Prototype scenarios", blurb: "Founder-only test scripts. Not for general use." },
+  { href: "/product", label: "Product details", blurb: "The daily log, weekly mirror, privacy choices, and what is still planned." },
 ];
 
 const DATA_TABLE: { what: string; where: string; delete: string }[] = [
   {
     what: "Chat messages (Fix)",
-    where: "Sent to the AI provider to generate a reply. Not stored by FreezeFix.",
-    delete: "Nothing to delete here. Provider retention is in the Privacy Policy.",
+    where: "Sent to the AI provider for a response; provider retention is in the Privacy Policy.",
+    delete: "Local settings do not recall submitted content from the provider.",
   },
   {
-    what: "Daily check-ins, goal, journal entries, Tomorrow Loop plans",
+    what: "Daily log, weekly goal, mirror history, and journal",
     where: "This browser's local storage.",
     delete: "Delete all my data below, or Delete all inside each surface.",
   },
   {
-    what: "Wins log and memory",
+    what: "Legacy chat memory and saved notes",
     where: "This browser's local storage.",
     delete: "Delete all my data below, or Delete inside Fix.",
   },
@@ -86,6 +93,9 @@ export default function SettingsHub() {
   const [wins, setWins] = useState(0);
   const [confirmWipe, setConfirmWipe] = useState(false);
   const [wiped, setWiped] = useState(false);
+  const [petName, setPetName] = useState("");
+  const [nameSaved, setNameSaved] = useState(false);
+  const [consentWithdrawn, setConsentWithdrawn] = useState(false);
   // Server-side config: feature flags + daily caps. Fetched once on mount so we don't
   // keep hitting /api/config while the user flips around settings. "undefined" means
   // "we haven't been told", so the UI shows "–" rather than a confident "0".
@@ -95,6 +105,7 @@ export default function SettingsHub() {
     setJournal(journalCount());
     setPlans(planCount());
     setWins(allWins().length);
+    setPetName(window.localStorage.getItem("ff_name") || "");
     setMounted(true);
     // Fire and forget. If the fetch fails, the section just doesn't render the caps.
     fetch("/api/config", { cache: "no-store" })
@@ -129,6 +140,30 @@ export default function SettingsHub() {
     window.setTimeout(() => setWiped(false), 2500);
   }
 
+  function savePetName() {
+    try {
+      const name = petName.trim().slice(0, 40);
+      if (name) window.localStorage.setItem("ff_name", name);
+      else window.localStorage.removeItem("ff_name");
+      setPetName(name);
+      setNameSaved(true);
+      window.setTimeout(() => setNameSaved(false), 2200);
+    } catch {
+      setNameSaved(false);
+    }
+  }
+
+  function withdrawLogConsent() {
+    try {
+      window.localStorage.removeItem("ff_health_consent");
+      window.localStorage.removeItem("ff_checkins");
+      window.localStorage.removeItem("ff_weekly_goal_v1");
+      setConsentWithdrawn(true);
+    } catch {
+      setConsentWithdrawn(false);
+    }
+  }
+
   return (
     <AppShell>
       <section className="flex flex-col gap-3">
@@ -153,6 +188,16 @@ export default function SettingsHub() {
         </p>
         <div className="mt-3">
           <ThemeToggle />
+        </div>
+      </section>
+
+      <section className="mt-5 rounded-[1.5rem] border border-line bg-card p-5">
+        <p className="font-mono text-xs uppercase tracking-[0.22em] text-ink-soft">A name for your mirror · optional</p>
+        <p className="mt-2 text-sm leading-relaxed text-ink-soft">Use a nickname, or leave it blank. It is saved only in this browser and is not sent to the server.</p>
+        <div className="mt-3 flex flex-wrap gap-2">
+          <input value={petName} onChange={(event) => setPetName(event.target.value.slice(0, 40))} maxLength={40} aria-label="Optional nickname for your mirror" placeholder="A name, if you like" className="min-h-11 min-w-0 flex-1 rounded-xl border border-line bg-bg px-3 text-sm text-ink placeholder:text-ink-faint focus:border-accent focus:outline-none" />
+          <button type="button" onClick={savePetName} className="min-h-11 rounded-full border border-line px-4 text-sm text-ink">Save name</button>
+          {nameSaved ? <span role="status" className="self-center text-xs text-ink-soft">Saved on this device.</span> : null}
         </div>
       </section>
 
@@ -205,6 +250,12 @@ export default function SettingsHub() {
           Consent and the 18+ gate stay — asking you to redo them on a cleared device would feel
           like a bug, not a feature. Clear your browser data to wipe them too.
         </p>
+        <div className="mt-4 border-t border-line pt-4">
+          <p className="text-sm font-medium text-ink">Sensitive check-in consent</p>
+          <p className="mt-1 text-xs leading-relaxed text-ink-soft">Withdrawing clears the daily log and optional goal, and asks Fix not to open the log again until you consent. Your 18+ confirmation remains.</p>
+          <button type="button" onClick={withdrawLogConsent} className="mt-3 min-h-10 rounded-full border border-line px-4 text-xs text-ink-soft">Withdraw consent and clear check-ins</button>
+          {consentWithdrawn ? <p role="status" className="mt-2 text-xs text-ink-soft">Consent withdrawn and local check-ins cleared.</p> : null}
+        </div>
       </section>
 
       {/* Daily limits — what the server caps today. Chat itself is open to everyone

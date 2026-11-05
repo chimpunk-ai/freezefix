@@ -732,15 +732,14 @@ export default function FreezeFixApp() {
               )}
             </div>
             <p className="mt-6 text-center text-xs leading-relaxed text-ink-faint">
-              Your notes stay on your phone. What you type goes to our AI to get your moves and isn&apos;t stored.
-              {(features.voice || features.screenshot) && " Voice notes and screenshots are handled the same way: used once, never stored."}
+              Your daily log stays in this browser. Separately, anything you submit to Fix chat is sent to our AI provider to generate a reply and may be retained under the provider&apos;s policy. Your local log is not attached automatically.
             </p>
           </Screen>
         )}
 
         {step === "thinking" && (
           <div className="flex flex-1 flex-col items-center justify-center gap-4 text-center" role="status" aria-live="polite">
-            <div className="h-12 w-12 animate-spin rounded-full border-4 border-line border-t-accent" aria-hidden="true" />
+            <div className="h-12 w-12 rounded-full border-4 border-line border-t-accent" aria-hidden="true" />
             <p className="text-lg text-ink-soft">Breathe out slowly while I think…</p>
           </div>
         )}
@@ -1014,7 +1013,7 @@ export default function FreezeFixApp() {
               </div>
               <h1 className="text-center text-3xl font-extrabold leading-tight text-ink">Private by design</h1>
               <p className="max-w-[30ch] text-center text-base leading-relaxed text-ink-soft">
-                No account. No sign-up. Your notes stay on your device.
+                No account for the daily log. Your check-ins stay in this browser.
               </p>
             </div>
 
@@ -1022,7 +1021,7 @@ export default function FreezeFixApp() {
             <div className="mt-6 rounded-2xl border border-line bg-card">
               <div className="flex items-center gap-3 border-b border-line px-5 py-4">
                 <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-frost/10 text-sm text-frost" aria-hidden="true">AI</span>
-                <p className="text-[0.92rem] leading-snug text-ink">What you type is sent to AI to reply &mdash; not stored by us</p>
+                <p className="text-[0.92rem] leading-snug text-ink">Chat text you submit goes to our AI provider; see the Privacy Policy for its retention.</p>
               </div>
               <div className="flex items-center gap-3 border-b border-line px-5 py-4">
                 <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-frost/10 text-sm text-frost" aria-hidden="true">18+</span>
@@ -1032,7 +1031,7 @@ export default function FreezeFixApp() {
                 <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-frost/10 text-sm text-frost" aria-hidden="true">
                   <svg width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden="true"><rect x="3" y="6.5" width="10" height="7" rx="1.5" stroke="currentColor" strokeWidth="1.5" fill="none" /><path d="M5.5 6.5V5a2.5 2.5 0 015 0v1.5" stroke="currentColor" strokeWidth="1.5" fill="none" /></svg>
                 </span>
-                <p className="text-[0.92rem] leading-snug text-ink">No conversations saved &mdash; your notes stay on your device</p>
+                <p className="text-[0.92rem] leading-snug text-ink">Your daily log stays here. Chat is separate and does not include it automatically.</p>
               </div>
             </div>
 
@@ -1054,7 +1053,7 @@ export default function FreezeFixApp() {
                   onChange={(e) => setConsentTicked(e.target.checked)}
                   className="h-5 w-5 shrink-0 rounded accent-[var(--color-frost)]"
                 />
-                <span>I understand Fix uses AI</span>
+                <span>I understand Fix chat sends what I submit to an AI provider to generate a response</span>
               </label>
             </div>
 
@@ -1131,11 +1130,6 @@ export default function FreezeFixApp() {
                     setUserName(n);
                     setNameInMemory(n);
                     setHello(greeting(n));
-                    fetch("/api/signup", {
-                      method: "POST",
-                      headers: { "Content-Type": "application/json" },
-                      body: JSON.stringify({ name: n }),
-                    }).catch(() => {});
                     setStep(afterName());
                   }
                 }}
@@ -1148,11 +1142,6 @@ export default function FreezeFixApp() {
                   setUserName(n);
                   setNameInMemory(n);
                   setHello(greeting(n));
-                  fetch("/api/signup", {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ name: n }),
-                  }).catch(() => {});
                   setStep(afterName());
                 }}
               >
@@ -1180,8 +1169,8 @@ export default function FreezeFixApp() {
         {step === "settings" && (
           <Screen title="Privacy & settings">
             <div className="flex flex-col gap-3">
-              <div className="rounded-2xl border border-line bg-card p-4 text-base text-ink-soft">
-                Your notes stay on your phone. What you type goes to our AI to get your moves and isn&apos;t stored.
+              <div className="rounded-2xl border border-line bg-card p-4 text-sm leading-relaxed text-ink-soft">
+                Your daily log stays in this browser. Fix chat is separate: anything you submit there goes to the AI provider for a response and may be retained under its policy. The local log is not attached automatically. See the Privacy Policy for provider details.
               </div>
               <ThemeToggle />
               {get("local", K_CONSENT) ? (
@@ -1334,4 +1323,3 @@ function GhostButton({ onClick, children }: { onClick: () => void; children: Rea
     </button>
   );
 }
-

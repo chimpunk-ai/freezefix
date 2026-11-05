@@ -28,9 +28,9 @@ export default function PrivacySummary() {
           detail="Not stored by FreezeFix. The provider's own retention is covered in the policy below."
         />
         <Row
-          what="Wins log, moments, scenario history"
+          what="Daily log, weekly goal, transcript"
           where="This browser's local storage."
-          detail="Never uploaded. Delete one from the Wins screen, or clear everything in Settings."
+          detail="Not uploaded or synced by Fix. Delete everything in Settings or clear this browser's site data."
         />
         <Row
           what="Patterns page"
@@ -38,9 +38,9 @@ export default function PrivacySummary() {
           detail="Nothing new is written and nothing is sent anywhere when you open it."
         />
         <Row
-          what="Theme, name, onboarding answers"
+          what="Nickname, theme, consent"
           where="This browser's local storage."
-          detail="Used only to greet you and keep the look you picked."
+          detail="Your nickname stays on this device. No profile is created or sent to the server."
         />
         <Row
           what="Anonymous counts"
@@ -58,9 +58,9 @@ export default function PrivacySummary() {
           detail="FreezeFix never sees your full card number. Receipts and VAT are the provider's."
         />
         <Row
-          what="Voice & photos (when enabled)"
-          where="Processed to generate a reply, then discarded."
-          detail="Not stored by FreezeFix. The provider's lifecycle is in the policy below."
+          what="Daily speech note"
+          where="Browser-provided speech recognition; transcript in this browser."
+          detail="The browser/provider may process audio. FreezeFix does not record or upload audio from the daily-log control."
         />
       </ul>
       <p className="mt-5 text-xs leading-relaxed text-ink-faint">

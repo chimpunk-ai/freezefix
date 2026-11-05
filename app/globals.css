@@ -194,7 +194,6 @@ a {
     inset 0 2px 0 rgba(255, 255, 255, 0.6),
     inset 0 -10px 24px rgba(20, 18, 24, 0.18),
     0 18px 44px -12px rgba(20, 18, 24, 0.6);
-  transition: transform 160ms ease;
 }
 .ice::after {
   content: "";
@@ -206,9 +205,7 @@ a {
   background: linear-gradient(160deg, #B6C7A3 0%, #9CAF88 55%, #7A9067 100%);
   opacity: 0;
   z-index: -1;
-  transition: opacity 420ms ease;
 }
-.ice:active { transform: scale(0.97); }
 .ice.thawing {
   background: transparent;
   color: #12100E;
@@ -216,14 +213,7 @@ a {
 }
 .ice.thawing::after { opacity: 1; }
 
-/* "+0.5%" reward. Keeps the same shape; shadow now carries the sage glow. */
-@keyframes rise {
-  0% { transform: translateY(12px) scale(0.9); opacity: 0; }
-  30% { transform: translateY(0) scale(1.06); opacity: 1; }
-  100% { transform: translateY(-6px) scale(1); opacity: 1; }
-}
 .reward {
-  animation: rise 700ms cubic-bezier(0.2, 0.9, 0.3, 1.2) both;
   text-shadow: 0 0 32px rgba(156, 175, 136, 0.55);
 }
 
@@ -257,12 +247,6 @@ a {
   }
 }
 
-/* Bubbles land rather than snap. */
-@keyframes fade {
-  from { opacity: 0; transform: translateY(6px); }
-  to { opacity: 1; transform: none; }
-}
-
 /* The single global reduced-motion rule. */
 @media (prefers-reduced-motion: reduce) {
   *,
@@ -275,96 +259,60 @@ a {
   }
 }
 
-/* Artwork animations. */
-.ff-draw {
-  stroke-dasharray: 420;
-  stroke-dashoffset: 420;
-  animation: ff-draw 2.6s ease-out forwards;
-}
-@keyframes ff-draw { to { stroke-dashoffset: 0; } }
-
-.ff-pulse { animation: ff-pulse 2.4s ease-in-out infinite; }
-@keyframes ff-pulse {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.35; }
-}
-
-.ff-dash { animation: ff-dash 1.6s linear infinite; }
-@keyframes ff-dash { to { stroke-dashoffset: -26; } }
-
-/* Breathing circle. The brief's SOS spec: 4s in, 6s out, infinite. The
-   current component uses this at the 5s midpoint; keeping it until the
-   /fix bottom-sheet rebuild tunes it to the spec exactly. */
+/* The SOS breathing cue: four seconds in, six seconds out. */
 .ff-breathe {
   transform-origin: 100px 86px;
-  animation: ff-breathe 5s ease-in-out infinite;
+  animation: ff-breathe 10s ease-in-out infinite;
 }
 @keyframes ff-breathe {
-  0%, 100% { transform: scale(0.75); opacity: 0.7; }
-  50% { transform: scale(1.25); opacity: 1; }
+  0%, 100% { transform: scale(0.75); opacity: 0.72; }
+  40% { transform: scale(1.25); opacity: 1; }
 }
 
-/* Sections arrive as you scroll. Brief spec: 200–350ms, entrance stagger. */
-.ff-rise {
-  animation: ff-rise 600ms cubic-bezier(.2,.7,.3,1) both;
+/* The weekly mirror arrives like a sheet being set down, then its seven days draw. */
+.ff-mirror-sheet {
+  animation: ff-mirror-up 350ms cubic-bezier(.22,.72,.2,1) both;
 }
-@keyframes ff-rise {
-  from { opacity: 0; transform: translateY(18px); }
-  to { opacity: 1; transform: none; }
+@keyframes ff-mirror-up {
+  from { opacity: 0; transform: translateY(24px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.ff-mirror-sheet-out {
+  animation: ff-mirror-down 350ms cubic-bezier(.22,.72,.2,1) both;
+}
+@keyframes ff-mirror-down {
+  from { opacity: 1; transform: translateY(0); }
+  to { opacity: 0; transform: translateY(24px); }
+}
+.ff-mirror-graph > li {
+  transform-origin: bottom center;
+  animation: ff-mirror-day 800ms cubic-bezier(.2,.7,.3,1) both;
+}
+.ff-mirror-graph > li:nth-child(2) { animation-delay: 70ms; }
+.ff-mirror-graph > li:nth-child(3) { animation-delay: 140ms; }
+.ff-mirror-graph > li:nth-child(4) { animation-delay: 210ms; }
+.ff-mirror-graph > li:nth-child(5) { animation-delay: 280ms; }
+.ff-mirror-graph > li:nth-child(6) { animation-delay: 350ms; }
+.ff-mirror-graph > li:nth-child(7) { animation-delay: 420ms; }
+@keyframes ff-mirror-day {
+  from { opacity: 0.25; transform: scaleY(.25); }
+  to { opacity: 1; transform: scaleY(1); }
 }
 
-/* Chat bubbles land. */
-.ff-bubble {
-  animation: ff-bubble 260ms cubic-bezier(.2,.8,.3,1) both;
+/* One sage pulse when a user-defined goal reaches its weekly target. */
+.ff-goal-pulse {
+  animation: ff-goal-pulse 600ms ease-out both;
 }
-@keyframes ff-bubble {
-  from { opacity: 0; transform: translateY(10px) scale(0.97); }
-  to { opacity: 1; transform: none; }
-}
-
-/* Home-screen cards arrive one after another. Brief spec: 40ms stagger. */
-.ff-stagger > * {
-  animation: ff-bubble 380ms cubic-bezier(.2,.8,.3,1) both;
-}
-.ff-stagger > *:nth-child(1) { animation-delay: 40ms; }
-.ff-stagger > *:nth-child(2) { animation-delay: 80ms; }
-.ff-stagger > *:nth-child(3) { animation-delay: 120ms; }
-.ff-stagger > *:nth-child(4) { animation-delay: 160ms; }
-.ff-stagger > *:nth-child(5) { animation-delay: 200ms; }
-.ff-stagger > *:nth-child(6) { animation-delay: 240ms; }
-.ff-stagger > *:nth-child(7) { animation-delay: 280ms; }
-.ff-stagger > *:nth-child(8) { animation-delay: 320ms; }
-
-/* Background drifts, very slowly. Suppressed by reduced-motion. */
-@media (prefers-reduced-motion: no-preference) {
-  body {
-    animation: ff-grove 48s ease-in-out infinite alternate;
-  }
-}
-@keyframes ff-grove {
-  from { background-position: 0% 0%, 100% 0%, 50% 100%; }
-  to { background-position: 12% 6%, 86% 10%, 58% 94%; }
+@keyframes ff-goal-pulse {
+  0% { box-shadow: 0 0 0 0 rgba(156,175,136,0); }
+  45% { box-shadow: 0 0 0 5px rgba(156,175,136,.22); }
+  100% { box-shadow: 0 0 0 0 rgba(156,175,136,0); }
 }
 
 /* Chips invite a tap. */
 .ff-chip {
-  transition: transform 140ms cubic-bezier(.2,.8,.3,1), background-color 140ms ease;
+  transition: none;
 }
-.ff-chip:active { transform: scale(0.94); }
-
-/* The cursor that blinks while a reply is still arriving. */
-.ff-caret::after {
-  content: "";
-  display: inline-block;
-  width: 0.5ch;
-  height: 1.05em;
-  margin-left: 2px;
-  vertical-align: -0.16em;
-  background: currentColor;
-  opacity: 0.55;
-  animation: ff-caret 1.05s steps(2, start) infinite;
-}
-@keyframes ff-caret { to { opacity: 0; } }
 
 /* ── Glassmorphism, nav only ────────────────────────────────────────────
  * Brief: "Glassmorphism on nav only." A single utility class any sticky

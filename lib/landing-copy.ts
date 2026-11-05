@@ -1,120 +1,49 @@
-// Landing-page strings keyed by locale.
-//
-// Shipped 3 November 2026 for Europe-audit P1.5 (DE first-language localization).
-// German is the ONLY non-English locale right now; French and Dutch are tracked
-// as audit P3.11. Keeping the shape as a Record<Locale, LandingCopy> rather
-// than two hard-coded objects so adding fr/nl later is a one-line change here
-// and a new app/<locale>/page.tsx — no further refactor.
-//
-// Translation posture
-//   Marcus (Berlin, 22) is a native German speaker. "Translated-feel" German
-//   reads worse than clean English for him: it signals the product is made for
-//   people like him only on the surface. These strings are written as German
-//   first (not an auto-translation of the English), kept conversational, and
-//   avoid false cognates. "Grinding", "stuck replying" etc. are localized to
-//   German idioms where there's a natural one, or dropped where there isn't.
-//
-// Honest about scope
-//   This is the LANDING page in German. The Fix chat, settings, journal,
-//   patterns, help screen UI chrome and the entire /app surface are still
-//   English today — that's audit P3.11. The German landing says so plainly
-//   near the primary CTA so Marcus knows what to expect before he taps "Fix
-//   öffnen". Pretending the whole product is German would be worse than
-//   admitting the chat is English and shipping the German chat later.
-
 export type Locale = "en" | "de" | "fr" | "nl" | "es" | "it";
 
 export const LOCALES: Locale[] = ["en", "de", "fr", "nl", "es", "it"];
-
-/** The locale a visitor sees when their region doesn't match any of
- *  LOCALES. English is the pivot — every alt-locale header "switch"
- *  points back to English, not between alt languages, so the user never
- *  has to go through French to reach Dutch. */
 export const FALLBACK_LOCALE: Locale = "en";
 
-/** Maps a 2-letter country code (from detectRegion / navigator) to the
- *  landing locale that should greet them. DE / AT / CH → de; FR / BE
- *  (French-speaking) / LU → fr; NL / BE (Dutch-speaking) → nl.
- *  BE is Dutch-speaking majority-wise but French in the south — we
- *  default BE to French because the FR crisis resources are stronger
- *  than the NL ones for Wallonia; a BE Dutch speaker still gets the
- *  switcher chip. Everyone else → en. */
 export function pickLandingLocale(region: string): Locale {
   const r = region.toUpperCase();
   if (r === "DE" || r === "AT" || r === "CH") return "de";
   if (r === "FR" || r === "LU" || r === "BE") return "fr";
   if (r === "NL") return "nl";
-  // Spanish (Maria, Madrid) and Italian (Nina, Milan) — added 4 Nov 2026
-  // for the 15-persona audit. AD/UY/other Spanish-speaking regions pivot
-  // here too; a UY visitor would prefer Castilian over English. IT covers
-  // SM and VA as neighbouring Italian-speaking states.
   if (r === "ES" || r === "AD" || r === "UY") return "es";
   if (r === "IT" || r === "SM" || r === "VA") return "it";
   return "en";
 }
 
 export type LandingCopy = {
-  /** 2-letter BCP-47 for the <html lang> and OpenGraph locale. */
   htmlLang: string;
-  /** <title> + metadata description. Separate from the body copy so the
-   *  SEO story and the on-page story don't drift apart. */
   metaTitle: string;
   metaDescription: string;
-  /** Header */
   getHelpNow: string;
   openReturning: string;
-  /** Locale switcher link to the primary OTHER locale. Kept for backward
-   *  compat with existing SeoLanding + Program headers that render only
-   *  one chip. For the main landing header, use `languageLinks` which
-   *  carries ALL available alternates for the current page. */
   switchTo: { href: string; label: string };
-  /** All alternate-language versions of this page, each a chip in the
-   *  header. On EN this lists de / fr / nl; on each alt locale this is
-   *  just [EN], the pivot — so a visitor never has to navigate through
-   *  French to reach Dutch. Added 3 Nov 2026 for audit P3.11. */
   languageLinks: Array<{ href: string; label: string; lang: string }>;
-  /** Hero */
   kicker: string;
   heroHeadlineLine1: string;
   heroHeadlineLine2: string;
   heroBody: string;
-  ctaOpen: string;
+  ctaWaitlist: string;
   ctaPrivacy: string;
-  /** Honest note shown ONLY on non-English pages: "Fix chat is still English".
-   *  null on English because there's nothing to disclose. */
-  chatIsEnglishNote: string | null;
-  /** Three honest-feature cards */
+  releaseNote: string;
   features: Array<{ title: string; body: string }>;
-  /** Example card */
-  exampleHeading: string;
-  exampleKicker: string;
-  exampleSubtitle: string;
-  exampleSteps: Array<{ index: string; label: string; body: string | null }>;
-  /**
-   * Tutorial card — "How the long-term loop works."
-   *
-   * Added 4 November 2026 (feat/tutorial-replaces-illustration) after the
-   * 15-persona audit. Multiple agents (Yuki, Lars, implicitly others) called
-   * out the "ILLUSTRATION" placeholder badge sitting in production above the
-   * example card. Lars's specific suggestion: "replace the chat-bubble
-   * example with real pattern output — a 7-day grid or a '4× on Thursdays'
-   * line — show the data the landing implies." This block carries the copy
-   * for the new tutorial card that replaces the sunrise SVG and badge.
-   *
-   * The card has four steps. Step 3 ("Patterns") carries no body prose —
-   * the component renders a real-looking 7-day heat strip (same visual
-   * language as /patterns and /program progress) so the reader sees the
-   * data product, not another chat screenshot. The user also explicitly
-   * asked for a walkthrough about Patterns, Journal, and using the app for
-   * the long run; these four steps are that walkthrough.
-   */
-  tutorial: {
+  mirror: {
     kicker: string;
     heading: string;
-    patternsExampleCaption: string; // sits next to the mini pattern strip
-    steps: Array<{ title: string; body: string }>;
+    observation: string;
+    chartSummary: string;
+    weekdays: string[];
+    smokedLegend: string;
+    noSmokeLegend: string;
+    goalLabel: string;
+    goalLine: string;
+    caption: string;
   };
-  /** Waitlist (passed to WaitlistCapture via its own copy prop, see below) */
+  loopHeading: string;
+  loopIntro: string;
+  loopSteps: Array<{ title: string; body: string }>;
   waitlist: {
     label: string;
     placeholder: string;
@@ -126,611 +55,407 @@ export type LandingCopy = {
     done: string;
     notCollecting: string;
   };
-  /** Footer */
   footerBlurb: string;
-  /** Added 4 November 2026 (feat/tutorial-replaces-illustration). An honest
-   *  one-liner about the current pricing posture. The repo carries dormant
-   *  prices in lib/plans.ts; Tom (NYC, 15-persona audit) called that out as
-   *  the shady part. If a paid plan launches, this line, /terms section 5,
-   *  and /refunds get updated together in the same PR. */
   footerPricingPosture: string;
   footerLinks: Array<{ href: string; label: string }>;
+};
+
+const allLanguageLinks = [
+  { href: "/de", label: "Auf Deutsch", lang: "de" },
+  { href: "/fr", label: "En français", lang: "fr" },
+  { href: "/nl", label: "In het Nederlands", lang: "nl" },
+  { href: "/es", label: "En español", lang: "es" },
+  { href: "/it", label: "In italiano", lang: "it" },
+];
+
+const englishLinks = [{ href: "/", label: "English", lang: "en" }];
+
+const footerLinks: Record<Locale, Array<{ href: string; label: string }>> = {
+  en: [
+    { href: "/product", label: "Product details" },
+    { href: "/pricing", label: "Pricing" },
+    { href: "/help", label: "Get help" },
+    { href: "/privacy", label: "Privacy" },
+    { href: "/patterns", label: "Patterns" },
+    { href: "/terms", label: "Terms" },
+    { href: "/refunds", label: "Refunds" },
+    { href: "mailto:hello@getfreezefix.com", label: "hello@getfreezefix.com" },
+  ],
+  de: [
+    { href: "/product", label: "Produktdetails" },
+    { href: "/pricing", label: "Preise" },
+    { href: "/help", label: "Hilfe" },
+    { href: "/privacy", label: "Datenschutz" },
+    { href: "/patterns", label: "Muster" },
+    { href: "/terms", label: "Nutzungsbedingungen" },
+    { href: "/refunds", label: "Erstattungen" },
+    { href: "mailto:hello@getfreezefix.com", label: "hello@getfreezefix.com" },
+  ],
+  fr: [
+    { href: "/product", label: "Détails du produit" },
+    { href: "/pricing", label: "Tarifs" },
+    { href: "/help", label: "Aide" },
+    { href: "/privacy", label: "Confidentialité" },
+    { href: "/patterns", label: "Tendances" },
+    { href: "/terms", label: "Conditions" },
+    { href: "/refunds", label: "Remboursements" },
+    { href: "mailto:hello@getfreezefix.com", label: "hello@getfreezefix.com" },
+  ],
+  nl: [
+    { href: "/product", label: "Productdetails" },
+    { href: "/pricing", label: "Prijzen" },
+    { href: "/help", label: "Hulp" },
+    { href: "/privacy", label: "Privacy" },
+    { href: "/patterns", label: "Patronen" },
+    { href: "/terms", label: "Voorwaarden" },
+    { href: "/refunds", label: "Terugbetalingen" },
+    { href: "mailto:hello@getfreezefix.com", label: "hello@getfreezefix.com" },
+  ],
+  es: [
+    { href: "/product", label: "Detalles del producto" },
+    { href: "/pricing", label: "Precios" },
+    { href: "/help", label: "Ayuda" },
+    { href: "/privacy", label: "Privacidad" },
+    { href: "/patterns", label: "Patrones" },
+    { href: "/terms", label: "Términos" },
+    { href: "/refunds", label: "Reembolsos" },
+    { href: "mailto:hello@getfreezefix.com", label: "hello@getfreezefix.com" },
+  ],
+  it: [
+    { href: "/product", label: "Dettagli del prodotto" },
+    { href: "/pricing", label: "Prezzi" },
+    { href: "/help", label: "Aiuto" },
+    { href: "/privacy", label: "Privacy" },
+    { href: "/patterns", label: "Schemi" },
+    { href: "/terms", label: "Termini" },
+    { href: "/refunds", label: "Rimborsi" },
+    { href: "mailto:hello@getfreezefix.com", label: "hello@getfreezefix.com" },
+  ],
 };
 
 export const LANDING_COPY: Record<Locale, LandingCopy> = {
   en: {
     htmlLang: "en",
-    metaTitle: "FreezeFix — the mate for when a smoke leaves you frozen",
-    metaDescription:
-      "A private companion for adults who want to understand their cannabis habits and find a next step that feels right for them.",
+    metaTitle: "Fix — a private mirror for your cannabis habits",
+    metaDescription: "Fix is building a private, nonjudgmental weekly mirror for cannabis habits. A small daily check-in, without a quit counter or lecture. Join for launch updates.",
     getHelpNow: "Get help now",
-    openReturning: "Open",
+    openReturning: "Open Fix",
     switchTo: { href: "/de", label: "Auf Deutsch" },
-    languageLinks: [
-      { href: "/de", label: "Auf Deutsch", lang: "de" },
-      { href: "/fr", label: "En français", lang: "fr" },
-      { href: "/nl", label: "In het Nederlands", lang: "nl" },
-      { href: "/es", label: "En español", lang: "es" },
-      { href: "/it", label: "In italiano", lang: "it" },
-    ],
-    kicker: "GetFreezeFix · for adults 18+",
-    heroHeadlineLine1: "More control,",
-    heroHeadlineLine2: "one moment at a time.",
-    heroBody:
-      "A private companion for adults who want to understand their cannabis habits and find a next step that feels right for them.",
-    ctaOpen: "Open Fix",
+    languageLinks: allLanguageLinks,
+    kicker: "FIX · A PRIVATE PATTERN MIRROR · 18+",
+    heroHeadlineLine1: "You don’t have to quit.",
+    heroHeadlineLine2: "Just notice.",
+    heroBody: "Fix is being built as a quiet, private way to see how cannabis fits into your week. A few small check-ins, one weekly mirror—without a quit counter or lecture. What you do with the pattern is yours.",
+    ctaWaitlist: "Get launch updates",
     ctaPrivacy: "How privacy works",
-    chatIsEnglishNote: null,
+    releaseNote: "The nightly log and weekly mirror are in development. Leave an email and we’ll send a note when they’re ready.",
     features: [
-      { title: "No judgment", body: "Reflect, reduce, pause, or just get through tonight." },
-      { title: "You choose your goal", body: "No streaks. Skip anything." },
-      { title: "Fix is an AI tool and can be wrong.", body: "" },
+      { title: "No quit counter", body: "A smoke night is a note, not a setback." },
+      { title: "Your goal, your call", body: "Change something, or don’t. Fix doesn’t choose for you." },
+      { title: "No scoreboard", body: "The check-in and mirror are designed for your device, not a public leaderboard." },
     ],
-    exampleHeading: "Example",
-    exampleKicker: "Example",
-    exampleSubtitle: "Not a live conversation",
-    exampleSteps: [
-      { index: "1", label: "Choose a situation", body: "I'm having a craving" },
-      {
-        index: "2",
-        label: "A few words",
-        body: "I planned not to smoke tonight but I really want to.",
-      },
-      {
-        index: "3",
-        label: "One small suggestion",
-        body: "“A craving can feel urgent. You don't have to decide your whole future right now. Would you rather create a ten-minute pause, change your setting, or write down what's pulling you toward it?”",
-      },
-      { index: "4", label: "You choose — try it, another idea, or leave", body: null },
-    ],
-    tutorial: {
-      kicker: "The long-term loop",
-      heading: "How it adds up over weeks",
-      patternsExampleCaption: "Example — your weeks, not someone else's.",
-      steps: [
-        {
-          title: "Open Fix in a tough moment",
-          body: "One safe next step in under sixty seconds. No sign-up, no account, no name required.",
-        },
-        {
-          title: "Jot a line in Journal",
-          body: "Your own words, on your device only. The feeling, the trigger, what you tried — enough that your week has a shape later.",
-        },
-        {
-          title: "Watch Patterns build",
-          body: "Honest weekly shapes — what days you tend to use, what time, what moods come first. No streaks, no scoreboards.",
-        },
-        {
-          title: "Build a Reduction Plan",
-          body: "A 2, 4 or 6-week plan you set yourself — pause, cut back, or shift the time. Pause and resume whenever.",
-        },
-      ],
+    mirror: {
+      kicker: "A SUNDAY PREVIEW · EXAMPLE ONLY",
+      heading: "Nico, here’s your week.",
+      observation: "You logged smoke on four nights. “After work” came up three times.",
+      chartSummary: "Illustrative week: smoke was logged Monday, Tuesday, Thursday and Saturday; no smoke was logged Wednesday, Friday and Sunday.",
+      weekdays: ["M", "T", "W", "T", "F", "S", "S"],
+      smokedLegend: "Smoke logged",
+      noSmokeLegend: "No smoke logged",
+      goalLabel: "YOUR THING",
+      goalLine: "You wanted to run twice. You went once. Only you know what that means.",
+      caption: "Illustrative example — not real user data.",
     },
+    loopHeading: "Three small taps. A clearer week.",
+    loopIntro: "This is the loop we’re building: no daily journal to keep up with, just enough to notice what’s there, in your own time.",
+    loopSteps: [
+      { title: "Log a few taps", body: "Whether you smoked, how the day felt, and what was around it. Skip anything you don’t want to answer." },
+      { title: "See the week", body: "On Sunday, a plain-language mirror shows the shape of your week. No grade. No streak." },
+      { title: "Choose your next step", body: "Pick one small thing you’d like to do more of, if you want. The choice stays yours." },
+    ],
     waitlist: {
-      label: "Want to hear when the next thing ships? Leave an email.",
+      label: "Want a note when the weekly mirror is ready? Leave an email.",
       placeholder: "you@wherever.com",
-      submit: "Add me",
+      submit: "Keep me posted",
       submitting: "Adding…",
-      footnote:
-        "Email only. No name, no phone, nothing tied to your Fix sessions. We send at most once a month and only when something you’d actually want to know about ships.",
+      footnote: "Email only. No account or payment. We’ll write when there’s real news; unsubscribe any time.",
       error: "That didn’t go through. Check the address and try again.",
-      throttled:
-        "Already noted. If you’ve signed up a few times today, that’s plenty — we’ll reach out when there’s something to say.",
-      done:
-        "Thanks — you’re on the list. We’ll only email when something you’d actually want to know about ships. Easy to unsubscribe in every email.",
-      notCollecting:
-        "The waitlist isn’t connected yet — try again in a bit. Nothing was lost; we just can’t save it right now.",
+      throttled: "Already noted. That’s plenty for today — we’ll be in touch when there’s news.",
+      done: "Thanks — you’re on the list. We’ll write when the mirror is ready. Unsubscribe in any email.",
+      notCollecting: "The launch list isn’t connected right now. Nothing was lost; please try again later.",
     },
-    footerBlurb:
-      "GetFreezeFix.com is supportive software for adults 18+. It is not therapy, medical advice or an emergency service.",
-    footerPricingPosture:
-      "Free today. If a paid plan ships one day, you'll see the price and terms before you're ever asked for a card.",
-    footerLinks: [
-      { href: "/pricing", label: "Pricing" },
-      { href: "/help", label: "Help" },
-      { href: "/privacy", label: "Privacy" },
-      { href: "/patterns", label: "Patterns" },
-      { href: "/terms", label: "Terms" },
-      { href: "/refunds", label: "Refunds" },
-      { href: "mailto:hello@getfreezefix.com", label: "hello@getfreezefix.com" },
-    ],
+    footerBlurb: "Fix is supportive software for adults 18+. It is not therapy, medical advice, or an emergency service.",
+    footerPricingPosture: "The launch offer is planned, not available yet. The price page shows the intended price; joining the list starts no trial and takes no payment.",
+    footerLinks: footerLinks.en,
   },
-
   de: {
     htmlLang: "de",
-    metaTitle: "FreezeFix — wenn du nach dem Rauchen hängenbleibst",
-    metaDescription:
-      "Ein stiller Begleiter für Erwachsene, die ihren Cannabis-Konsum verstehen und einen nächsten Schritt finden wollen, der sich für sie richtig anfühlt.",
+    metaTitle: "Fix — ein privater Spiegel für deinen Cannabiskonsum",
+    metaDescription: "Fix entwickelt einen privaten, vorurteilsfreien Wochenspiegel für den Cannabiskonsum. Ein kurzer Check-in ohne Aufhör-Zähler oder Predigt. Launch-News erhalten.",
     getHelpNow: "Hilfe jetzt",
-    openReturning: "Öffnen",
+    openReturning: "Fix öffnen",
     switchTo: { href: "/", label: "English" },
-    languageLinks: [{ href: "/", label: "English", lang: "en" }],
-    kicker: "GetFreezeFix · ab 18 Jahren",
-    heroHeadlineLine1: "Mehr Kontrolle,",
-    heroHeadlineLine2: "Moment für Moment.",
-    heroBody:
-      "Ein stiller Begleiter für Erwachsene, die ihren Cannabis-Konsum verstehen und einen nächsten Schritt finden wollen, der sich für sie richtig anfühlt.",
-    ctaOpen: "Fix öffnen",
-    ctaPrivacy: "Wie Datenschutz funktioniert",
-    // The chat itself is still English today. Say it plainly, don't bait and
-    // switch. "Fix spricht aktuell Englisch — Deutsch folgt bald."
-    chatIsEnglishNote:
-      "Fix selbst läuft momentan auf Englisch. Deutsch kommt als Nächstes — wenn du das lieber abwarten willst, lass unten eine E-Mail da.",
+    languageLinks: englishLinks,
+    kicker: "FIX · EIN PRIVATER MUSTERSPIEGEL · AB 18",
+    heroHeadlineLine1: "Du musst nicht aufhören.",
+    heroHeadlineLine2: "Erst mal hinschauen.",
+    heroBody: "Fix wird als ruhiger, privater Blick darauf entwickelt, wie Cannabis in deine Woche passt. Ein paar kurze Check-ins, ein Wochen-Spiegel — ohne Aufhör-Zähler oder Predigt. Was du im Muster siehst, entscheidest du.",
+    ctaWaitlist: "Launch-News erhalten",
+    ctaPrivacy: "Datenschutz bei Fix",
+    releaseNote: "Der kurze Abend-Log und der Wochen-Spiegel sind in Arbeit. Hinterlass eine E-Mail, dann melden wir uns, wenn sie bereit sind.",
     features: [
-      { title: "Kein Urteil", body: "Nachdenken, weniger rauchen, pausieren — oder einfach durch heute Abend kommen." },
-      { title: "Du wählst dein Ziel", body: "Keine Streaks. Alles lässt sich überspringen." },
-      { title: "Fix ist ein KI-Tool und kann sich irren.", body: "" },
+      { title: "Kein Aufhör-Zähler", body: "Ein Abend mit Cannabis ist eine Notiz, kein Rückschritt." },
+      { title: "Dein Ziel, deine Sache", body: "Etwas ändern oder nicht. Fix entscheidet das nicht für dich." },
+      { title: "Keine Punktetafel", body: "Check-in und Spiegel sind für dein Gerät gedacht, nicht für eine öffentliche Rangliste." },
     ],
-    exampleHeading: "Beispiel",
-    exampleKicker: "Beispiel",
-    exampleSubtitle: "Kein echtes Gespräch",
-    // These sample conversation strings are deliberately shown in German even
-    // though the real chat is English, because the whole point of the example
-    // card is to let Marcus imagine himself inside the conversation. The
-    // chatIsEnglishNote above sets expectations before he taps the CTA.
-    exampleSteps: [
-      { index: "1", label: "Wähl eine Situation", body: "Ich hab gerade einen Craving" },
-      {
-        index: "2",
-        label: "Ein paar Worte",
-        body: "Ich wollte heute Abend eigentlich nicht rauchen, aber ich hab richtig Bock drauf.",
-      },
-      {
-        index: "3",
-        label: "Ein kleiner Vorschlag",
-        body: "„Ein Craving kann sich dringend anfühlen. Du musst gerade nicht deine ganze Zukunft entscheiden. Magst du zehn Minuten Pause einlegen, die Umgebung wechseln oder aufschreiben, was dich hinzieht?“",
-      },
-      { index: "4", label: "Du wählst — ausprobieren, eine andere Idee oder gehen", body: null },
-    ],
-    tutorial: {
-      kicker: "Die Langzeit-Schleife",
-      heading: "Wie sich das über Wochen summiert",
-      patternsExampleCaption: "Beispiel — deine Wochen, nicht die von jemand anderem.",
-      steps: [
-        {
-          title: "Fix öffnen in einem schweren Moment",
-          body: "Ein sicherer nächster Schritt in unter sechzig Sekunden. Keine Anmeldung, kein Konto, kein Name.",
-        },
-        {
-          title: "Eine Zeile ins Journal schreiben",
-          body: "Deine eigenen Worte, nur auf deinem Gerät. Das Gefühl, der Auslöser, was du versucht hast — genug, dass deine Woche später eine Form hat.",
-        },
-        {
-          title: "Muster sichtbar machen",
-          body: "Ehrliche Wochen-Shapes — an welchen Tagen du eher rauchst, zu welcher Zeit, welche Stimmungen vorher kommen. Keine Streaks, keine Punktzähler.",
-        },
-        {
-          title: "Einen Reduktions-Plan bauen",
-          body: "Ein Plan über 2, 4 oder 6 Wochen, den du selbst setzt — pausieren, weniger rauchen, oder die Zeit verschieben. Jederzeit pausieren und weitermachen.",
-        },
-      ],
+    mirror: {
+      kicker: "SONNTAGS-VORSCHAU · NUR EIN BEISPIEL",
+      heading: "Nico, so sah deine Woche aus.",
+      observation: "Du hast an vier Abenden Cannabis notiert. „Nach der Arbeit“ kam dreimal vor.",
+      chartSummary: "Beispielwoche: Cannabis am Montag, Dienstag, Donnerstag und Samstag notiert; kein Cannabis am Mittwoch, Freitag und Sonntag.",
+      weekdays: ["M", "D", "M", "D", "F", "S", "S"],
+      smokedLegend: "Cannabis notiert",
+      noSmokeLegend: "Kein Cannabis notiert",
+      goalLabel: "DEIN VORHABEN",
+      goalLine: "Du wolltest zweimal laufen gehen. Einmal hat’s geklappt. Was das bedeutet, weißt nur du.",
+      caption: "Nur ein Beispiel — keine echten Nutzungsdaten.",
     },
+    loopHeading: "Ein paar kurze Taps. Eine klarere Woche.",
+    loopIntro: "Das ist der Ablauf, den wir entwickeln: kein Tagebuch zum Durchhalten, nur genug, um in deinem Tempo zu sehen, was da ist.",
+    loopSteps: [
+      { title: "Kurz eintragen", body: "Ob du geraucht hast, wie sich der Tag angefühlt hat und was dabei eine Rolle spielte. Alles lässt sich überspringen." },
+      { title: "Die Woche ansehen", body: "Am Sonntag zeigt dir ein einfacher Spiegel die Form deiner Woche. Keine Note. Keine Streak." },
+      { title: "Selbst entscheiden", body: "Wenn du möchtest, suchst du dir eine Kleinigkeit aus, die öfter Platz haben soll. Es bleibt deine Entscheidung." },
+    ],
     waitlist: {
-      label: "Willst du erfahren, wann das Nächste kommt? Lass eine E-Mail da.",
+      label: "Möchtest du Bescheid bekommen, wenn der Wochen-Spiegel fertig ist? Lass eine E-Mail da.",
       placeholder: "du@irgendwo.de",
-      submit: "Ich bin dabei",
-      submitting: "Trage ein…",
-      footnote:
-        "Nur die E-Mail. Kein Name, keine Telefonnummer, nichts, was mit deinen Fix-Gesprächen verknüpft wäre. Wir schreiben höchstens einmal pro Monat und nur, wenn es etwas gibt, das du wirklich wissen willst.",
-      error: "Das hat nicht geklappt. Prüf die Adresse und versuch’s noch mal.",
-      throttled:
-        "Schon notiert. Wenn du dich heute mehrmals eingetragen hast, reicht das — wir melden uns, sobald es etwas zu sagen gibt.",
-      done:
-        "Danke — du stehst auf der Liste. Wir mailen nur, wenn es etwas gibt, das du wirklich wissen willst. In jeder Mail steht ein Abmelde-Link.",
-      notCollecting:
-        "Die Warteliste ist noch nicht angeschlossen — versuch’s in einer Minute noch mal. Es ist nichts verloren; wir können es gerade nur nicht speichern.",
+      submit: "Auf dem Laufenden bleiben",
+      submitting: "Wird eingetragen…",
+      footnote: "Nur E-Mail. Kein Konto, keine Zahlung. Wir melden uns bei echten Neuigkeiten; Abmeldung jederzeit.",
+      error: "Das hat nicht geklappt. Prüfe die Adresse und versuch es noch einmal.",
+      throttled: "Schon notiert. Für heute reicht’s — wir melden uns, wenn es Neuigkeiten gibt.",
+      done: "Danke — du stehst auf der Liste. Wir melden uns, wenn der Spiegel bereit ist. Abmeldung in jeder Mail.",
+      notCollecting: "Die Liste ist gerade nicht erreichbar. Es ging nichts verloren; versuch es später noch einmal.",
     },
-    footerBlurb:
-      "GetFreezeFix.com ist unterstützende Software für Erwachsene ab 18. Keine Therapie, keine medizinische Beratung, kein Notdienst.",
-    footerPricingPosture:
-      "Heute kostenlos. Wenn ein kostenpflichtiger Plan irgendwann kommt, siehst du den Preis und die Bedingungen, bevor jemals nach einer Karte gefragt wird.",
-    footerLinks: [
-      { href: "/pricing", label: "Preise" },
-      { href: "/help", label: "Hilfe" },
-      { href: "/privacy", label: "Datenschutz" },
-      { href: "/patterns", label: "Muster" },
-      { href: "/terms", label: "AGB" },
-      { href: "/refunds", label: "Rückerstattung" },
-      { href: "mailto:hello@getfreezefix.com", label: "hello@getfreezefix.com" },
-    ],
+    footerBlurb: "Fix ist unterstützende Software für Erwachsene ab 18. Keine Therapie, keine medizinische Beratung und kein Notdienst.",
+    footerPricingPosture: "Das geplante Angebot ist noch nicht verfügbar. Die Preisseite zeigt den vorgesehenen Preis; die Liste startet weder einen Test noch eine Zahlung.",
+    footerLinks: footerLinks.de,
   },
-
-  // ───────────────────────────── French ─────────────────────────────
-  // Added 3 November 2026 for audit P3.11. Written French-first for Sophie
-  // (Paris, 24, weekend user) — not an auto-translation of the English.
-  // "Craving" stays "craving" because that is what she actually says; a
-  // stilted "envie irrépressible" would sound like a university textbook.
-  // The chat-is-English note is louder here than on /de, because P1.5's
-  // German chat is explicitly next; French chat has no committed date yet,
-  // so the honest line directs Sophie at the waitlist.
   fr: {
     htmlLang: "fr",
-    metaTitle: "FreezeFix — un allié pour quand un joint te laisse bloqué",
-    metaDescription:
-      "Un accompagnement privé pour les adultes qui veulent comprendre leurs habitudes avec le cannabis et trouver un prochain pas qui leur parle. Ados exclus. Confidentiel.",
+    metaTitle: "Fix — un miroir privé de tes habitudes avec le cannabis",
+    metaDescription: "Fix développe un miroir hebdomadaire privé et sans jugement sur les habitudes liées au cannabis. Un check-in bref, sans compteur d’arrêt. Nouvelles du lancement.",
     getHelpNow: "Aide maintenant",
-    openReturning: "Ouvrir",
+    openReturning: "Ouvrir Fix",
     switchTo: { href: "/", label: "English" },
-    languageLinks: [{ href: "/", label: "English", lang: "en" }],
-    kicker: "GetFreezeFix · pour adultes 18+",
-    heroHeadlineLine1: "Plus de contrôle,",
-    heroHeadlineLine2: "un moment à la fois.",
-    heroBody:
-      "Un accompagnement privé pour les adultes qui veulent comprendre leurs habitudes avec le cannabis et trouver un prochain pas qui leur parle vraiment.",
-    ctaOpen: "Ouvrir Fix",
-    ctaPrivacy: "Comment la vie privée fonctionne",
-    chatIsEnglishNote:
-      "Fix lui-même est pour l'instant en anglais. Le français est en cours — si tu préfères attendre, laisse ton email plus bas et on te préviendra.",
+    languageLinks: englishLinks,
+    kicker: "FIX · UN MIROIR PRIVÉ · 18+",
+    heroHeadlineLine1: "Tu n’as pas à arrêter.",
+    heroHeadlineLine2: "Tu peux juste voir.",
+    heroBody: "Fix est en cours de création comme un regard calme et privé sur la place du cannabis dans ta semaine. Quelques petits check-ins, un miroir hebdomadaire — sans compteur d’arrêt ni leçon. Tu décides quoi en faire.",
+    ctaWaitlist: "Recevoir les nouvelles",
+    ctaPrivacy: "Comment fonctionne la confidentialité",
+    releaseNote: "Le petit suivi du soir et le miroir de la semaine sont en cours de création. Laisse ton email et on te préviendra quand ils seront prêts.",
     features: [
-      { title: "Pas de jugement", body: "Réfléchir, réduire, faire une pause — ou juste passer ce soir." },
-      { title: "Tu choisis ton objectif", body: "Pas de streaks. Tout peut être passé." },
-      { title: "Fix est un outil IA et peut se tromper.", body: "" },
+      { title: "Pas de compteur d’arrêt", body: "Une soirée où tu fumes est une note, pas un échec." },
+      { title: "Ton objectif, ton choix", body: "Changer quelque chose ou pas. Fix ne choisit pas à ta place." },
+      { title: "Pas de classement", body: "Le check-in et le miroir sont conçus pour ton appareil, pas pour un classement public." },
     ],
-    exampleHeading: "Exemple",
-    exampleKicker: "Exemple",
-    exampleSubtitle: "Pas une vraie conversation",
-    exampleSteps: [
-      { index: "1", label: "Choisis une situation", body: "J'ai un craving" },
-      {
-        index: "2",
-        label: "Quelques mots",
-        body: "Je comptais ne pas fumer ce soir mais j'en ai vraiment envie.",
-      },
-      {
-        index: "3",
-        label: "Une petite suggestion",
-        body: "« Un craving peut sembler urgent. Tu n'as pas à décider de toute ta vie là, maintenant. Tu veux créer dix minutes de pause, changer d'ambiance, ou écrire ce qui te tire vers ça ? »",
-      },
-      { index: "4", label: "Tu choisis — essayer, une autre idée, ou partir", body: null },
-    ],
-    tutorial: {
-      kicker: "La boucle sur la durée",
-      heading: "Comment ça prend forme sur les semaines",
-      patternsExampleCaption: "Exemple — tes semaines, pas celles de quelqu'un d'autre.",
-      steps: [
-        {
-          title: "Ouvrir Fix dans un moment difficile",
-          body: "Un prochain pas sûr en moins de soixante secondes. Sans inscription, sans compte, sans nom.",
-        },
-        {
-          title: "Noter une ligne dans Journal",
-          body: "Tes propres mots, uniquement sur ton appareil. Le ressenti, le déclencheur, ce que tu as essayé — assez pour que ta semaine ait une forme plus tard.",
-        },
-        {
-          title: "Voir tes Motifs se dessiner",
-          body: "Des formes hebdomadaires honnêtes — quels jours tu fumes plutôt, à quelle heure, quelles humeurs arrivent avant. Pas de streaks, pas de tableaux de score.",
-        },
-        {
-          title: "Construire un Plan de Réduction",
-          body: "Un plan de 2, 4 ou 6 semaines que tu règles toi-même — pause, réduire, ou décaler l'heure. Mettre en pause et reprendre quand tu veux.",
-        },
-      ],
+    mirror: {
+      kicker: "APERÇU DU DIMANCHE · EXEMPLE",
+      heading: "Nico, voilà ta semaine.",
+      observation: "Tu as noté avoir fumé quatre soirs. « Après le travail » est revenu trois fois.",
+      chartSummary: "Semaine illustrative : cannabis noté lundi, mardi, jeudi et samedi ; pas de cannabis noté mercredi, vendredi et dimanche.",
+      weekdays: ["L", "M", "M", "J", "V", "S", "D"],
+      smokedLegend: "Cannabis noté",
+      noSmokeLegend: "Pas de cannabis noté",
+      goalLabel: "TON TRUC À TOI",
+      goalLine: "Tu voulais courir deux fois. Tu y es allé une fois. Toi seul sais ce que ça signifie.",
+      caption: "Exemple illustratif — aucune donnée réelle.",
     },
+    loopHeading: "Quelques taps. Une semaine plus claire.",
+    loopIntro: "C’est le parcours que nous construisons : pas de journal à tenir, juste assez pour remarquer ce qui se passe, à ton rythme.",
+    loopSteps: [
+      { title: "Noter quelques éléments", body: "Si tu as fumé, comment tu te sentais et ce qui se passait autour. Tu peux tout passer." },
+      { title: "Voir ta semaine", body: "Le dimanche, un miroir en mots simples montre la forme de ta semaine. Pas de note. Pas de série." },
+      { title: "Choisir la suite", body: "Si tu veux, choisis une petite chose que tu aimerais faire davantage. La décision reste la tienne." },
+    ],
     waitlist: {
-      label: "Tu veux être averti quand la prochaine chose arrive ? Laisse un email.",
+      label: "Tu veux un mot quand le miroir hebdomadaire sera prêt ? Laisse ton email.",
       placeholder: "toi@quelquepart.fr",
-      submit: "Ajoute-moi",
-      submitting: "J'ajoute…",
-      footnote:
-        "Juste l'email. Pas de nom, pas de téléphone, rien de lié à tes conversations avec Fix. On écrit au plus une fois par mois et seulement s'il y a quelque chose que tu veux vraiment savoir.",
-      error: "Ça n'a pas marché. Vérifie l'adresse et réessaie.",
-      throttled:
-        "Déjà noté. Si tu t'es inscrit plusieurs fois aujourd'hui, c'est suffisant — on te contactera quand il y aura quelque chose à dire.",
-      done:
-        "Merci — tu es sur la liste. On n'enverra un email que s'il y a quelque chose que tu veux vraiment savoir. Lien de désinscription dans chaque mail.",
-      notCollecting:
-        "La liste d'attente n'est pas encore connectée — réessaie dans une minute. Rien n'est perdu; on ne peut juste pas l'enregistrer maintenant.",
+      submit: "Me tenir au courant",
+      submitting: "Inscription…",
+      footnote: "Email seulement. Pas de compte, pas de paiement. On écrit quand il y a du concret ; désinscription à tout moment.",
+      error: "Ça n’a pas marché. Vérifie l’adresse et réessaie.",
+      throttled: "C’est déjà noté. Ça suffit pour aujourd’hui — on te recontactera quand il y aura du nouveau.",
+      done: "Merci — tu es sur la liste. On te préviendra quand le miroir sera prêt. Désinscription dans chaque email.",
+      notCollecting: "La liste est momentanément indisponible. Rien n’est perdu ; réessaie plus tard.",
     },
-    footerBlurb:
-      "GetFreezeFix.com est un logiciel de soutien pour adultes 18+. Pas une thérapie, pas un conseil médical, pas un service d'urgence.",
-    footerPricingPosture:
-      "Gratuit aujourd'hui. Si un plan payant arrive un jour, tu verras le prix et les conditions avant qu'on ne te demande une carte.",
-    footerLinks: [
-      { href: "/pricing", label: "Prix" },
-      { href: "/help", label: "Aide" },
-      { href: "/privacy", label: "Vie privée" },
-      { href: "/patterns", label: "Tendances" },
-      { href: "/terms", label: "CGU" },
-      { href: "/refunds", label: "Remboursements" },
-      { href: "mailto:hello@getfreezefix.com", label: "hello@getfreezefix.com" },
-    ],
+    footerBlurb: "Fix est un logiciel de soutien pour adultes de 18 ans et plus. Ce n’est ni une thérapie, ni un conseil médical, ni un service d’urgence.",
+    footerPricingPosture: "L’offre de lancement prévue n’est pas encore disponible. La page de tarifs affiche le prix envisagé ; la liste ne démarre aucun essai et n’entraîne aucun paiement.",
+    footerLinks: footerLinks.fr,
   },
-
-  // ───────────────────────────── Dutch ─────────────────────────────
-  // Added 3 November 2026 for audit P3.11. Written Dutch-first for Lars
-  // (Amsterdam, 25, social user, English-fluent but reads Dutch
-  // marketing better). NL has a particularly strong harm-reduction
-  // culture around cannabis, so this copy leans slightly more
-  // matter-of-fact than EN or DE — "kalm, niet oordelend" lands softer
-  // than "no judgment" in a culture that already does not judge much.
   nl: {
     htmlLang: "nl",
-    metaTitle: "FreezeFix — voor als een joint je laat vastlopen",
-    metaDescription:
-      "Rustige ondersteuning voor volwassenen die hun cannabisgebruik willen begrijpen en een volgende stap willen vinden die bij hen past. Vanaf 18. Privé.",
+    metaTitle: "Fix — een privéspiegel voor je cannabisgebruik",
+    metaDescription: "Fix bouwt aan een privé-weekspiegel voor cannabisgebruik, zonder oordeel. Een korte check-in, zonder stopteller of preek. Ontvang startnieuws.",
     getHelpNow: "Hulp nu",
-    openReturning: "Openen",
+    openReturning: "Fix openen",
     switchTo: { href: "/", label: "English" },
-    languageLinks: [{ href: "/", label: "English", lang: "en" }],
-    kicker: "GetFreezeFix · voor volwassenen 18+",
-    heroHeadlineLine1: "Meer grip,",
-    heroHeadlineLine2: "moment voor moment.",
-    heroBody:
-      "Rustige ondersteuning voor volwassenen die hun cannabisgebruik willen begrijpen en een volgende stap willen vinden die goed voelt.",
-    ctaOpen: "Fix openen",
-    ctaPrivacy: "Hoe privacy werkt",
-    chatIsEnglishNote:
-      "Fix zelf is nu in het Engels. Nederlands komt eraan — als je dat liever afwacht, laat hieronder een e-mail achter en we laten het weten.",
+    languageLinks: englishLinks,
+    kicker: "FIX · EEN PRIVÉSPIEGEL · 18+",
+    heroHeadlineLine1: "Je hoeft niet te stoppen.",
+    heroHeadlineLine2: "Kijk eerst maar eens.",
+    heroBody: "Fix wordt gebouwd als een rustige, private manier om te zien hoe cannabis in je week past. Een paar korte check-ins, één weekspiegel — zonder stopteller of preek. Wat je ermee doet, bepaal jij.",
+    ctaWaitlist: "Houd me op de hoogte",
+    ctaPrivacy: "Zo werkt privacy",
+    releaseNote: "De korte avondcheck en weekspiegel zijn in ontwikkeling. Laat je e-mailadres achter; we laten weten wanneer ze klaar zijn.",
     features: [
-      { title: "Geen oordeel", body: "Nadenken, minderen, pauzeren — of gewoon vanavond doorkomen." },
-      { title: "Jij kiest je doel", body: "Geen streaks. Alles mag overgeslagen worden." },
-      { title: "Fix is een AI-tool en kan het mis hebben.", body: "" },
+      { title: "Geen stop-teller", body: "Een avond blowen is een notitie, geen terugval." },
+      { title: "Jouw doel, jouw keuze", body: "Iets veranderen of niet. Fix beslist dat niet voor je." },
+      { title: "Geen scorebord", body: "De check-in en spiegel zijn bedoeld voor je eigen apparaat, niet voor een openbare ranglijst." },
     ],
-    exampleHeading: "Voorbeeld",
-    exampleKicker: "Voorbeeld",
-    exampleSubtitle: "Geen echt gesprek",
-    exampleSteps: [
-      { index: "1", label: "Kies een situatie", body: "Ik heb trek" },
-      {
-        index: "2",
-        label: "Een paar woorden",
-        body: "Ik had afgesproken vanavond niet te blowen maar ik heb er echt zin in.",
-      },
-      {
-        index: "3",
-        label: "Eén klein voorstel",
-        body: "“Trek kan dringend aanvoelen. Je hoeft nu niet je hele toekomst te beslissen. Wil je tien minuten pauze nemen, van omgeving veranderen, of opschrijven wat je ernaartoe trekt?”",
-      },
-      { index: "4", label: "Jij kiest — proberen, een ander idee, of weggaan", body: null },
-    ],
-    tutorial: {
-      kicker: "De lange-termijn-lus",
-      heading: "Hoe het over weken opbouwt",
-      patternsExampleCaption: "Voorbeeld — jouw weken, niet die van iemand anders.",
-      steps: [
-        {
-          title: "Open Fix in een zwaar moment",
-          body: "Eén veilige volgende stap binnen zestig seconden. Geen aanmelding, geen account, geen naam nodig.",
-        },
-        {
-          title: "Schrijf een regel in Journal",
-          body: "Je eigen woorden, alleen op je apparaat. Het gevoel, de trigger, wat je probeerde — genoeg zodat je week later een vorm heeft.",
-        },
-        {
-          title: "Zie Patronen opbouwen",
-          body: "Eerlijke weekvormen — welke dagen je blowt, welk tijdstip, welke stemmingen eerst komen. Geen streaks, geen scorebord.",
-        },
-        {
-          title: "Bouw een Reductieplan",
-          body: "Een plan van 2, 4 of 6 weken dat je zelf instelt — pauzeren, minderen, of het tijdstip verschuiven. Pauzeer en hervat wanneer je wilt.",
-        },
-      ],
+    mirror: {
+      kicker: "ZONDAGVOORBEELD · TER ILLUSTRATIE",
+      heading: "Nico, zo zag je week eruit.",
+      observation: "Je noteerde blowen op vier avonden. ‘Na het werk’ kwam drie keer terug.",
+      chartSummary: "Voorbeeldweek: cannabis genoteerd op maandag, dinsdag, donderdag en zaterdag; niet genoteerd op woensdag, vrijdag en zondag.",
+      weekdays: ["M", "D", "W", "D", "V", "Z", "Z"],
+      smokedLegend: "Cannabis genoteerd",
+      noSmokeLegend: "Geen cannabis genoteerd",
+      goalLabel: "JOUW DING",
+      goalLine: "Je wilde twee keer gaan hardlopen. Je ging één keer. Alleen jij weet wat dat betekent.",
+      caption: "Alleen een voorbeeld — geen echte gebruikersdata.",
     },
+    loopHeading: "Een paar tikken. Een helderder beeld.",
+    loopIntro: "Dit is het ritme dat we bouwen: geen dagboek om bij te houden, alleen genoeg om op jouw moment te zien wat er speelt.",
+    loopSteps: [
+      { title: "Een paar dingen noteren", body: "Of je blowde, hoe je dag voelde en wat meespeelde. Je mag alles overslaan." },
+      { title: "Je week bekijken", body: "Op zondag laat een spiegel in gewone taal de vorm van je week zien. Geen cijfer. Geen streak." },
+      { title: "Zelf kiezen wat volgt", body: "Kies desgewenst één klein ding dat je vaker wilt doen. De keuze blijft bij jou." },
+    ],
     waitlist: {
-      label: "Wil je horen wanneer het volgende komt? Laat een e-mail achter.",
+      label: "Wil je bericht als de weekspiegel klaar is? Laat je e-mailadres achter.",
       placeholder: "jij@ergens.nl",
-      submit: "Zet me erop",
+      submit: "Houd me op de hoogte",
       submitting: "Bezig…",
-      footnote:
-        "Alleen de e-mail. Geen naam, geen telefoon, niets wat gekoppeld is aan je Fix-gesprekken. We mailen hoogstens één keer per maand en alleen als er iets is dat je echt wilt weten.",
+      footnote: "Alleen e-mail. Geen account of betaling. We mailen als er echt nieuws is; afmelden kan altijd.",
       error: "Dat ging niet door. Controleer het adres en probeer opnieuw.",
-      throttled:
-        "Al genoteerd. Als je je vandaag een paar keer hebt aangemeld, is dat genoeg — we laten het weten als er iets te melden is.",
-      done:
-        "Bedankt — je staat op de lijst. We mailen alleen als er iets is dat je echt wilt weten. Afmeldlink in elke mail.",
-      notCollecting:
-        "De wachtlijst is nog niet aangesloten — probeer het over een minuut nog eens. Niets is kwijt; we kunnen het alleen even niet opslaan.",
+      throttled: "Al genoteerd. Dat is genoeg voor vandaag — we laten het weten als er nieuws is.",
+      done: "Bedankt — je staat op de lijst. We laten het weten als de spiegel klaar is. Afmelden kan in elke mail.",
+      notCollecting: "De lijst is nu even niet beschikbaar. Er is niets kwijt; probeer het later opnieuw.",
     },
-    footerBlurb:
-      "GetFreezeFix.com is ondersteunende software voor volwassenen vanaf 18. Geen therapie, geen medisch advies, geen noodhulp.",
-    footerPricingPosture:
-      "Vandaag gratis. Als er ooit een betaald plan komt, zie je de prijs en voorwaarden voordat er ooit om een kaart wordt gevraagd.",
-    footerLinks: [
-      { href: "/pricing", label: "Prijzen" },
-      { href: "/help", label: "Hulp" },
-      { href: "/privacy", label: "Privacy" },
-      { href: "/patterns", label: "Patronen" },
-      { href: "/terms", label: "Voorwaarden" },
-      { href: "/refunds", label: "Terugbetalingen" },
-      { href: "mailto:hello@getfreezefix.com", label: "hello@getfreezefix.com" },
-    ],
+    footerBlurb: "Fix is ondersteunende software voor volwassenen vanaf 18. Geen therapie, medisch advies of noodhulp.",
+    footerPricingPosture: "Het geplande aanbod is nog niet beschikbaar. De prijzenpagina toont de beoogde prijs; aanmelden start geen proefperiode en brengt geen betaling mee.",
+    footerLinks: footerLinks.nl,
   },
-
-  // ───────────────────────────── Spanish ─────────────────────────────
-  // Added 4 November 2026 for the 15-persona audit (Maria, Madrid, 28).
-  // Written Spanish-first — not an auto-translation. "Craving" stays as
-  // "craving" because that is what Maria actually says; Spanish does not
-  // have a one-word equivalent that lands as softly as the anglicism in
-  // a youth register. Spanish chat is on the waitlist (same posture as
-  // French and Dutch).
   es: {
     htmlLang: "es",
-    metaTitle: "FreezeFix — el compañero para cuando un porro te deja clavado",
-    metaDescription:
-      "Un acompañante privado para adultos que quieren entender su relación con el cannabis y encontrar un siguiente paso que les cuadre. Mayores de 18. Confidencial.",
+    metaTitle: "Fix — un espejo privado para tus hábitos con el cannabis",
+    metaDescription: "Fix está creando un espejo semanal privado y sin juicios sobre los hábitos con cannabis. Un registro breve, sin contador para dejarlo. Recibe novedades del lanzamiento.",
     getHelpNow: "Ayuda ahora",
-    openReturning: "Abrir",
+    openReturning: "Abrir Fix",
     switchTo: { href: "/", label: "English" },
-    languageLinks: [{ href: "/", label: "English", lang: "en" }],
-    kicker: "GetFreezeFix · para adultos 18+",
-    heroHeadlineLine1: "Más control,",
-    heroHeadlineLine2: "momento a momento.",
-    heroBody:
-      "Un acompañante privado para adultos que quieren entender sus hábitos con el cannabis y dar un siguiente paso que les cuadre.",
-    ctaOpen: "Abrir Fix",
-    ctaPrivacy: "Cómo funciona la privacidad",
-    chatIsEnglishNote:
-      "Fix en sí está ahora mismo en inglés. El español viene — si prefieres esperar, deja tu correo abajo y te avisamos.",
+    languageLinks: englishLinks,
+    kicker: "FIX · UN ESPEJO PRIVADO · 18+",
+    heroHeadlineLine1: "No tienes que dejarlo.",
+    heroHeadlineLine2: "Solo observar.",
+    heroBody: "Fix se está creando como una forma tranquila y privada de ver cómo encaja el cannabis en tu semana. Unos apuntes breves y un espejo semanal, sin contador ni sermones. Tú decides qué significa.",
+    ctaWaitlist: "Avísame cuando esté",
+    ctaPrivacy: "Cómo cuidamos tu privacidad",
+    releaseNote: "El registro nocturno y el espejo semanal están en desarrollo. Déjanos un correo y te avisamos cuando estén listos.",
     features: [
-      { title: "Sin juicio", body: "Reflexionar, reducir, parar — o simplemente pasar esta noche." },
-      { title: "Tú eliges tu meta", body: "Sin rachas. Todo se puede saltar." },
-      { title: "Fix es una herramienta de IA y puede equivocarse.", body: "" },
+      { title: "Sin contador para dejarlo", body: "Una noche fumando es un dato, no un retroceso." },
+      { title: "Tu objetivo, tu decisión", body: "Cambiar algo o no. Fix no decide por ti." },
+      { title: "Sin marcador", body: "El registro y el espejo están pensados para tu dispositivo, no para una clasificación pública." },
     ],
-    exampleHeading: "Ejemplo",
-    exampleKicker: "Ejemplo",
-    exampleSubtitle: "No es una conversación real",
-    exampleSteps: [
-      { index: "1", label: "Elige una situación", body: "Tengo un craving" },
-      {
-        index: "2",
-        label: "Unas palabras",
-        body: "Había decidido no fumar esta noche pero me apetece un montón.",
-      },
-      {
-        index: "3",
-        label: "Una pequeña sugerencia",
-        body: "«Un craving puede parecer urgente. No tienes que decidir todo tu futuro ahora mismo. ¿Quieres hacer una pausa de diez minutos, cambiar de sitio, o escribir qué te está tirando hacia ahí?»",
-      },
-      { index: "4", label: "Tú eliges — probar, otra idea, o irte", body: null },
-    ],
-    tutorial: {
-      kicker: "El bucle a largo plazo",
-      heading: "Cómo se va sumando semana a semana",
-      patternsExampleCaption: "Ejemplo — tus semanas, no las de otra persona.",
-      steps: [
-        {
-          title: "Abrir Fix en un momento duro",
-          body: "Un siguiente paso seguro en menos de sesenta segundos. Sin registro, sin cuenta, sin nombre.",
-        },
-        {
-          title: "Apuntar una línea en Diario",
-          body: "Tus propias palabras, sólo en tu dispositivo. El sentimiento, el detonante, lo que probaste — suficiente para que tu semana tenga forma después.",
-        },
-        {
-          title: "Ver tus Patrones",
-          body: "Formas semanales honestas — qué días fumas más, a qué hora, qué estados de ánimo llegan antes. Sin rachas, sin marcadores.",
-        },
-        {
-          title: "Construir un Plan de Reducción",
-          body: "Un plan de 2, 4 o 6 semanas que tú mismo ajustas — pausar, reducir, o cambiar la hora. Puedes pausar y retomar cuando quieras.",
-        },
-      ],
+    mirror: {
+      kicker: "VISTA DEL DOMINGO · SOLO UN EJEMPLO",
+      heading: "Nico, así fue tu semana.",
+      observation: "Registraste consumo cuatro noches. «Después del trabajo» apareció tres veces.",
+      chartSummary: "Semana de ejemplo: consumo registrado lunes, martes, jueves y sábado; sin consumo registrado miércoles, viernes y domingo.",
+      weekdays: ["L", "M", "X", "J", "V", "S", "D"],
+      smokedLegend: "Consumo registrado",
+      noSmokeLegend: "Sin consumo registrado",
+      goalLabel: "TU COSA",
+      goalLine: "Querías salir a correr dos veces. Fuiste una. Solo tú sabes qué significa.",
+      caption: "Ejemplo ilustrativo — no son datos reales de nadie.",
     },
+    loopHeading: "Unos toques. Una semana más clara.",
+    loopIntro: "Este es el recorrido que estamos construyendo: nada de diarios que mantener, solo lo suficiente para observar, a tu ritmo.",
+    loopSteps: [
+      { title: "Apunta unas pocas cosas", body: "Si fumaste, cómo fue el día y qué había alrededor. Puedes saltarte lo que quieras." },
+      { title: "Mira la semana", body: "El domingo, un espejo en lenguaje claro muestra la forma de tu semana. Sin nota. Sin rachas." },
+      { title: "Elige lo siguiente", body: "Si te apetece, escoge una cosa pequeña que quieras hacer más. La decisión es tuya." },
+    ],
     waitlist: {
-      label: "¿Quieres saber cuándo llega lo próximo? Deja un correo.",
+      label: "¿Quieres un aviso cuando esté listo el espejo semanal? Déjanos tu correo.",
       placeholder: "tu@donde-sea.es",
-      submit: "Apúntame",
+      submit: "Avísame",
       submitting: "Apuntando…",
-      footnote:
-        "Sólo el correo. Sin nombre, sin teléfono, nada vinculado a tus sesiones con Fix. Escribimos como mucho una vez al mes y sólo cuando hay algo que te interese saber.",
-      error: "No ha pasado. Revisa la dirección e inténtalo otra vez.",
-      throttled:
-        "Ya apuntado. Si te has apuntado varias veces hoy, con eso vale — te avisaremos cuando haya algo que contar.",
-      done:
-        "Gracias — estás en la lista. Sólo escribimos cuando hay algo que te interese saber. Baja fácil en cada correo.",
-      notCollecting:
-        "La lista de espera no está conectada ahora mismo — vuelve a probar en un momento. No se ha perdido nada; es que no podemos guardarlo ahora.",
+      footnote: "Solo correo. Sin cuenta ni pago. Escribiremos cuando haya novedades de verdad; puedes darte de baja cuando quieras.",
+      error: "No ha funcionado. Revisa la dirección e inténtalo de nuevo.",
+      throttled: "Ya está apuntado. Por hoy es suficiente; te avisaremos cuando haya novedades.",
+      done: "Gracias — estás en la lista. Te avisaremos cuando esté listo el espejo. Puedes darte de baja en cualquier correo.",
+      notCollecting: "La lista no está disponible ahora mismo. No se ha perdido nada; inténtalo más tarde.",
     },
-    footerBlurb:
-      "GetFreezeFix.com es software de apoyo para adultos mayores de 18. No es terapia, ni consejo médico, ni un servicio de emergencia.",
-    footerPricingPosture:
-      "Gratis hoy. Si algún día llega un plan de pago, verás el precio y las condiciones antes de que te pidamos una tarjeta.",
-    footerLinks: [
-      { href: "/pricing", label: "Precios" },
-      { href: "/help", label: "Ayuda" },
-      { href: "/privacy", label: "Privacidad" },
-      { href: "/patterns", label: "Patrones" },
-      { href: "/terms", label: "Términos" },
-      { href: "/refunds", label: "Reembolsos" },
-      { href: "mailto:hello@getfreezefix.com", label: "hello@getfreezefix.com" },
-    ],
+    footerBlurb: "Fix es software de apoyo para adultos mayores de 18 años. No es terapia, consejo médico ni un servicio de emergencia.",
+    footerPricingPosture: "El plan de lanzamiento previsto aún no está disponible. La página de precios muestra el precio previsto; apuntarse no inicia una prueba ni supone un cobro.",
+    footerLinks: footerLinks.es,
   },
-
-  // ───────────────────────────── Italian ─────────────────────────────
-  // Added 4 November 2026 for the 15-persona audit (Nina, Milan, 26).
-  // Written Italian-first. "Craving" stays as "craving" — the Italian
-  // youth register uses the anglicism; "voglia impellente" would sound
-  // like a textbook. Italian chat is on the waitlist.
   it: {
     htmlLang: "it",
-    metaTitle: "FreezeFix — il compagno per quando una canna ti lascia bloccato",
-    metaDescription:
-      "Un accompagnatore privato per adulti che vogliono capire le proprie abitudini con la cannabis e trovare un prossimo passo che gli torni. Dai 18 anni. Riservato.",
+    metaTitle: "Fix — uno specchio privato per le tue abitudini con la cannabis",
+    metaDescription: "Fix sta costruendo uno specchio settimanale privato e senza giudizi sulle abitudini legate alla cannabis. Un check-in breve, senza contatori per smettere. Aggiornamenti al lancio.",
     getHelpNow: "Aiuto ora",
-    openReturning: "Apri",
+    openReturning: "Apri Fix",
     switchTo: { href: "/", label: "English" },
-    languageLinks: [{ href: "/", label: "English", lang: "en" }],
-    kicker: "GetFreezeFix · per adulti 18+",
-    heroHeadlineLine1: "Più controllo,",
-    heroHeadlineLine2: "un momento alla volta.",
-    heroBody:
-      "Un accompagnatore privato per adulti che vogliono capire le proprie abitudini con la cannabis e trovare un prossimo passo che gli torni davvero.",
-    ctaOpen: "Apri Fix",
-    ctaPrivacy: "Come funziona la privacy",
-    chatIsEnglishNote:
-      "Fix al momento è in inglese. L'italiano sta arrivando — se preferisci aspettare, lascia una mail qui sotto e ti avvisiamo.",
+    languageLinks: englishLinks,
+    kicker: "FIX · UNO SPECCHIO PRIVATO · 18+",
+    heroHeadlineLine1: "Non devi smettere.",
+    heroHeadlineLine2: "Puoi solo osservare.",
+    heroBody: "Fix è in sviluppo come modo tranquillo e privato per vedere che posto ha la cannabis nella tua settimana. Qualche appunto breve, uno specchio settimanale, senza contatori o prediche. Decidi tu cosa farne.",
+    ctaWaitlist: "Avvisami quando è pronto",
+    ctaPrivacy: "Come proteggiamo la privacy",
+    releaseNote: "Il breve check-in serale e lo specchio settimanale sono in sviluppo. Lascia un’email e ti avvisiamo quando saranno pronti.",
     features: [
-      { title: "Nessun giudizio", body: "Riflettere, ridurre, fermarsi — o semplicemente passare questa sera." },
-      { title: "Scegli tu l'obiettivo", body: "Niente streak. Si può saltare tutto." },
-      { title: "Fix è uno strumento IA e può sbagliare.", body: "" },
+      { title: "Niente contatore per smettere", body: "Una sera in cui fumi è un appunto, non un passo indietro." },
+      { title: "Il tuo obiettivo, la tua scelta", body: "Cambiare qualcosa o no. Fix non decide per te." },
+      { title: "Niente classifiche", body: "Il check-in e lo specchio sono pensati per il tuo dispositivo, non per una classifica pubblica." },
     ],
-    exampleHeading: "Esempio",
-    exampleKicker: "Esempio",
-    exampleSubtitle: "Non è una conversazione vera",
-    exampleSteps: [
-      { index: "1", label: "Scegli una situazione", body: "Ho un craving" },
-      {
-        index: "2",
-        label: "Due parole",
-        body: "Avevo deciso di non fumare stasera ma ne ho davvero voglia.",
-      },
-      {
-        index: "3",
-        label: "Un piccolo suggerimento",
-        body: "«Un craving può sembrare urgente. Non devi decidere tutto il tuo futuro adesso. Vuoi fare una pausa di dieci minuti, cambiare ambiente, o scrivere cosa ti sta tirando lì?»",
-      },
-      { index: "4", label: "Scegli tu — provare, un'altra idea, o andare via", body: null },
-    ],
-    tutorial: {
-      kicker: "Il loop sul lungo periodo",
-      heading: "Come si somma settimana dopo settimana",
-      patternsExampleCaption: "Esempio — le tue settimane, non quelle di qualcun altro.",
-      steps: [
-        {
-          title: "Aprire Fix in un momento difficile",
-          body: "Un prossimo passo sicuro in meno di sessanta secondi. Senza registrazione, senza account, senza nome.",
-        },
-        {
-          title: "Scrivere una riga in Diario",
-          body: "Le tue parole, solo sul tuo dispositivo. La sensazione, l'innesco, cosa hai provato — abbastanza perché la tua settimana prenda forma dopo.",
-        },
-        {
-          title: "Vedere i Pattern",
-          body: "Forme settimanali oneste — in che giorni fumi di più, a che ora, quali stati d'animo arrivano prima. Niente streak, niente classifiche.",
-        },
-        {
-          title: "Costruire un Piano di Riduzione",
-          body: "Un piano di 2, 4 o 6 settimane che imposti tu — fermarsi, ridurre, o spostare l'orario. Metti in pausa e riprendi quando vuoi.",
-        },
-      ],
+    mirror: {
+      kicker: "ANTEPRIMA DELLA DOMENICA · SOLO UN ESEMPIO",
+      heading: "Nico, ecco com’è andata la settimana.",
+      observation: "Hai segnato quattro sere in cui hai fumato. «Dopo il lavoro» è comparso tre volte.",
+      chartSummary: "Settimana illustrativa: consumo segnato lunedì, martedì, giovedì e sabato; nessun consumo segnato mercoledì, venerdì e domenica.",
+      weekdays: ["L", "M", "M", "G", "V", "S", "D"],
+      smokedLegend: "Consumo segnato",
+      noSmokeLegend: "Nessun consumo segnato",
+      goalLabel: "UNA COSA TUA",
+      goalLine: "Volevi andare a correre due volte. Ci sei andato una volta. Solo tu sai cosa significa.",
+      caption: "Esempio illustrativo — non sono dati reali.",
     },
+    loopHeading: "Pochi tocchi. Una settimana più chiara.",
+    loopIntro: "Questo è il percorso che stiamo costruendo: non un diario da portare avanti, solo il minimo per notare cosa c’è, con i tuoi tempi.",
+    loopSteps: [
+      { title: "Segna poche cose", body: "Se hai fumato, com’è andata la giornata e cosa c’era intorno. Puoi saltare tutto quello che vuoi." },
+      { title: "Guarda la settimana", body: "La domenica, uno specchio in parole semplici mostra la forma della tua settimana. Nessun voto. Nessuna serie." },
+      { title: "Scegli tu il prossimo passo", body: "Se ti va, scegli una piccola cosa da fare un po’ più spesso. La decisione resta tua." },
+    ],
     waitlist: {
-      label: "Vuoi sapere quando arriva la prossima cosa? Lascia una mail.",
-      placeholder: "tu@dovunque.it",
-      submit: "Aggiungimi",
-      submitting: "Aggiungo…",
-      footnote:
-        "Solo la mail. Niente nome, niente telefono, niente collegato alle tue sessioni con Fix. Scriviamo al massimo una volta al mese e solo quando c'è qualcosa che vorresti davvero sapere.",
-      error: "Non è andata. Controlla l'indirizzo e riprova.",
-      throttled:
-        "Già segnato. Se ti sei iscritto più volte oggi, basta così — ti contattiamo quando c'è qualcosa da dire.",
-      done:
-        "Grazie — sei nella lista. Scriviamo solo quando c'è qualcosa che vorresti davvero sapere. Link per disiscriversi in ogni mail.",
-      notCollecting:
-        "La lista d'attesa non è ancora collegata — riprova tra un minuto. Non si è perso nulla; è che non riusciamo a salvarlo ora.",
+      label: "Vuoi un avviso quando lo specchio settimanale è pronto? Lascia un’email.",
+      placeholder: "tu@dovevuoi.it",
+      submit: "Avvisami",
+      submitting: "Invio…",
+      footnote: "Solo email. Nessun account o pagamento. Scriveremo quando ci saranno novità vere; puoi disiscriverti quando vuoi.",
+      error: "Non è andata. Controlla l’indirizzo e riprova.",
+      throttled: "Segnato. Per oggi basta così; ti avvisiamo quando ci saranno novità.",
+      done: "Grazie — sei nella lista. Ti avvisiamo quando lo specchio è pronto. Puoi disiscriverti da ogni email.",
+      notCollecting: "La lista non è disponibile in questo momento. Non è andato perso nulla; riprova più tardi.",
     },
-    footerBlurb:
-      "GetFreezeFix.com è software di supporto per adulti dai 18 anni. Non è terapia, non è consiglio medico, non è un servizio di emergenza.",
-    footerPricingPosture:
-      "Gratis oggi. Se un giorno arriva un piano a pagamento, vedrai prezzo e condizioni prima che ti venga mai chiesta una carta.",
-    footerLinks: [
-      { href: "/pricing", label: "Prezzi" },
-      { href: "/help", label: "Aiuto" },
-      { href: "/privacy", label: "Privacy" },
-      { href: "/patterns", label: "Pattern" },
-      { href: "/terms", label: "Termini" },
-      { href: "/refunds", label: "Rimborsi" },
-      { href: "mailto:hello@getfreezefix.com", label: "hello@getfreezefix.com" },
-    ],
+    footerBlurb: "Fix è un software di supporto per adulti dai 18 anni in su. Non è terapia, consulenza medica o un servizio di emergenza.",
+    footerPricingPosture: "L’offerta di lancio prevista non è ancora disponibile. La pagina prezzi mostra il prezzo previsto; iscriversi non avvia una prova né comporta pagamenti.",
+    footerLinks: footerLinks.it,
   },
 };
