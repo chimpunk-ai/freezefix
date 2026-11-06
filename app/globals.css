@@ -395,3 +395,131 @@ a {
 :root[data-theme="light"] .ff-glass {
   background: rgba(251, 247, 241, 0.60);
 }
+
+/* ─────────────────────────────────────────────────────────────────────────
+ * The weekly mirror — motion set (brief, section 7: three animations only).
+ *
+ *   1. the breathing circle  → 4s in, 6s out (below, retimes .ff-breathe)
+ *   2. the mirror card       → 350ms slide up, then the seven nights draw in
+ *   3. the goal pulse        → one 600ms sage glow, never confetti
+ *
+ * Everything here is additive: the existing ff-draw / ff-rise / ff-stagger /
+ * ff-bubble utilities are untouched, and every new animation is disabled under
+ * prefers-reduced-motion.
+ * ──────────────────────────────────────────────────────────────────────── */
+
+/* 1. Breathing circle: 10s cycle, 40% of it rising (4s in), 60% falling (6s out).
+   Overrides the earlier 5s symmetric loop so the rhythm is 4 in / 6 out. */
+.ff-breathe {
+  animation: ff-breathe-4-6 10s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+@keyframes ff-breathe-4-6 {
+  0%,
+  100% {
+    transform: scale(0.62);
+    opacity: 0.72;
+  }
+  40% {
+    transform: scale(1.12);
+    opacity: 1;
+  }
+}
+
+/* 2. The mirror sheet: slides up from the bottom, decelerating like a door
+   closing softly. 350ms, per the brief. */
+.ff-scrim {
+  animation: ff-scrim-in 240ms ease-out both;
+}
+@keyframes ff-scrim-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+.ff-sheet {
+  box-shadow: 0 -18px 48px rgba(0, 0, 0, 0.45);
+}
+.ff-sheet-in {
+  animation: ff-sheet-up 350ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+@keyframes ff-sheet-up {
+  from {
+    transform: translateY(100%);
+  }
+  to {
+    transform: translateY(0);
+  }
+}
+
+/* 2b. The seven nights draw in, left to right, one after another. Each box
+   carries its own animation-delay inline. */
+.ff-night {
+  display: inline-block;
+  width: 100%;
+  min-width: 0;
+  aspect-ratio: 1 / 1;
+  border-radius: 0.5rem;
+  border: 1px solid var(--color-line);
+  background: var(--color-chip);
+  animation: ff-night-in 420ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+@keyframes ff-night-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px) scale(0.92);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+.ff-night-smoked {
+  background: var(--color-terracotta, #d8927a);
+  border-color: var(--color-terracotta, #d8927a);
+  opacity: 0.92;
+}
+.ff-night-clear {
+  background: var(--color-accent);
+  border-color: var(--color-accent);
+}
+.ff-night-empty {
+  background: transparent;
+  border-style: dashed;
+}
+.ff-night-future {
+  background: transparent;
+  border-color: color-mix(in srgb, var(--color-line) 45%, transparent);
+  opacity: 0.45;
+  animation: none;
+}
+
+/* 3. Goal pulse: one honest glow when a milestone lands. 600ms, once. */
+.ff-goal-pulse {
+  animation: ff-goal-pulse 600ms ease-out 1;
+}
+@keyframes ff-goal-pulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(156, 175, 136, 0.55);
+    border-color: var(--color-accent);
+  }
+  100% {
+    box-shadow: 0 0 0 16px rgba(156, 175, 136, 0);
+    border-color: var(--color-line);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ff-scrim,
+  .ff-sheet-in,
+  .ff-night,
+  .ff-goal-pulse,
+  .ff-breathe {
+    animation: none !important;
+  }
+  .ff-night {
+    opacity: 1;
+    transform: none;
+  }
+}
