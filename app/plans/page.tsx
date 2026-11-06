@@ -56,7 +56,6 @@ export default function PlansPage() {
   const initialised = useRef(false);
 
   useEffect(() => {
-    setRegion(detectRegion());
     fetch("/api/paywall", { cache: "no-store" })
       .then((r) => r.json())
       .then((d) => {
