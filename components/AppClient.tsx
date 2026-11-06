@@ -249,7 +249,7 @@ function SettingsView({
   function forget() {
     clearEntries();
     clearProfile();
-    window.location.href = "/";
+    router.replace("/");
   }
 
   return (
