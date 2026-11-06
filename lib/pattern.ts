@@ -213,8 +213,9 @@ export function weekStats(entries: Entries, goal: Goal | null, end = todayISO())
 }
 
 export function goalSentence(line: GoalLine): string {
-  const times = (n: number) => (n === 1 ? "once" : n === 0 ? "not once" : `${numberWord(n)} times`);
-  const target = line.target === 1 ? "once" : `${numberWord(line.target)} times`;
+  const times = (n: number) =>
+    n === 1 ? "once" : n === 0 ? "not once" : n === 2 ? "twice" : `${numberWord(n)} times`;
+  const target = line.target === 1 ? "once" : line.target === 2 ? "twice" : `${numberWord(line.target)} times`;
   let s = `you wanted to ${line.text} ${target} this week. you did it ${times(line.done)}.`;
   if (line.lastWeekDone !== null && line.lastWeekDone !== line.done) {
     s += ` last week you did it ${times(line.lastWeekDone)}.`;
