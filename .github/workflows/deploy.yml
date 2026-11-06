@@ -1,0 +1,77 @@
+name: Deploy to getfreezefix.com
+
+# What this does, in plain words:
+# getfreezefix.com is not served by Vercel or by GitHub Pages — it is a
+# Cloudflare Worker called `freezefix`. OpenNext turns this Next.js app into
+# that single Worker bundle, and `wrangler deploy` pushes it live.
+#
+# Until now nothing in this repo did that. The only way the live site changed
+# was somebody remembering to run `npm run deploy` on their own machine, which
+# is exactly how it drifted several commits behind this branch.
+#
+# This workflow closes that gap: every push to `appjet` builds the Worker and
+# deploys it, so what is on the branch is what is on getfreezefix.com.
+#
+# One-time setup — GitHub → Settings → Secrets and variables → Actions → New
+# repository secret, twice:
+#
+#   CLOUDFLARE_API_TOKEN   Create at Cloudflare → My Profile → API Tokens using
+#                          the "Edit Cloudflare Workers" template, and limit it
+#                          to this account. That is all the permission needed.
+#   CLOUDFLARE_ACCOUNT_ID  From the Cloudflare dashboard URL:
+#                          dash.cloudflare.com/<THIS_PART>/workers
+#
+# Application secrets (ANTHROPIC_API_KEY, SUPABASE_URL, SUPABASE_ANON_KEY) do
+# NOT go here. They stay in the Cloudflare dashboard, and wrangler.jsonc sets
+# `keep_vars: true` so a deploy from this workflow cannot wipe them.
+
+on:
+  push:
+    branches: [appjet]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+# Never let two deploys race: a half-applied Worker is worse than a slow one.
+concurrency:
+  group: deploy-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - name: Check out the branch
+        uses: actions/checkout@v4
+
+      - name: Set up Node (version from .nvmrc)
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci --no-audit --no-fund
+
+      - name: Explain what is missing if the token is not configured
+        # A red X with "Input required and not supplied" is not a useful error
+        # for whoever sees this next. Say plainly what to do instead.
+        run: |
+          if [ -z "${{ secrets.CLOUDFLARE_API_TOKEN }}" ]; then
+            echo "::error::CLOUDFLARE_API_TOKEN is not set. Add CLOUDFLARE_API_TOKEN and CLOUDFLARE_ACCOUNT_ID in Settings → Secrets and variables → Actions, then re-run this job."
+            exit 1
+          fi
+
+      - name: Build the Worker bundle (OpenNext)
+        run: npx opennextjs-cloudflare build
+        env:
+          NEXT_TELEMETRY_DISABLED: "1"
+
+      - name: Deploy to Cloudflare
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          command: deploy
