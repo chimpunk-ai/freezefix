@@ -23,6 +23,7 @@
 import { todayISO } from "@/lib/checkins";
 import { allNewestFirst, CONTEXTS } from "@/lib/journal";
 import { thisWeek } from "@/lib/wins";
+import { NIGHT_TRIGGERS, moodAverage, triggerCounts } from "@/lib/nights";
 import { GOAL_LABEL, readGoal } from "@/lib/goals";
 
 const MIRROR_KEY = "ff_mirrors";
@@ -199,7 +200,11 @@ export function thingDoneThisWeek(now = new Date()): number {
 /* ── the engine ────────────────────────────────────────────────────────── */
 
 function triggerLabel(id: string): string {
-  return CONTEXTS.find((c) => c.id === id)?.label ?? id;
+  return (
+    CONTEXTS.find((c) => c.id === id)?.label ??
+    NIGHT_TRIGGERS.find((t) => t.id === id)?.label ??
+    id
+  );
 }
 
 /** Nights in the week containing `now`, Monday → Sunday. */
@@ -263,6 +268,12 @@ export function buildMirror(now = new Date()): Mirror {
     if (e.ts < startMs || e.ts >= endMs) continue;
     for (const c of e.contexts ?? []) counts.set(c, (counts.get(c) ?? 0) + 1);
   }
+  // The nightly tap carries its own chips (lib/nights). Merging them with the journal
+  // contexts is what lets the sentence fire from the three-tap log alone, without the
+  // user ever opening the journal.
+  for (const [id, n] of triggerCounts(nights.map((night) => night.day))) {
+    counts.set(id, (counts.get(id) ?? 0) + n);
+  }
   const ranked = [...counts.entries()].sort((a, b) => b[1] - a[1]);
   const topTrigger = ranked[0] && ranked[0][1] > 1 ? triggerLabel(ranked[0][0]) : null;
   const topTriggerCount = topTrigger ? ranked[0][1] : 0;
@@ -282,6 +293,18 @@ export function buildMirror(now = new Date()): Mirror {
   const delta = comparable ? prev.smoked - smoked : null;
 
   const hasEnough = recorded >= 3;
+
+  // Mood only speaks when both sides of the comparison have at least two faces, so a
+  // single rough night cannot masquerade as a pattern. A gap under half a face is not a
+  // difference worth reporting.
+  const smokedMood = moodAverage(
+    nights.filter((night) => night.smoked === true).map((night) => night.day),
+  );
+  const cleanMood = moodAverage(
+    nights.filter((night) => night.smoked === false).map((night) => night.day),
+  );
+  const moodDiff =
+    smokedMood.n >= 2 && cleanMood.n >= 2 ? cleanMood.avg - smokedMood.avg : null;
 
   const sentence = (() => {
     if (recorded === 0) {
@@ -307,6 +330,11 @@ export function buildMirror(now = new Date()): Mirror {
     }
     if (winsThisWeek > 0) {
       return `You also saved ${winsThisWeek} small ${winsThisWeek === 1 ? "win" : "wins"} this week. Those count as data too.`;
+    }
+    if (moodDiff !== null && Math.abs(moodDiff) >= 0.5) {
+      return moodDiff > 0
+        ? "On the nights you didn't smoke, your mood face averaged a little higher. That is a correlation in your own taps, not a verdict."
+        : "On the nights you didn't smoke, your mood face wasn't higher. Whatever else is going on, weed isn't the whole story.";
     }
     // `delta === null` means there is no earlier week worth comparing against. Saying
     // "the same as last week" there would invent a comparison the engine never made, so
