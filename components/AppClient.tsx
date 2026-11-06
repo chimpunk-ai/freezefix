@@ -29,13 +29,14 @@ export default function AppClient({ view = "log" }: { view?: View }) {
   const [entries, setEntries] = useState<Entries>({});
   const [paid, setPaid] = useState(false);
   const [fixOpen, setFixOpen] = useState(false);
-  const [sheet, setSheet] = useState<WeekStats | null>(null);
-  const [region, setRegion] = useState("");
+  const [manualSheet, setManualSheet] = useState<WeekStats | null>(null);
+  const [dismissed, setDismissed] = useState<string | null>(null);
+  const region = useRegion();
+  const router = useRouter();
 
   useEffect(() => {
     setProfile(readProfile());
     setEntries(readEntries());
-    setRegion(detectRegion());
     setReady(true);
     fetch("/api/paywall")
       .then((r) => r.json())
@@ -43,16 +44,18 @@ export default function AppClient({ view = "log" }: { view?: View }) {
       .catch(() => setPaid(false));
   }, []);
 
-  // The Sunday card arrives on its own. It does not appear twice.
-  useEffect(() => {
-    if (!ready || !profile?.onboarded || view !== "log") return;
-    const due = dueMirror(entries, profile.goal);
-    if (due) setSheet(due);
-  }, [ready, profile, entries, view]);
+  // The Sunday card arrives on its own, once. It is derived from the log instead
+  // of being pushed into state by an effect: dueMirror is pure and cheap, and the
+  // only thing worth remembering is which week the user already closed.
+  const due = ready && profile?.onboarded && view === "log" ? dueMirror(entries, profile.goal) : null;
+  const sheet = manualSheet ?? (due && due.end !== dismissed ? due : null);
 
   const closeSheet = useCallback(() => {
-    if (sheet) markSeen(sheet.end);
-    setSheet(null);
+    if (sheet) {
+      markSeen(sheet.end);
+      setDismissed(sheet.end);
+    }
+    setManualSheet(null);
   }, [sheet]);
 
   const openFix = useCallback(() => setFixOpen(true), []);
