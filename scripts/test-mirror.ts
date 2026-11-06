@@ -105,7 +105,7 @@ check(
 );
 
 reset();
-seedWeek(new Date(2026, 10, 1, 12, 0, 0), ["yes", "yes", "no", "yes", "no", "no", null]); // 3 of 6
+seedWeek(new Date(2026, 10, 1, 12, 0, 0), ["yes", "yes", "yes", "yes", "yes", "no", null]); // 5 of 6
 seedWeek(SUNDAY, ["yes", "yes", "no", "yes", "no", "yes", "no"]); // 4 of 7
 const fewer = buildMirror(SUNDAY);
 check(fewer.direction === "1 fewer than last week", `direction wrong: ${fewer.direction}`);
