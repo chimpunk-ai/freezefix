@@ -80,7 +80,7 @@ export default function FixSheet({
     if (!message || sending || capped || crisis) return;
     setInput("");
     setNote(null);
-    const history = turns.slice(-8);
+    const history = thread.slice(-8);
     setTurns((t) => [...t, { role: "user", text: message }]);
     setSending(true);
     try {
@@ -152,7 +152,7 @@ export default function FixSheet({
         </div>
 
         <div className="min-h-0 flex-1 space-y-3 overflow-y-auto px-5 py-4">
-          {turns.map((t, i) => (
+          {thread.map((t, i) => (
             <p
               key={i}
               className={[

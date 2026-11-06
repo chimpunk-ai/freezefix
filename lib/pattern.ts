@@ -117,7 +117,7 @@ function moodAfter(entries: Entries, end: string): { afterNoSmoke: number | null
   return { afterNoSmoke: average(afterNoSmoke), afterSmoke: average(afterSmoke) };
 }
 
-function goalLineFor(entries: Entries, goal: Goal | null, start: string, end: string): GoalLine | null {
+function goalLineFor(entries: Entries, goal: Goal | null, start: string): GoalLine | null {
   if (!goal) return null;
   let done = 0;
   for (let i = 0; i < 7; i++) {
@@ -146,7 +146,7 @@ export function weekStats(entries: Entries, goal: Goal | null, end = todayISO())
   const logged = loggedCells.length;
   const { top, count } = countTriggers(cells);
   const mood = moodAfter(entries, end);
-  const goalLine = goalLineFor(entries, goal, addDays(end, -6), end);
+  const goalLine = goalLineFor(entries, goal, addDays(end, -6));
 
   const weekdaySmokes = cells.filter((c) => c.smoked === true && !isWeekend(c.day)).length;
   const weekendSmokes = cells.filter((c) => c.smoked === true && isWeekend(c.day)).length;
