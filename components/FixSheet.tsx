@@ -63,16 +63,15 @@ export default function FixSheet({
   const endRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
-    if (open && turns.length === 0) {
-      setTurns([{ role: "assistant", text: opener(name, stats) }]);
-    }
-  }, [open, turns.length, name, stats]);
-
-  useEffect(() => {
     endRef.current?.scrollIntoView({ block: "end" });
   }, [turns, crisis, sending]);
 
   if (!open) return null;
+
+  // The opener is derived from the log instead of being pushed into state by an
+  // effect: no extra render, and it stays true if the week's stats change under
+  // an open sheet. `turns` holds only what was actually said after it.
+  const thread: Turn[] = [{ role: "assistant", text: opener(name, stats) }, ...turns];
 
   const capped = used >= limit;
 
