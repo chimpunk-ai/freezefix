@@ -62,14 +62,16 @@ if (quiet.logged !== 0 || !quiet.sentences[0].includes("nothing logged")) {
 if (quiet.goalLine && quiet.goalLine.done !== 0) throw new Error("an empty week has no goal ticks");
 
 // --- mood the day after ------------------------------------------------------
+// The mood on a day belongs to that day, so the day AFTER a smoke night is the
+// low-mood one here, and the day after a no-smoke night is the high-mood one.
 const moods = fill("2026-10-26", [
-  [true, 2],
-  [false, 4],
-  [true, 2],
-  [false, 5],
-  [true, 2],
-  [false, 4],
-  [true, 2],
+  [true, 3],
+  [false, 2],
+  [true, 5],
+  [false, 2],
+  [true, 5],
+  [false, 2],
+  [true, 5],
 ]);
 const moodStats = weekStats(moods, null, SUNDAY);
 if (moodStats.moodAfterNoSmoke === null || moodStats.moodAfterSmoke === null) {
