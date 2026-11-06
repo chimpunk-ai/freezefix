@@ -59,10 +59,14 @@ export const PLANS = plansFor("US");
 export function trialDates(from = new Date(), days = TRIAL_DAYS) {
   const ends = new Date(from.getTime() + days * 24 * 60 * 60 * 1000);
   const fmt = (d: Date) => d.toLocaleDateString(undefined, { day: "numeric", month: "long" });
+  // The day before the first charge, never earlier than the day the trial
+  // started: a one-day trial is reminded the same day, not in the past.
+  const reminder = new Date(ends.getTime() - 24 * 60 * 60 * 1000);
   return {
     days,
     startsLabel: "Today",
     chargeLabel: fmt(ends),
+    reminderLabel: fmt(reminder < from ? from : reminder),
     endsAt: ends,
   };
 }
