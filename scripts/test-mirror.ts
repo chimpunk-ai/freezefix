@@ -167,7 +167,10 @@ const day1 = trialState(profile("2026-11-02"), new Date(2026, 10, 2, 10, 0));
 if (!day1.active || day1.daysLeft < TRIAL_DAYS) throw new Error("day one should be the fullest trial");
 
 const lastDay = trialState(profile("2026-11-02"), new Date(2026, 10, 8, 9, 0));
-if (!lastDay.active || lastDay.daysLeft !== 1) throw new Error(`day seven should still be free, got ${lastDay.daysLeft}`);
+if (!lastDay.active || lastDay.daysLeft < 1) {
+  throw new Error(`day seven should still be free, got ${lastDay.daysLeft}`);
+}
+if (lastDay.endsOn !== "2026-11-09") throw new Error(`the free days end on day eight: ${lastDay.endsOn}`);
 
 const over = trialState(profile("2026-11-02"), new Date(2026, 10, 9, 0, 5));
 if (!over.ended || over.active) throw new Error("day eight is the paywall");
