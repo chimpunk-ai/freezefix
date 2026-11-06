@@ -160,6 +160,71 @@ export default function HomeDashboard() {
             Logged for today. Tap again to change — nothing is sent anywhere.
           </p>
         )}
+
+        {/* Optional detail, one tap each. The yes/no above is the whole log; these two
+            rows are there when the user has the energy, and skipped without complaint
+            when they don't. Tapping a selected chip again removes it. */}
+        {today && (
+          <div className="mt-5 border-t border-line/70 pt-4">
+            <p className="font-mono text-[11px] uppercase tracking-[0.18em] text-ink-soft">
+              How did it sit?
+            </p>
+            <div className="mt-2 flex items-center gap-2" role="group" aria-label="Mood face">
+              {MOODS.map((m) => {
+                const active = mood === m;
+                return (
+                  <button
+                    key={m}
+                    type="button"
+                    aria-pressed={active}
+                    aria-label={`Mood: ${MOOD_LABELS[m]}`}
+                    onClick={() => pickMood(m)}
+                    className={`flex h-11 w-11 items-center justify-center rounded-full border transition-colors ${
+                      active
+                        ? "border-accent bg-accent/15 text-accent"
+                        : "border-line/80 text-ink-faint hover:border-line"
+                    }`}
+                  >
+                    <MoodFace mood={m} />
+                  </button>
+                );
+              })}
+            </div>
+
+            <p className="mt-4 font-mono text-[11px] uppercase tracking-[0.18em] text-ink-soft">
+              What was going on?
+            </p>
+            <div className="mt-2 flex flex-wrap gap-2">
+              {NIGHT_TRIGGERS.map((t) => {
+                const active = triggers.includes(t.id);
+                const full =
+                  !active && !triggers.includes("none") && triggers.length >= MAX_TRIGGERS;
+                return (
+                  <button
+                    key={t.id}
+                    type="button"
+                    aria-pressed={active}
+                    disabled={full}
+                    onClick={() => pickTrigger(t.id)}
+                    className={`rounded-full border px-3 py-1.5 text-sm transition-colors ${
+                      active
+                        ? "border-accent bg-accent/15 text-accent"
+                        : full
+                          ? "border-line/40 text-ink-faint/50"
+                          : "border-line/80 text-ink-soft hover:border-line"
+                    }`}
+                  >
+                    {t.label}
+                  </button>
+                );
+              })}
+            </div>
+
+            {(mood !== undefined || triggers.length > 0) && (
+              <p className="mt-3 text-xs text-ink-faint">saved. see you Sunday.</p>
+            )}
+          </div>
+        )}
       </section>
 
       {/* Last 7 days */}
