@@ -1,0 +1,47 @@
+name: CI
+
+# Automation for every push: typecheck, lint, the copy/engine test scripts and a
+# real production build. The mirror engine (lib/mirror.ts) and the automation
+# (lib/automation.ts) are covered by the build + typecheck; the scripts below
+# guard the tone-sensitive copy and the safety rails that must never drift.
+
+on:
+  push:
+    branches: [appjet, main]
+  pull_request:
+    branches: [appjet, main]
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install
+        run: npm ci --no-audit --no-fund
+
+      - name: Typecheck
+        run: npm run typecheck
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Copy and engine tests
+        run: |
+          for s in risk scenarios country resources landing-copy pricing-copy \
+                   seo-copy program reflections pwa plans demo wins facts \
+                   ndjson offtopic; do
+            echo "── test:$s"
+            npm run "test:$s"
+          done
+
+      - name: Production build
+        run: npm run build
+        env:
+          NEXT_TELEMETRY_DISABLED: "1"
