@@ -35,7 +35,7 @@
 //   CACHE_NAME includes a date-tagged version. Bump it to force an
 //   immediate refresh of pre-cached pages on next activate.
 
-const VERSION = "v1-2026-11-03";
+const VERSION = "v2-2026-11-07";
 const CACHE_NAME = `freezefix-${VERSION}`;
 
 // Pre-cached shells — pages a user is most likely to open first, and the
@@ -43,14 +43,14 @@ const CACHE_NAME = `freezefix-${VERSION}`;
 // the service worker is not a universal mirror of the site.
 const PRECACHE = [
   "/",
-  "/de",
-  "/fr",
-  "/nl",
-  "/program",
-  "/too-high-what-to-do",
-  "/zu-high-was-tun",
-  "/greened-out",
+  "/app",
+  "/app/weeks",
+  "/app/settings",
+  "/plans",
   "/help",
+  "/privacy",
+  "/terms",
+  "/refunds",
   "/offline.html",
   "/manifest.webmanifest",
   "/icon.svg",

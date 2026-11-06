@@ -5,7 +5,8 @@ import { pricesFor, plansFor, trialDates, TRIAL_DAYS } from "../lib/plans";
 if (pricesFor("GB").currency !== "GBP") throw new Error("UK should be priced in GBP");
 if (pricesFor("gb").yearly !== "£39.99") throw new Error("region match must ignore case");
 if (pricesFor("US").currency !== "USD") throw new Error("US should be priced in USD");
-if (pricesFor("DE").currency !== "USD") throw new Error("unlisted regions fall back to USD");
+if (pricesFor("DE").currency !== "EUR") throw new Error("Germany is a euro market");
+if (pricesFor("JP").currency !== "USD") throw new Error("unlisted regions fall back to USD");
 if (pricesFor(undefined).currency !== "USD") throw new Error("no region falls back to USD");
 
 const uk = plansFor("GB");
