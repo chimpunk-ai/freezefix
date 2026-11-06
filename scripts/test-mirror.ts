@@ -18,7 +18,7 @@ const store = new Map<string, string>();
   },
 };
 
-const KEYS = ["ff_checkins", "ff_wins_log", "ff_goal", "ff_thing", "ff_mirrors"];
+const KEYS = ["ff_checkins", "ff_wins_log", "ff_goal", "ff_thing", "ff_mirrors", "ff_nights"];
 function reset() {
   for (const k of KEYS) store.delete(k);
 }
@@ -174,4 +174,92 @@ for (const [label, m] of Object.entries({ first, thin, more, fewer, same, empty,
   }
 }
 
-console.log("Mirror: counts, direction, first-week honesty and voice rules all behave");
+/* ── the nightly detail (lib/nights) ───────────────────────────────────── */
+
+/** Write mood faces and trigger chips for specific days, leaving other days alone. */
+function seedNights(entries: Record<string, { mood?: number; triggers?: string[] }>) {
+  const all: Record<string, unknown> = JSON.parse(store.get("ff_nights") ?? "{}");
+  for (const [day, meta] of Object.entries(entries)) all[day] = meta;
+  store.set("ff_nights", JSON.stringify(all));
+}
+
+/** Monday → Sunday of the seeded week, at noon so a DST shift cannot move the date. */
+function weekDay(i: number) {
+  const m = mondayOf(SUNDAY);
+  return todayISO(new Date(m.getFullYear(), m.getMonth(), m.getDate() + i, 12, 0, 0));
+}
+
+// The nightly tap carries its own trigger chips, so the mirror's trigger sentence has
+// to work without the user ever opening the journal.
+reset();
+seedWeek(SUNDAY, ["yes", "yes", "yes", "no", "no", "no", "no"]);
+seedNights({
+  [weekDay(0)]: { triggers: ["after-work"] },
+  [weekDay(1)]: { triggers: ["after-work"] },
+  [weekDay(2)]: { triggers: ["boredom"] },
+});
+const nightly = buildMirror(SUNDAY);
+check(
+  nightly.sentence.includes("after work"),
+  `nightly triggers never reached the sentence: ${nightly.sentence}`,
+);
+
+// "nothing really" is a way of saying "no trigger", not a pattern to report back.
+reset();
+seedWeek(SUNDAY, ["yes", "yes", "yes", "yes", "yes", "yes", "yes"]);
+seedNights({
+  [weekDay(0)]: { triggers: ["none"] },
+  [weekDay(1)]: { triggers: ["none"] },
+  [weekDay(2)]: { triggers: ["none"] },
+});
+const nothingReally = buildMirror(SUNDAY);
+check(
+  !/nothing really/i.test(nothingReally.sentence),
+  `"nothing really" must never be reported as a pattern: ${nothingReally.sentence}`,
+);
+
+// The mood comparison only speaks when both sides have at least two faces.
+reset();
+seedWeek(SUNDAY, ["yes", "yes", "yes", "yes", "no", "no", "no"]);
+seedNights({
+  [weekDay(0)]: { mood: 2 },
+  [weekDay(1)]: { mood: 2 },
+  [weekDay(2)]: { mood: 3 },
+  [weekDay(3)]: { mood: 2 },
+  [weekDay(4)]: { mood: 4 },
+  [weekDay(5)]: { mood: 5 },
+  [weekDay(6)]: { mood: 4 },
+});
+const moody = buildMirror(SUNDAY);
+check(
+  /mood face/i.test(moody.observation),
+  `mood comparison never appeared: ${moody.observation}`,
+);
+
+// One clean night is not a comparison. It must stay quiet.
+reset();
+seedWeek(SUNDAY, ["yes", "yes", "no", "yes", "yes", "yes", "yes"]);
+seedNights({
+  [weekDay(0)]: { mood: 4 },
+  [weekDay(1)]: { mood: 4 },
+  [weekDay(2)]: { mood: 1 },
+});
+const thinMood = buildMirror(SUNDAY);
+check(
+  !/mood face/i.test(thinMood.observation),
+  `a single clean night must not read as a mood pattern: ${thinMood.observation}`,
+);
+
+for (const [label, m] of Object.entries({ nightly, nothingReally, moody, thinMood })) {
+  for (const [field, text] of Object.entries({
+    sentence: m.sentence,
+    observation: m.observation,
+    direction: m.direction ?? "",
+  })) {
+    check(!BANNED.test(text), `${label}.${field} breaks the voice rules: ${text}`);
+  }
+}
+
+console.log(
+  "Mirror: counts, direction, first-week honesty, nightly triggers, mood and voice all behave",
+);
