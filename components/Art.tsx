@@ -14,9 +14,9 @@ const SOFT = "rgba(255,248,240,0.08)";   // card tint
 const FAINT = "rgba(255,248,240,0.14)"; // line tint
 const DIM = "rgba(255,248,240,0.18)";   // ink dim
 const INK = "#f0ece6";
-const AMBER = "#e8a84c";                // accent
-const MOSS = "#d4956a";                 // frost (terracotta)
-const TEAL = "#c07b4f";                 // deeper terracotta
+const AMBER = "#9CAF88";                // accent — warm sage (brief §7)
+const MOSS = "#B6C7A3";                 // frost — the light sage of a succulent
+const TEAL = "#7A9067";                 // deeper sage for emphasis
 
 /** The loop that won't stop: a line that goes round and round and never lands. */
 export function LoopArt({ className = "" }: { className?: string }) {

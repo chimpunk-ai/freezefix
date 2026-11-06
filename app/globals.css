@@ -476,8 +476,10 @@ a {
   }
 }
 .ff-night-smoked {
-  background: var(--color-terracotta, #d8927a);
-  border-color: var(--color-terracotta, #d8927a);
+  /* Warm stone, deliberately NOT the terracotta: that hex is reserved for the
+     get-help chip so it keeps meaning "safety" and nothing else. */
+  background: #b9a08c;
+  border-color: #b9a08c;
   opacity: 0.92;
 }
 .ff-night-clear {

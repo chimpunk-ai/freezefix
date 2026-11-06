@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import AppShell from "@/components/AppShell";
 import WeeklyReflection from "@/components/WeeklyReflection";
+import WeeklyMirror from "@/components/WeeklyMirror";
 import { last7Days, last7Summary, getAnswer, setToday, todayISO, type DayShape, type Shape } from "@/lib/checkins";
 import { readGoal, writeGoal, GOALS, GOAL_LABEL, type GoalId } from "@/lib/goals";
 import { allWins } from "@/lib/wins";
@@ -192,6 +193,11 @@ export default function HomeDashboard() {
           app once a week; the goal + help chips stay as everyday surfaces
           below. */}
       <div className="mt-5">
+        {/* The mirror is the product's one magic moment (brief §3/§5): the week
+            computed from the log, the triggers, the wins and the user's own
+            small thing. It sits above the reflection prompt because the card
+            is what the user came back for; the prompt is the optional extra. */}
+        <WeeklyMirror />
         <WeeklyReflection />
       </div>
 
