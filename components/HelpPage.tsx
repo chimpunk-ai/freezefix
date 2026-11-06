@@ -33,11 +33,9 @@ function parseScreen(q: string | null): HelpScreenId {
 export default function HelpPage() {
   const router = useRouter();
   const params = useSearchParams();
-  const [region, setRegion] = useState("");
-
-  useEffect(() => {
-    setRegion(detectRegion());
-  }, []);
+  const detected = useRegion();
+  const [picked, setPicked] = useState<string | null>(null);
+  const region = picked ?? detected;
 
   const screen = parseScreen(params.get("screen"));
 
