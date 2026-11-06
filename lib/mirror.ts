@@ -308,10 +308,16 @@ export function buildMirror(now = new Date()): Mirror {
     if (winsThisWeek > 0) {
       return `You also saved ${winsThisWeek} small ${winsThisWeek === 1 ? "win" : "wins"} this week. Those count as data too.`;
     }
+    // `delta === null` means there is no earlier week worth comparing against. Saying
+    // "the same as last week" there would invent a comparison the engine never made, so
+    // only a real zero delta gets to claim sameness.
+    if (delta === 0) {
+      return "A week the same as the last one is still a shape. Only you know what it means.";
+    }
     if (remaining > 0) {
       return `${remaining} ${remaining === 1 ? "night" : "nights"} left this week. Nothing to do about it unless you want to.`;
     }
-    return "A week the same as the last one is still a shape. Only you know what it means.";
+    return "Seven nights logged, and no earlier week to compare them to yet. Next Sunday the picture gets a second point.";
   })();
 
   const direction = (() => {
