@@ -1,241 +1,165 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import Link from "next/link";
-import SiteFooter from "@/components/SiteFooter";
-import WaitlistCapture from "@/components/WaitlistCapture";
-import { LANDING_COPY, type Locale } from "@/lib/landing-copy";
+import { HelpChip, Wordmark } from "@/components/Brand";
+import { PatternCard } from "@/components/PatternCard";
+import { weekStats } from "@/lib/pattern";
+import { SAMPLE_END, SAMPLE_GOAL, sampleEntries } from "@/lib/sample";
 
-/* Landing page — "Grove" rebuild (2026-10-31).
- *
- * Structure follows the approved reference prototype:
- *   /welcome : header (logo + Get help now) → hero (kicker + serif headline + body +
- *   mint CTA "Open Fix" + "How privacy works" link) → example card marked
- *   "EXAMPLE / Not a live conversation" → three honest-feature cards.
- *
- * Localized 3 November 2026 (feat/de-landing, Europe-audit P1.5). Takes a
- * `locale` prop; English is the default so the existing `/` route needs no
- * change. The German `/de` route passes locale="de". All visible strings
- * live in lib/landing-copy.ts; this file only lays them out. The illustration,
- * example-step layout, header/footer structure and the three-feature grid are
- * identical across locales so a visitor who flips the switcher sees the same
- * product, just in their language.
- *
- * The route "/app" is still accountless in this phase. Phase 3 adds the
- * Supabase + Google sign-in guard; nothing about the chat / safety flow changes here.
- */
+// The front door. One idea, three steps, one real card.
+//
+// No scenario cards, no founder pitch, no waitlist, no countdown. The visitor
+// should understand the whole product before they scroll past the hero, and
+// the thing they see first is the thing the product actually produces.
 
-type Props = {
-  locale?: Locale;
-};
+const sample = weekStats(sampleEntries(), SAMPLE_GOAL, SAMPLE_END);
 
-/* Each example-step row needs to know who's "speaking" so it picks the right
- * bubble style. Lives in code (not copy) because it's layout, not language. */
-type SpeakerKind = "user" | "fix" | "none";
-const SPEAKERS: SpeakerKind[] = ["user", "user", "fix", "none"];
+const STEPS = [
+  {
+    n: "01",
+    title: "the log",
+    body: "yes or no. one face. up to three chips. nine seconds, at bedtime, in the dark. hold the mic if you want to say it out loud — we keep the words, throw the audio away.",
+  },
+  {
+    n: "02",
+    title: "the mirror",
+    body: "sunday, 8:15pm, one notification. a card slides up and tells you what the week looked like in plain english. four nights out of seven. mostly after work. that's it. no grade.",
+  },
+  {
+    n: "03",
+    title: "your thing",
+    body: "one small thing you'd like to do more of. run twice. call your brother back. the card notices whether you did, and says so without a party.",
+  },
+];
 
-export default function Landing({ locale = "en" }: Props) {
-  const copy = LANDING_COPY[locale];
-  const [returning, setReturning] = useState(false);
-  useEffect(() => {
-    try {
-      setReturning(window.localStorage.getItem("ff_adult") === "yes");
-    } catch {
-      /* storage can be blocked */
-    }
-  }, []);
-
+export default function Landing() {
   return (
-    <main className="mx-auto w-full max-w-6xl px-5 pb-16">
-      {/* ── Header ─────────────────────────────────────────────────────── */}
-      <header className="flex items-center justify-between py-5">
-        <Link href="/" aria-label="GetFreezeFix home" className="flex items-center gap-2.5">
-          <span
-            aria-hidden="true"
-            className="flex h-9 w-9 items-center justify-center rounded-full bg-accent font-serif text-lg italic text-accent-ink"
-            style={{ fontFamily: "var(--font-display)" }}
-          >
-            f
-          </span>
-          <span className="font-serif text-xl text-ink" style={{ fontFamily: "var(--font-display)" }}>
-            Fix
-          </span>
-        </Link>
-        <nav className="flex items-center gap-3 text-sm">
-          <Link
-            href="/help"
-            className="flex min-h-[44px] items-center gap-2 rounded-full border border-frost/60 px-4 py-2 text-frost transition hover:border-frost hover:bg-frost/10"
-          >
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
-              <circle cx="12" cy="12" r="9" />
-              <circle cx="12" cy="12" r="3" />
-              <path d="M12 3v2M12 19v2M3 12h2M19 12h2M5.6 5.6l1.4 1.4M17 17l1.4 1.4M5.6 18.4l1.4-1.4M17 7l1.4-1.4" />
-            </svg>
-            {copy.getHelpNow}
-          </Link>
-          {returning && (
-            <Link
-              href="/app"
-              className="hidden min-h-[44px] items-center rounded-full bg-chip px-4 py-2 text-ink hover:bg-chip/80 sm:flex"
-            >
-              {copy.openReturning}
-            </Link>
-          )}
-          {/* Locale switcher. On English this lists de / fr / nl as separate
-              chips; on each alt locale it is just the single pivot back to
-              English (so a visitor never has to navigate through French to
-              reach Dutch). Extended 3 Nov 2026 for audit P3.11. */}
-          {copy.languageLinks.map((link) => (
-            <Link
-              key={link.lang}
-              href={link.href}
-              lang={link.lang}
-              className="hidden min-h-[44px] items-center rounded-full border border-line/80 px-3 py-2 text-xs uppercase tracking-wider text-ink-soft transition hover:border-line hover:text-ink sm:flex"
-              aria-label={link.label}
-            >
-              {link.label}
-            </Link>
-          ))}
-        </nav>
+    <main className="min-h-dvh">
+      <header className="mx-auto flex w-full max-w-[560px] items-center justify-between px-5 pb-6 pt-5">
+        <Wordmark />
+        <HelpChip compact />
       </header>
 
-      {/* ── Hero ───────────────────────────────────────────────────────── */}
-      <section className="grid items-start gap-10 py-8 md:py-14 lg:grid-cols-[1.1fr_1fr]">
-        <div className="flex flex-col gap-6">
-          <p className="font-mono text-xs uppercase tracking-[0.22em] text-ink-soft">
-            {copy.kicker}
-          </p>
+      <section className="mx-auto w-full max-w-[560px] px-5">
+        <h1 className="font-display text-40 leading-[1.08] text-ink">
+          you don&rsquo;t have to quit.
+          <br />
+          you just have to notice.
+        </h1>
+        <p className="mt-4 max-w-[38ch] text-16 text-ink-soft">
+          a private log for people who smoke and wonder, quietly, whether it&rsquo;s doing something
+          they can&rsquo;t name. three taps a night. one card on sunday. no streak, no score, nobody
+          telling you off.
+        </p>
 
-          <h1
-            className="text-[clamp(2.4rem,7vw,4rem)] leading-[1.05] text-ink"
-            style={{ fontFamily: "var(--font-display)", fontWeight: 400, letterSpacing: "-0.015em" }}
+        <div className="mt-6 flex flex-wrap items-center gap-3">
+          <Link
+            href="/app"
+            className="rounded-pill bg-accent px-6 py-3 text-16 font-medium text-bg no-underline"
           >
-            {copy.heroHeadlineLine1}
-            <br />
-            {copy.heroHeadlineLine2}
-          </h1>
-
-          <p className="max-w-[46ch] text-lg leading-relaxed text-ink-soft">
-            {copy.heroBody}
-          </p>
-
-          <div className="mt-2 flex flex-wrap items-center gap-5">
-            <Link
-              href="/app"
-              className="group flex min-h-[52px] items-center gap-3 rounded-full bg-accent px-7 py-3 text-lg font-medium text-accent-ink shadow-[0_14px_32px_-14px_rgba(175,215,182,0.55)] transition active:scale-[0.98]"
-            >
-              {copy.ctaOpen}
-              <span aria-hidden="true" className="transition group-hover:translate-x-0.5">
-                &rarr;
-              </span>
-            </Link>
-            <Link
-              href="/privacy"
-              className="min-h-[44px] text-base text-ink-soft underline-offset-4 hover:text-ink hover:underline"
-            >
-              {copy.ctaPrivacy}
-            </Link>
-          </div>
-
-          {/* Honest note (feat/de-landing, 3 Nov 2026 — P1.5). On the German
-              page this reads "Fix selbst läuft momentan auf Englisch", so
-              Marcus knows the chat is still English before he taps the CTA
-              — no bait and switch. English page has no note. */}
-          {copy.chatIsEnglishNote && (
-            <p className="mt-1 rounded-[1.25rem] border border-line/70 bg-card/60 px-4 py-3 text-sm leading-relaxed text-ink-soft">
-              {copy.chatIsEnglishNote}
-            </p>
-          )}
-
-          {/* Waitlist (feat/waitlist, 3 Nov 2026 — Europe-audit P1.4). Lives above
-              the three-feature list because the audit showed every European
-              persona landed and left without a way for us to notify them when
-              DE/FR/NL localization or the paid plan ships. */}
-          <div className="mt-2">
-            <WaitlistCapture source="home" variant="compact" locale={locale} />
-          </div>
-
-          {/* Three honest-feature list — stacked on mobile, 3-col on desktop */}
-          <ul className="mt-6 grid grid-cols-1 gap-6 border-t border-line pt-6 sm:grid-cols-3">
-            {copy.features.map((f) => (
-              <li key={f.title} className="flex flex-col gap-1">
-                <span className="text-sm font-semibold text-ink">{f.title}</span>
-                {f.body ? (
-                  <span className="text-sm leading-snug text-ink-soft">{f.body}</span>
-                ) : null}
-              </li>
-            ))}
-          </ul>
+            start the free week
+          </Link>
+          <Link href="/plans" className="text-14 text-ink-faint underline decoration-line underline-offset-4 hover:text-ink-soft">
+            what it costs
+          </Link>
         </div>
-
-        {/* ── Right-hand: example card ─────────────────────────────────── */}
-        <aside aria-labelledby="example-heading" className="w-full">
-          {/* A lightweight SVG hero placeholder — a warm sage/mint sunrise.
-              Replaces the prototype's photo with licensed-free art until a
-              hero photo is signed off. */}
-          <div className="relative overflow-hidden rounded-[1.75rem] border border-line bg-card">
-            <svg viewBox="0 0 480 300" className="h-56 w-full" aria-hidden="true" preserveAspectRatio="xMidYMid slice">
-              <defs>
-                <linearGradient id="skyGrad" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stopColor="#1E3A2F" />
-                  <stop offset="60%" stopColor="#2C5A47" />
-                  <stop offset="100%" stopColor="#AFD7B6" />
-                </linearGradient>
-                <radialGradient id="sun" cx="0.72" cy="0.68" r="0.35">
-                  <stop offset="0%" stopColor="#F2E7C6" stopOpacity="0.95" />
-                  <stop offset="100%" stopColor="#AFD7B6" stopOpacity="0" />
-                </radialGradient>
-              </defs>
-              <rect width="480" height="300" fill="url(#skyGrad)" />
-              <rect width="480" height="300" fill="url(#sun)" />
-              {/* Soft rolling hills */}
-              <path d="M0 230 Q 120 180, 240 215 T 480 205 L480 300 L0 300 Z" fill="#0F2A20" opacity="0.75" />
-              <path d="M0 258 Q 140 220, 280 248 T 480 240 L480 300 L0 300 Z" fill="#0A1C15" opacity="0.9" />
-            </svg>
-            <span className="pointer-events-none absolute left-4 top-4 rounded-full bg-black/35 px-3 py-1 text-[11px] uppercase tracking-wider text-ink/85 backdrop-blur">
-              {copy.exampleIllustrationLabel}
-            </span>
-          </div>
-
-          <section
-            aria-labelledby="example-heading"
-            className="mt-4 rounded-[1.75rem] border border-line bg-card p-5 sm:p-6"
-          >
-            <div className="mb-4 flex items-center justify-between gap-3">
-              <h2 id="example-heading" className="font-mono text-xs uppercase tracking-[0.22em] text-ink-soft">
-                {copy.exampleKicker}
-              </h2>
-              <span className="text-xs text-ink-faint">{copy.exampleSubtitle}</span>
-            </div>
-
-            <ol className="flex flex-col gap-4">
-              {copy.exampleSteps.map((step, i) => {
-                const speaker = SPEAKERS[i] ?? "none";
-                return (
-                  <li key={step.index} className="flex flex-col gap-1.5">
-                    <span className="text-xs text-ink-soft">
-                      {step.index} &middot; {step.label}
-                    </span>
-                    {step.body !== null ? (
-                      <span
-                        className={
-                          speaker === "user"
-                            ? "self-start rounded-xl bg-chip px-3.5 py-2 text-sm text-ink"
-                            : "self-start rounded-xl border border-line bg-bg/40 px-3.5 py-2.5 text-sm leading-relaxed text-ink"
-                        }
-                      >
-                        {step.body}
-                      </span>
-                    ) : null}
-                  </li>
-                );
-              })}
-            </ol>
-          </section>
-        </aside>
+        <p className="mt-3 text-12 text-ink-faint">
+          seven days free, no card. no email, no password — a name you pick, and that&rsquo;s it.
+        </p>
       </section>
 
-      <SiteFooter locale={locale} />
+      <section className="mx-auto mt-10 w-full max-w-[560px] px-5">
+        <p className="mb-2 text-12 uppercase tracking-[0.14em] text-ink-faint">what sunday looks like</p>
+        <div className="rounded-card border border-line bg-card/60 p-2">
+          <PatternCard name="nico" stats={sample} onAsk={() => {}} dimmed />
+        </div>
+        <p className="mt-2 text-12 text-ink-faint">
+          A sample week from a sample log, not a mockup of something we haven&rsquo;t built.
+        </p>
+      </section>
+
+      <section className="mx-auto mt-14 w-full max-w-[560px] px-5">
+        <div className="space-y-8">
+          {STEPS.map((s) => (
+            <div key={s.n} className="border-t border-line pt-5">
+              <div className="flex items-baseline gap-3">
+                <span className="text-12 tabular-nums text-ink-faint">{s.n}</span>
+                <h2 className="font-display text-20 text-ink">{s.title}</h2>
+              </div>
+              <p className="mt-2 text-14 leading-relaxed text-ink-soft">{s.body}</p>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      <section className="mx-auto mt-14 w-full max-w-[560px] px-5">
+        <div className="rounded-card border border-line bg-card px-4 py-5">
+          <h2 className="font-display text-20 text-ink">and Fix, when you want a knife not a friend.</h2>
+          <p className="mt-2 text-14 leading-relaxed text-ink-soft">
+            inside the card there&rsquo;s one button. ask it one question about your week and it answers
+            from your own log — dry, brief, and it stops. five questions a day. it never messages you
+            first, never asks how you&rsquo;re feeling, and never tells you what to do.
+          </p>
+        </div>
+      </section>
+
+      <section className="mx-auto mt-14 w-full max-w-[560px] px-5">
+        <h2 className="font-display text-20 text-ink">what this isn&rsquo;t</h2>
+        <ul className="mt-3 space-y-2 text-14 text-ink-soft">
+          {[
+            "not a quitting app. no counter, no clean days, no relapse.",
+            "not a strain tracker. nobody here cares about terpenes.",
+            "not a community. no feeds, no comparison, no posting.",
+            "not a therapist, a coach, or an AI girlfriend.",
+            "not a place that thinks you're broken for smoking.",
+          ].map((line) => (
+            <li key={line} className="flex gap-3">
+              <span aria-hidden className="mt-2 h-1 w-1 shrink-0 rounded-full bg-accent/60" />
+              <span>{line}</span>
+            </li>
+          ))}
+        </ul>
+      </section>
+
+      <section className="mx-auto mt-14 w-full max-w-[560px] px-5">
+        <div className="rounded-card border border-accent/30 bg-accent/[0.06] px-4 py-5">
+          <h2 className="font-display text-28 text-ink">$39.99 a year.</h2>
+          <p className="mt-1 text-14 text-ink-soft">
+            or $9.99 a month if you&rsquo;d rather not commit. seven days free first, no card, and the
+            whole thing is open for those seven days — log, card, shelf, Fix.
+          </p>
+          <Link
+            href="/plans"
+            className="mt-4 inline-block rounded-pill bg-accent px-5 py-2.5 text-14 font-medium text-bg no-underline"
+          >
+            the price, honestly
+          </Link>
+        </div>
+      </section>
+
+      <footer className="mx-auto mt-14 w-full max-w-[560px] px-5 pb-14">
+        <div className="border-t border-line pt-5 text-12 text-ink-faint">
+          <p className="max-w-[46ch]">
+            everything you write stays on your phone unless you ask for a voice note to be typed out or
+            you talk to Fix. no account, no email, no way for us to look you up.
+          </p>
+          <div className="mt-4 flex flex-wrap gap-x-5 gap-y-2">
+            <Link href="/help" className="text-frost underline decoration-frost/40 underline-offset-4">
+              get help now
+            </Link>
+            <Link href="/privacy" className="underline decoration-line underline-offset-4">
+              privacy
+            </Link>
+            <Link href="/terms" className="underline decoration-line underline-offset-4">
+              terms
+            </Link>
+            <Link href="/refunds" className="underline decoration-line underline-offset-4">
+              refunds
+            </Link>
+          </div>
+          <p className="mt-4">fix · 18+ · made for adults who smoke and wonder</p>
+        </div>
+      </footer>
     </main>
   );
 }
