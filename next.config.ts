@@ -31,6 +31,10 @@ const nextConfig: NextConfig = {
 
 export default nextConfig;
 
-// Lets `npm run dev` use Cloudflare features locally.
+// Lets `npm run dev` use Cloudflare features locally. Dev only: calling this
+// during a production build tries to spawn the workerd binary, which is not
+// part of a plain Node deployment image.
 import { initOpenNextCloudflareForDev } from "@opennextjs/cloudflare";
-initOpenNextCloudflareForDev();
+if (process.env.NODE_ENV === "development") {
+  initOpenNextCloudflareForDev();
+}
