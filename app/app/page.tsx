@@ -1,12 +1,12 @@
-import { Suspense } from "react";
-import FreezeFixApp from "@/components/FreezeFixApp";
+import type { Metadata } from "next";
+import AppClient from "@/components/AppClient";
 
-// The app. A ?s=<scenario id> on the URL opens straight into that conversation, which is how
-// the landing page's cards hand over.
+export const metadata: Metadata = {
+  title: "Tonight",
+  description: "Three taps. One line back. See you Sunday.",
+  robots: { index: false, follow: false },
+};
+
 export default function Page() {
-  return (
-    <Suspense fallback={null}>
-      <FreezeFixApp />
-    </Suspense>
-  );
+  return <AppClient view="log" />;
 }
