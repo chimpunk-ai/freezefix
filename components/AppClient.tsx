@@ -56,7 +56,7 @@ export default function AppClient({ view = "log" }: { view?: View }) {
 
   const openFix = useCallback(() => setFixOpen(true), []);
 
-  if (!ready) {
+  if (!ready || !profile) {
     return (
       <main className="mx-auto flex min-h-dvh w-full max-w-[560px] items-center justify-center px-5">
         <span className="breathe h-3 w-3 rounded-full bg-accent/50" aria-label="loading" />
@@ -64,9 +64,9 @@ export default function AppClient({ view = "log" }: { view?: View }) {
     );
   }
 
-  const trial = profile ? trialState(profile) : null;
-  const locked = Boolean(profile?.onboarded && trial?.ended && !paid);
-  const stats = profile ? latestMirror(entries, profile.goal) : null;
+  const trial = trialState(profile);
+  const locked = Boolean(profile.onboarded && trial.ended && !paid);
+  const stats = latestMirror(entries, profile.goal);
 
   return (
     <main className="min-h-dvh">
