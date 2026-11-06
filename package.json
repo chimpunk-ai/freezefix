@@ -50,5 +50,10 @@
     "tsx": "^4.23.15",
     "typescript": "^5.9.3",
     "wrangler": "^4.151.1"
+  },
+  "overrides": {
+    "body-parser": "^2.4.0",
+    "glob": "^10.5.0",
+    "undici": "^7.30.1"
   }
 }
