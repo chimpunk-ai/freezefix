@@ -130,8 +130,10 @@ function goalLineFor(entries: Entries, goal: Goal | null, start: string, end: st
     if (e) lastWeekLogged++;
     if (e?.goalDone === true) lastWeekDone = (lastWeekDone ?? 0) + 1;
   }
-  // Only claim last week when there's a real week of ticks to compare with.
-  if (lastWeekLogged < 3) lastWeekDone = null;
+  // Only claim last week when there's a real week of entries to compare with.
+  // A logged week with no ticks is zero, not silence: "last week you did it not
+  // once" is the direction, and it is the one line the goal is for.
+  lastWeekDone = lastWeekLogged < 3 ? null : (lastWeekDone ?? 0);
   const direction: GoalLine["direction"] =
     lastWeekDone === null ? "first" : done > lastWeekDone ? "up" : done < lastWeekDone ? "down" : "same";
   return { text: goal.text, done, target: goal.target, lastWeekDone, direction };
