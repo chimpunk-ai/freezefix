@@ -32,7 +32,6 @@ export default function AppClient({ view = "log" }: { view?: View }) {
   const [manualSheet, setManualSheet] = useState<WeekStats | null>(null);
   const [dismissed, setDismissed] = useState<string | null>(null);
   const region = useRegion();
-  const router = useRouter();
 
   useEffect(() => {
     // One-time read of this device's own storage. The server cannot know what is
