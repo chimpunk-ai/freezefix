@@ -47,7 +47,7 @@ function loadPaddle(): Promise<PaddleGlobal> {
 }
 
 export default function PlansPage() {
-  const [region, setRegion] = useState("");
+  const region = useRegion();
   const [plan, setPlan] = useState<PlanId>("yearly");
   const [state, setState] = useState<"loading" | "ready" | "off" | "opening" | "confirming" | "active" | "error">(
     "loading"
