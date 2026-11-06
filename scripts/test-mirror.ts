@@ -30,10 +30,11 @@ const WEDNESDAY = new Date(2026, 10, 4, 12, 0, 0);
 
 type Answer = "yes" | "no" | null;
 
-/** Write a week of check-ins, Monday first. `null` leaves that night unlogged. */
+/** Write a week of check-ins, Monday first. `null` leaves that night unlogged.
+ *  Merges into whatever is already stored, so a prior week can be seeded alongside. */
 function seedWeek(now: Date, answers: Answer[]) {
   const start = mondayOf(now);
-  const log: Record<string, "yes" | "no"> = {};
+  const log: Record<string, "yes" | "no"> = JSON.parse(store.get("ff_checkins") ?? "{}");
   answers.forEach((a, i) => {
     if (!a) return;
     const d = new Date(start);
