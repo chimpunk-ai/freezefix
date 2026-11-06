@@ -49,7 +49,7 @@ export default function HelpPage() {
   }
 
   function onRegionChange(r: string) {
-    setRegion(r);
+    setPicked(r);
     try {
       window.localStorage.setItem("ff_region", r);
     } catch {

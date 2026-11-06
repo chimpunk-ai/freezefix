@@ -35,9 +35,15 @@ export default function AppClient({ view = "log" }: { view?: View }) {
   const router = useRouter();
 
   useEffect(() => {
+    // One-time read of this device's own storage. The server cannot know what is
+    // on the phone, so this is the hydration-safe bootstrap rather than a
+    // render-driven sync — the compiler's setState-in-effect heuristic does not
+    // apply to a mount-only read.
+    /* eslint-disable react-hooks/set-state-in-effect */
     setProfile(readProfile());
     setEntries(readEntries());
     setReady(true);
+    /* eslint-enable react-hooks/set-state-in-effect */
     fetch("/api/paywall")
       .then((r) => r.json())
       .then((d: { active?: boolean }) => setPaid(Boolean(d.active)))
@@ -231,6 +237,7 @@ function SettingsView({
   const [target, setTarget] = useState(profile.goal?.target ?? 2);
   const [saved, setSaved] = useState(false);
   const [confirming, setConfirming] = useState(false);
+  const router = useRouter();
 
   const logged = Object.keys(entries).length;
 
