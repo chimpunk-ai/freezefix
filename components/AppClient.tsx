@@ -141,8 +141,7 @@ export default function AppClient({ view = "log" }: { view?: View }) {
             onSaved={(next) => setEntries(next)}
             onOpenFix={openFix}
             onOpenMirror={() => {
-              const due = dueMirror(entries, profile.goal);
-              setSheet(due ?? stats);
+              setManualSheet(dueMirror(entries, profile.goal) ?? stats);
             }}
             mirrorReady={Boolean(dueMirror(entries, profile.goal))}
           />
