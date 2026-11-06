@@ -1,155 +1,225 @@
 "use client";
 
 import { useState } from "react";
-import { loadMemory, saveMemory, memoryOn } from "@/lib/memory";
+import Link from "next/link";
+import { MoodFace } from "@/components/MoodFace";
+import { BEDTIMES, GOAL_EXAMPLES, bedtimeLabel, patchProfile, type Goal, type Profile } from "@/lib/profile";
+import { todayISO } from "@/lib/entry";
 
-// Four questions, asked once, so the first conversation doesn't start from nothing.
-// Every one is skippable: somebody who opened this app mid-freeze should be able to get
-// past it in two taps. The answers go into device memory, never to a server.
+// Five small screens. No email, no password, no phone number: a pet-name, a
+// bedtime, and one thing they'd like to do more of. The seven free days start
+// when this finishes.
 
-type Props = { onDone: () => void };
-
-const WHEN = ["Late at night", "Around people", "When I've got stuff to do", "All sorts"];
-const WANTS = ["Getting unstuck", "Overthinking less", "Saying the thing", "Just someone to talk to"];
-const TRIGGERS = ["Big groups", "Messages I owe", "Work or uni", "No idea"];
-
-export default function Onboarding({ onDone }: Props) {
-  const [q, setQ] = useState(0);
+export default function Onboarding({ onDone }: { onDone: (p: Profile) => void }) {
+  const [step, setStep] = useState(0);
   const [name, setName] = useState("");
-  const [triggers, setTriggers] = useState("");
-  const [when, setWhen] = useState("");
-  const [wants, setWants] = useState("");
+  const [bedtime, setBedtime] = useState<number>(23);
+  const [goalText, setGoalText] = useState("");
+  const [target, setTarget] = useState(2);
+  const [underage, setUnderage] = useState(false);
 
-  const total = 4;
-
-  function finish(last?: { wants?: string }) {
-    // Memory off means memory off. Nothing is written, and the questions were still harmless.
-    if (memoryOn()) {
-      const m = loadMemory() ?? {};
-      const next = { ...m };
-      if (name.trim()) next.name = name.trim().slice(0, 24);
-      if (triggers) next.triggers = triggers;
-      if (when) next.when = when;
-      const w = last?.wants ?? wants;
-      if (w) next.wants = w;
-      saveMemory(next);
-    }
-    onDone();
+  function finish() {
+    const goal: Goal | null = goalText.trim()
+      ? { text: goalText.trim().slice(0, 80), target, madeAt: todayISO() }
+      : null;
+    const p = patchProfile({
+      name: name.trim().slice(0, 24),
+      bedtime,
+      goal,
+      ageOk: true,
+      onboarded: true,
+      trialStart: todayISO(),
+    });
+    void fetch("/api/trial/start", { method: "POST" }).catch(() => {});
+    onDone(p);
   }
 
-  const step = (n: number, body: React.ReactNode) =>
-    q === n ? <div className="flex flex-1 flex-col gap-5">{body}</div> : null;
+  const steps = 4;
 
-  const Choices = ({ options, onPick }: { options: string[]; onPick: (v: string) => void }) => (
-    <div className="flex flex-col gap-2.5">
-      {options.map((o) => (
-        <button
-          key={o}
-          onClick={() => onPick(o)}
-          className="rounded-2xl border border-line bg-card px-5 py-4 text-left text-lg text-ink transition active:scale-[0.98]"
-        >
-          {o}
-        </button>
-      ))}
-    </div>
-  );
+  if (underage) {
+    return (
+      <div className="mx-auto flex min-h-[70vh] w-full max-w-[560px] flex-col justify-center px-5">
+        <h1 className="font-display text-28 text-ink">not yet.</h1>
+        <p className="mt-3 text-16 text-ink-soft">
+          this one&rsquo;s for adults. if weed is making things hard right now, the help page has real
+          people who will talk to you, whatever your age.
+        </p>
+        <div className="mt-6 flex flex-wrap gap-3">
+          <Link href="/help" className="rounded-pill border border-frost/40 bg-frost/10 px-4 py-2 text-14 text-frost">
+            get help now
+          </Link>
+          <button
+            type="button"
+            onClick={() => setUnderage(false)}
+            className="rounded-pill border border-line px-4 py-2 text-14 text-ink-soft"
+          >
+            back
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
-    <section className="flex min-h-0 flex-1 flex-col gap-6">
-      <div className="flex items-center gap-3 pt-2">
-        <div className="flex gap-1.5" role="progressbar" aria-valuenow={q + 1} aria-valuemin={1} aria-valuemax={total}>
-          {Array.from({ length: total }).map((_, i) => (
-            <span key={i} className={`h-1.5 w-8 rounded-full ${i <= q ? "bg-accent" : "bg-chip"}`} />
-          ))}
-        </div>
-        <button onClick={() => finish()} className="ml-auto text-sm text-ink-faint underline underline-offset-4">
-          Skip all
-        </button>
+    <div className="mx-auto flex min-h-[78vh] w-full max-w-[560px] flex-col justify-center px-5 py-10">
+      <div className="mb-8 flex gap-1.5" aria-hidden>
+        {Array.from({ length: steps }).map((_, i) => (
+          <span
+            key={i}
+            className={["h-1 flex-1 rounded-pill", i <= step ? "bg-accent" : "bg-line"].join(" ")}
+          />
+        ))}
       </div>
 
-      {step(
-        0,
-        <>
-          <h1 className="text-3xl font-extrabold leading-tight text-ink">What should Fix call you?</h1>
-          <p className="text-base text-ink-faint">Anything. A nickname, one letter, nothing at all.</p>
+      {step === 0 ? (
+        <section className="ff-rise">
+          <h1 className="font-display text-28 text-ink">this is for adults.</h1>
+          <p className="mt-3 text-16 text-ink-soft">are you 18 or over?</p>
+          <div className="mt-6 flex gap-3">
+            <button
+              type="button"
+              onClick={() => setStep(1)}
+              className="ff-chip flex-1 rounded-pill bg-accent px-5 py-3 text-16 font-medium text-bg"
+            >
+              yes
+            </button>
+            <button
+              type="button"
+              onClick={() => setUnderage(true)}
+              className="ff-chip flex-1 rounded-pill border border-line px-5 py-3 text-16 text-ink-soft"
+            >
+              no
+            </button>
+          </div>
+          <p className="mt-6 text-12 text-ink-faint">
+            no account, no email, no phone number. a name you make up is the whole sign-up.
+          </p>
+        </section>
+      ) : null}
+
+      {step === 1 ? (
+        <section className="ff-rise">
+          <h1 className="font-display text-28 text-ink">what should the mirror call you?</h1>
+          <p className="mt-2 text-14 text-ink-faint">anything. it never leaves this phone.</p>
           <input
             value={name}
             onChange={(e) => setName(e.target.value.slice(0, 24))}
-            onKeyDown={(e) => e.key === "Enter" && setQ(1)}
-            placeholder="type a name"
-            autoComplete="off"
-            className="rounded-2xl border border-line bg-card px-5 py-4 text-xl text-ink placeholder:text-ink-faint focus:border-accent focus:outline-none"
+            placeholder="nico"
+            autoFocus
+            className="mt-6 w-full rounded-card border border-line bg-card px-4 py-4 font-display text-20 text-ink placeholder:text-ink-faint focus:border-accent/50 focus:outline-none"
           />
           <button
-            onClick={() => setQ(1)}
-            className="rounded-[1.75rem] bg-accent px-5 py-4 text-xl font-bold text-accent-ink transition active:scale-[0.98]"
+            type="button"
+            onClick={() => setStep(2)}
+            className="mt-6 w-full rounded-pill bg-accent px-6 py-3 text-16 font-medium text-bg"
           >
-            {name.trim() ? "Next" : "Skip"}
+            next
           </button>
-        </>
-      )}
+        </section>
+      ) : null}
 
-      {step(
-        1,
-        <>
-          <h1 className="text-3xl font-extrabold leading-tight text-ink">What usually sets it off?</h1>
-          <Choices
-            options={TRIGGERS}
-            onPick={(v) => {
-              setTriggers(v);
-              setQ(2);
-            }}
-          />
-        </>
-      )}
-
-      {step(
-        2,
-        <>
-          <h1 className="text-3xl font-extrabold leading-tight text-ink">When does it hit most?</h1>
-          <Choices
-            options={WHEN}
-            onPick={(v) => {
-              setWhen(v);
-              setQ(3);
-            }}
-          />
-        </>
-      )}
-
-      {step(
-        3,
-        <>
-          <h1 className="text-3xl font-extrabold leading-tight text-ink">What do you want out of this?</h1>
-          <Choices
-            options={WANTS}
-            onPick={(v) => {
-              // Passed straight through: setWants wouldn't have landed before finish() reads it.
-              setWants(v);
-              finish({ wants: v });
-            }}
-          />
-        </>
-      )}
-
-      <div className="mt-auto flex items-center justify-between pt-2">
-        {q > 0 ? (
-          <button onClick={() => setQ(q - 1)} className="text-base text-ink-soft underline underline-offset-4">
-            Back
+      {step === 2 ? (
+        <section className="ff-rise">
+          <h1 className="font-display text-28 text-ink">when do you usually go to bed?</h1>
+          <p className="mt-2 text-14 text-ink-faint">one quiet ping, around then. that&rsquo;s the only one.</p>
+          <div className="mt-6 flex flex-wrap gap-2">
+            {BEDTIMES.map((h) => (
+              <button
+                key={h}
+                type="button"
+                onClick={() => setBedtime(h)}
+                aria-pressed={bedtime === h}
+                className={[
+                  "ff-chip rounded-pill border px-4 py-2 text-14",
+                  bedtime === h
+                    ? "border-accent/50 bg-accent/15 text-accent"
+                    : "border-line bg-card text-ink-soft",
+                ].join(" ")}
+              >
+                {bedtimeLabel(h)}
+              </button>
+            ))}
+          </div>
+          <button
+            type="button"
+            onClick={() => setStep(3)}
+            className="mt-6 w-full rounded-pill bg-accent px-6 py-3 text-16 font-medium text-bg"
+          >
+            next
           </button>
-        ) : (
-          <span />
-        )}
-        {q > 0 && q < 3 && (
-          <button onClick={() => setQ(q + 1)} className="text-base text-ink-faint underline underline-offset-4">
-            Skip this
-          </button>
-        )}
-      </div>
+        </section>
+      ) : null}
 
-      <p className="text-center text-sm leading-relaxed text-ink-faint">
-        All of this stays on your phone. You can change or wipe it any time in settings.
-      </p>
-    </section>
+      {step === 3 ? (
+        <section className="ff-rise">
+          <h1 className="font-display text-28 text-ink">one small thing you&rsquo;d like to do more of?</h1>
+          <p className="mt-2 text-14 text-ink-faint">
+            this is yours. nothing happens if you skip it, and nothing happens if you don&rsquo;t do it.
+          </p>
+          <div className="mt-5 flex flex-wrap gap-2">
+            {GOAL_EXAMPLES.map((g) => (
+              <button
+                key={g}
+                type="button"
+                onClick={() => setGoalText(g)}
+                aria-pressed={goalText === g}
+                className={[
+                  "ff-chip rounded-pill border px-3 py-1.5 text-12",
+                  goalText === g
+                    ? "border-accent/50 bg-accent/15 text-accent"
+                    : "border-line bg-card text-ink-soft",
+                ].join(" ")}
+              >
+                {g}
+              </button>
+            ))}
+          </div>
+          <input
+            value={goalText}
+            onChange={(e) => setGoalText(e.target.value.slice(0, 80))}
+            placeholder="or write your own"
+            className="mt-4 w-full rounded-card border border-line bg-card px-4 py-3 text-14 text-ink placeholder:text-ink-faint focus:border-accent/50 focus:outline-none"
+          />
+          <p className="mt-5 text-14 text-ink-soft">how many times a week?</p>
+          <div className="mt-2 flex gap-2">
+            {[1, 2, 3, 4, 5].map((n) => (
+              <button
+                key={n}
+                type="button"
+                onClick={() => setTarget(n)}
+                aria-pressed={target === n}
+                className={[
+                  "ff-chip h-10 w-10 rounded-full border text-14",
+                  target === n
+                    ? "border-accent/50 bg-accent/15 text-accent"
+                    : "border-line bg-card text-ink-soft",
+                ].join(" ")}
+              >
+                {n}
+              </button>
+            ))}
+          </div>
+          <button
+            type="button"
+            onClick={finish}
+            className="mt-7 w-full rounded-pill bg-accent px-6 py-3 text-16 font-medium text-bg"
+          >
+            start the week
+          </button>
+          <p className="mt-3 text-center text-12 text-ink-faint">seven days free. no card.</p>
+        </section>
+      ) : null}
+
+      {step > 0 ? (
+        <div className="mt-8 flex items-center justify-between">
+          <button type="button" onClick={() => setStep((s) => s - 1)} className="text-14 text-ink-faint hover:text-ink-soft">
+            back
+          </button>
+          <span className="inline-flex items-center gap-1.5 text-12 text-ink-faint">
+            <MoodFace mood={3} size={16} /> your log stays on this phone
+          </span>
+        </div>
+      ) : null}
+    </div>
   );
 }
