@@ -59,8 +59,11 @@ export function weekEndFor(now = new Date()): string {
 export function dueMirror(entries: Entries, goal: Goal | null, now = new Date()): WeekStats | null {
   const sunday = weekEndFor(now);
   const seen = readSeen();
-  // The week that just closed. On Sunday itself the week closes that evening.
-  const closing = now.getDay() === 0 && now.getHours() >= MIRROR_HOUR ? sunday : addDays(sunday, -7);
+  // The week that just closed. Sunday evening closes the week that ends today;
+  // Monday to Saturday the week that closed is the Sunday just gone; Sunday
+  // before the mirror hour, the week that closed is the Sunday before that.
+  const dow = now.getDay();
+  const closing = dow === 0 && now.getHours() < MIRROR_HOUR ? addDays(sunday, -7) : sunday;
   const candidates = [closing, addDays(closing, -7)];
   for (const end of candidates) {
     if (seen[end]) continue;

@@ -15,6 +15,18 @@ const nextConfig: NextConfig = {
       },
     ];
   },
+  // Surfaces retired when the product was rebuilt around the log, the mirror and
+  // the goal. Old links keep working: the help page and the front door survive.
+  async redirects() {
+    return [
+      { source: "/sos", destination: "/help", permanent: false },
+      {
+        source: "/:path(de|fr|nl|home|journal|patterns|program|scenarios|settings|tools|fix|greened-out|too-high-what-to-do|zu-high-was-tun|future-plan)",
+        destination: "/",
+        permanent: false,
+      },
+    ];
+  },
 };
 
 export default nextConfig;
