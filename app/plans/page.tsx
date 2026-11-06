@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { HelpChip, Wordmark } from "@/components/Brand";
-import { detectRegion } from "@/lib/country";
+import { useRegion } from "@/components/useRegion";
 import { plansFor, TRIAL_DAYS, trialDates, type PlanId } from "@/lib/plans";
 
 // One price, one trial, one page. Yearly is the default and the honest one.
