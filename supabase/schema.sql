@@ -351,3 +351,50 @@ create or replace view public.waitlist_summary as
   order by 1 desc, 4 desc;
 
 revoke all on public.waitlist_summary from anon, authenticated;
+
+-- ─────────────────────────────────────────────────────────────────────────────
+-- The seven free days, recorded server-side so a browser can't restart the clock.
+-- Only a one-way device reference is stored; no email, no name, no IP.
+
+create table if not exists public.trials (
+  device_ref text primary key,
+  started_at timestamptz not null default now()
+);
+
+alter table public.trials enable row level security;
+-- No policies: the table is only reachable through the two functions below.
+
+create or replace function public.start_trial(p_device_ref text)
+returns json
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare s timestamptz;
+begin
+  if p_device_ref is null or char_length(p_device_ref) < 16 then
+    return null;
+  end if;
+  insert into public.trials (device_ref) values (p_device_ref)
+    on conflict (device_ref) do nothing;
+  select started_at into s from public.trials where device_ref = p_device_ref;
+  return json_build_object('started_at', s);
+end;
+$$;
+
+create or replace function public.trial_active(p_device_ref text)
+returns boolean
+language sql
+security definer
+set search_path = public
+as $$
+  select coalesce(
+    (select started_at > now() - interval '7 days' from public.trials where device_ref = p_device_ref),
+    false
+  );
+$$;
+
+revoke all on function public.start_trial(text) from public;
+revoke all on function public.trial_active(text) from public;
+grant execute on function public.start_trial(text) to anon, authenticated;
+grant execute on function public.trial_active(text) to anon, authenticated;

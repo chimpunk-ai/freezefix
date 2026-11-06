@@ -187,3 +187,33 @@ function countInCookie(req: Request, kind: QuotaKind, limit: number): CookieCoun
     setCookie: `${COUNT_COOKIE}=${value}; Path=/; Max-Age=172800; HttpOnly; Secure; SameSite=Lax`,
   };
 }
+
+// ── The seven free days, recorded on the server ───────────────────────────────
+// The local profile holds the trial clock for the UI, but a clock the browser
+// owns is a clock the browser can reset. These two calls give the server its own
+// record, keyed by the same one-way device reference used for payments.
+// If the database isn't configured they return null/undefined and the app falls
+// back to the local clock, so nothing breaks before Supabase is live.
+
+export async function startTrialOnServer(deviceId: string): Promise<string | null> {
+  if (!process.env.SUPABASE_URL || !process.env.SUPABASE_ANON_KEY) return null;
+  try {
+    const out = (await rpc("start_trial", { p_device_ref: await deviceRef(deviceId) })) as {
+      started_at?: string;
+    } | null;
+    return out?.started_at ?? null;
+  } catch {
+    return null;
+  }
+}
+
+/** true = still inside the free days, false = over, null = no server record. */
+export async function serverTrialActive(deviceId: string): Promise<boolean | null> {
+  if (!process.env.SUPABASE_URL || !process.env.SUPABASE_ANON_KEY) return null;
+  try {
+    const out = await rpc("trial_active", { p_device_ref: await deviceRef(deviceId) });
+    return typeof out === "boolean" ? out : null;
+  } catch {
+    return null;
+  }
+}
