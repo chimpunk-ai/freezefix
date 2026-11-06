@@ -2,12 +2,13 @@
 
 import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { HelpChip, Wordmark } from "@/components/Brand";
 import FixSheet from "@/components/FixSheet";
 import LogScreen from "@/components/LogScreen";
 import Onboarding from "@/components/Onboarding";
 import { PatternCard } from "@/components/PatternCard";
-import { detectRegion } from "@/lib/country";
+import { useRegion } from "@/components/useRegion";
 import { clearEntries, readEntries, todayISO, type Entries } from "@/lib/entry";
 import { dueMirror, latestMirror, markSeen } from "@/lib/mirror";
 import { recentWeeks, type WeekStats } from "@/lib/pattern";
