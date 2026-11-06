@@ -1,70 +1,54 @@
 @import "tailwindcss";
 
-/* FreezeFix "Grove" theme (2026-10-31 rebuild).
-   Deep green charcoal night, mint sage primary, warm cream, terracotta help accent.
-   Values are HSL triplets taken from the approved reference prototype's live CSS,
-   not guessed. The old "Ember" amber palette has been retired.
-   Calm, mobile-first, works at 2am. No alarm reds, no clinical blues, no cannabis-leaf shorthand. */
+/* Fix — design tokens.
+   Warm black, not OLED black. One accent (sage) for anything that matters.
+   One second accent (terracotta) for safety and nothing else.
+   Type: Inter for everything, Newsreader for the few display lines.
+   Scale is exactly 12 / 14 / 16 / 20 / 28 / 40. Grid is 8pt. */
+
 @theme {
-  /* Core canvas */
-  --color-bg: hsl(161 33% 9%);              /* #0F1F1A — deep green charcoal */
-  --color-card: hsl(158 27% 14%);           /* forest night, same as prototype --card */
-  --color-chip: hsl(156 29% 19%);           /* same as prototype --accent, used for subtle chips */
-  --color-line: hsl(155 16% 23%);           /* prototype --border */
-  --color-ink: hsl(135 20% 96%);            /* warm cream, prototype --foreground */
-  --color-ink-soft: hsl(150 11% 75%);       /* prototype --muted-foreground */
-  --color-ink-faint: hsl(150 10% 55%);      /* a touch darker than ink-soft for fine print */
+  --color-bg: #12100e;
+  --color-card: #1b1815;
+  --color-chip: #241f1a;
+  --color-line: #332c25;
+  --color-ink: #f2ede6;
+  --color-ink-soft: #c9beb1;
+  --color-ink-faint: #94897c;
 
-  /* Primary = mint sage, on dark bg carries dark ink */
-  --color-accent: hsl(148 43% 76%);         /* #AFD7B6 — mint sage, prototype --primary */
-  --color-accent-ink: hsl(161 33% 9%);      /* prototype --primary-foreground */
-  --color-glow: hsl(148 43% 82%);           /* lighter mint for hover/glow */
+  --color-accent: #9caf88;
+  --color-accent-ink: #12100e;
+  --color-glow: #b3c49f;
 
-  /* Secondary = warm terracotta for "Get help now" style callouts */
-  --color-frost: hsl(10 45% 72%);           /* warm pink/terracotta outline accent */
-  --color-teal: hsl(148 43% 60%);           /* deeper mint for emphasis — kept name for compatibility with existing components */
+  /* Terracotta. The get-help-now chip, and nothing else. */
+  --color-frost: #d8927a;
+  /* Kept so older components keep compiling; same sage family. */
+  --color-teal: #7f9469;
 
-  /* Font families — raw stacks, so no CSS vars need to be injected by any JS
-     font loader. See app/layout.tsx for how the <link> tags load these from
-     Google's CDN. */
-  --font-body: "Plus Jakarta Sans", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
-  --font-serif: Newsreader, Georgia, "Times New Roman", serif;
+  --font-body: Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --font-display: Newsreader, Georgia, "Times New Roman", serif;
   --font-sans: var(--font-body);
-  --font-display: var(--font-serif);
+  --font-serif: var(--font-display);
+
+  --text-12: 12px;
+  --text-12--line-height: 16px;
+  --text-14: 14px;
+  --text-14--line-height: 20px;
+  --text-16: 16px;
+  --text-16--line-height: 24px;
+  --text-20: 20px;
+  --text-20--line-height: 28px;
+  --text-28: 28px;
+  --text-28--line-height: 36px;
+  --text-40: 40px;
+  --text-40--line-height: 48px;
+
+  --radius-card: 16px;
+  --radius-sheet: 20px;
+  --radius-pill: 999px;
 }
 
-/* ── Light theme overrides ───────────────────────────────────────────────────
-   Applied when the OS prefers light AND the user hasn't forced dark,
-   or when the user explicitly chose light. Keeps the sage/mint identity. */
-@media (prefers-color-scheme: light) {
-  :root:not([data-theme="dark"]) {
-    --color-bg: hsl(135 25% 97%);
-    --color-card: hsl(148 20% 93%);
-    --color-chip: hsl(148 25% 88%);
-    --color-line: hsl(148 15% 80%);
-    --color-ink: hsl(161 33% 12%);
-    --color-ink-soft: hsl(161 15% 32%);
-    --color-ink-faint: hsl(150 10% 48%);
-    --color-accent: hsl(148 43% 42%);        /* deeper mint for contrast on light */
-    --color-accent-ink: hsl(135 25% 97%);
-    --color-glow: hsl(148 43% 50%);
-    --color-frost: hsl(10 45% 48%);
-    --color-teal: hsl(148 43% 36%);
-  }
-}
-:root[data-theme="light"] {
-  --color-bg: hsl(135 25% 97%);
-  --color-card: hsl(148 20% 93%);
-  --color-chip: hsl(148 25% 88%);
-  --color-line: hsl(148 15% 80%);
-  --color-ink: hsl(161 33% 12%);
-  --color-ink-soft: hsl(161 15% 32%);
-  --color-ink-faint: hsl(150 10% 48%);
-  --color-accent: hsl(148 43% 42%);
-  --color-accent-ink: hsl(135 25% 97%);
-  --color-glow: hsl(148 43% 50%);
-  --color-frost: hsl(10 45% 48%);
-  --color-teal: hsl(148 43% 36%);
+:root {
+  color-scheme: dark;
 }
 
 html,
@@ -74,48 +58,24 @@ body {
 }
 
 body {
+  font-family: var(--font-body);
   -webkit-font-smoothing: antialiased;
   -webkit-tap-highlight-color: transparent;
-  /* Soft green mist: a low mint orb to the upper-left, a cooler forest glow upper-right,
-     and a gentle sage lift at the horizon. Deliberately quieter than Ember so the mint CTA pops. */
   background-image:
-    radial-gradient(60% 40% at 20% 10%, rgba(175, 215, 182, 0.10), transparent 70%),
-    radial-gradient(50% 35% at 90% 25%, rgba(80, 140, 110, 0.08), transparent 70%),
-    radial-gradient(70% 40% at 50% 105%, rgba(175, 215, 182, 0.09), transparent 70%);
+    radial-gradient(52% 34% at 18% 6%, rgba(156, 175, 136, 0.07), transparent 70%),
+    radial-gradient(46% 32% at 92% 22%, rgba(216, 146, 122, 0.04), transparent 72%),
+    radial-gradient(70% 40% at 50% 104%, rgba(156, 175, 136, 0.05), transparent 72%);
   background-attachment: fixed;
 }
 
-/* Light-mode body gradients — a hint of sage on cream. */
-@media (prefers-color-scheme: light) {
-  :root:not([data-theme="dark"]) body {
-    background-image:
-      radial-gradient(60% 40% at 20% 10%, rgba(80, 140, 110, 0.06), transparent 70%),
-      radial-gradient(50% 35% at 90% 25%, rgba(175, 215, 182, 0.18), transparent 70%),
-      radial-gradient(70% 40% at 50% 105%, rgba(100, 160, 125, 0.05), transparent 70%);
-  }
-}
-:root[data-theme="light"] body {
-  background-image:
-    radial-gradient(60% 40% at 20% 10%, rgba(80, 140, 110, 0.06), transparent 70%),
-    radial-gradient(50% 35% at 90% 25%, rgba(175, 215, 182, 0.18), transparent 70%),
-    radial-gradient(70% 40% at 50% 105%, rgba(100, 160, 125, 0.05), transparent 70%);
-}
-/* Force dark gradients back when user explicitly picks dark */
-:root[data-theme="dark"] body {
-  background-image:
-    radial-gradient(60% 40% at 20% 10%, rgba(175, 215, 182, 0.10), transparent 70%),
-    radial-gradient(50% 35% at 90% 25%, rgba(80, 140, 110, 0.08), transparent 70%),
-    radial-gradient(70% 40% at 50% 105%, rgba(175, 215, 182, 0.09), transparent 70%);
-}
-
 h1,
-h2 {
+h2,
+h3 {
   font-family: var(--font-display);
-  font-weight: 400;             /* Newsreader reads elegantly at regular weight */
+  font-weight: 400;
   letter-spacing: -0.015em;
 }
 
-/* A quieter, more comfortable reading line length and leading on long prose blocks. */
 p {
   text-wrap: pretty;
 }
@@ -125,106 +85,60 @@ a {
   touch-action: manipulation;
 }
 
+::selection {
+  background: rgba(156, 175, 136, 0.28);
+}
+
 :focus-visible {
   outline: 2px solid var(--color-accent);
   outline-offset: 3px;
-  border-radius: 6px;
+  border-radius: 8px;
 }
 
-/* Light-mode focus ring uses the darker accent for contrast. */
-@media (prefers-color-scheme: light) {
-  :root:not([data-theme="dark"]) :focus-visible {
-    outline-color: var(--color-frost);
+/* ── The three animations ──────────────────────────────────────────────────
+   1. The mirror card. 350ms up, decelerating like a door closing softly.
+   2. The week grid drawing itself, 800ms, left to right.
+   3. The goal line pulsing once, 600ms.
+   Plus the breathing circle inside Fix, 4s in and 6s out. */
+
+.ff-sheet {
+  animation: ff-sheet 350ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+@keyframes ff-sheet {
+  from {
+    transform: translateY(100%);
   }
-}
-:root[data-theme="light"] :focus-visible {
-  outline-color: var(--color-frost);
-}
-
-/* The signature moment: the ice block that thaws when you press it.
-   Cool morning stone, warms to mint sage on tap — Grove palette (was Ember amber). */
-.ice {
-  position: relative;
-  isolation: isolate;
-  background: linear-gradient(160deg, #e8e2d8 0%, #d1c8ba 50%, #a89888 100%);
-  color: #1c1814;
-  box-shadow:
-    inset 0 2px 0 rgba(255, 255, 255, 0.6),
-    inset 0 -10px 24px rgba(20, 18, 24, 0.18),
-    0 18px 44px -12px rgba(20, 18, 24, 0.6);
-  transition: transform 160ms ease;
-}
-.ice::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  border-radius: inherit;
-  /* Grove mint sage, blending from the lighter --color-glow into the deeper --color-teal.
-     Hex rather than the token so the gradient stops stay crisp on CSS-animation. */
-  background: linear-gradient(160deg, #c3e4c9 0%, #afd7b6 55%, #6cae82 100%);
-  opacity: 0;
-  z-index: -1;
-  transition: opacity 420ms ease;
-}
-.ice:active {
-  transform: scale(0.97);
-}
-.ice.thawing {
-  background: transparent;
-  color: hsl(161 33% 9%); /* Grove deep green, same as --color-accent-ink */
-  box-shadow: 0 18px 50px -10px rgba(175, 215, 182, 0.55);
-}
-.ice.thawing::after {
-  opacity: 1;
-}
-
-/* "+0.5%" reward when a move helped. */
-@keyframes rise {
-  0% { transform: translateY(12px) scale(0.9); opacity: 0; }
-  30% { transform: translateY(0) scale(1.06); opacity: 1; }
-  100% { transform: translateY(-6px) scale(1); opacity: 1; }
-}
-.reward {
-  animation: rise 700ms cubic-bezier(0.2, 0.9, 0.3, 1.2) both;
-  text-shadow: 0 0 32px rgba(175, 215, 182, 0.55); /* Grove mint glow (was Ember amber) */
-}
-
-/* Light-mode ice: keep the same form but adjust shadow for a light canvas. */
-@media (prefers-color-scheme: light) {
-  :root:not([data-theme="dark"]) .ice {
-    box-shadow:
-      inset 0 2px 0 rgba(255, 255, 255, 0.8),
-      inset 0 -10px 24px rgba(20, 18, 24, 0.08),
-      0 12px 32px -8px rgba(20, 18, 24, 0.18);
-  }
-  :root:not([data-theme="dark"]) .ice.thawing {
-    box-shadow: 0 12px 36px -8px rgba(80, 140, 110, 0.45); /* Grove deeper mint */
-  }
-}
-:root[data-theme="light"] .ice {
-  box-shadow:
-    inset 0 2px 0 rgba(255, 255, 255, 0.8),
-    inset 0 -10px 24px rgba(20, 18, 24, 0.08),
-    0 12px 32px -8px rgba(20, 18, 24, 0.18);
-}
-:root[data-theme="light"] .ice.thawing {
-  box-shadow: 0 12px 36px -8px rgba(80, 140, 110, 0.45); /* Grove deeper mint */
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .ice,
-  .ice::after,
-  .reward {
-    transition: none;
-    animation: none;
+  to {
+    transform: translateY(0);
   }
 }
 
-/* Bubbles land rather than snap, on the landing-page demo and in the real chat. */
-@keyframes fade {
+.ff-sheet-out {
+  animation: ff-sheet-out 300ms cubic-bezier(0.4, 0, 0.7, 0.2) both;
+}
+@keyframes ff-sheet-out {
+  from {
+    transform: translateY(0);
+  }
+  to {
+    transform: translateY(100%);
+  }
+}
+
+.ff-draw > * {
+  animation: ff-draw 800ms cubic-bezier(0.2, 0.8, 0.3, 1) both;
+}
+.ff-draw > *:nth-child(1) { animation-delay: 60ms; }
+.ff-draw > *:nth-child(2) { animation-delay: 160ms; }
+.ff-draw > *:nth-child(3) { animation-delay: 260ms; }
+.ff-draw > *:nth-child(4) { animation-delay: 360ms; }
+.ff-draw > *:nth-child(5) { animation-delay: 460ms; }
+.ff-draw > *:nth-child(6) { animation-delay: 560ms; }
+.ff-draw > *:nth-child(7) { animation-delay: 660ms; }
+@keyframes ff-draw {
   from {
     opacity: 0;
-    transform: translateY(6px);
+    transform: translateY(8px) scale(0.96);
   }
   to {
     opacity: 1;
@@ -232,122 +146,55 @@ a {
   }
 }
 
-/* The global reduced-motion rule. Must stay the single source of truth for this. */
+.ff-pulse {
+  animation: ff-pulse 600ms cubic-bezier(0.2, 0.8, 0.3, 1) 1;
+}
+@keyframes ff-pulse {
+  0% { box-shadow: 0 0 0 0 rgba(156, 175, 136, 0); }
+  35% { box-shadow: 0 0 0 6px rgba(156, 175, 136, 0.18); }
+  100% { box-shadow: 0 0 0 0 rgba(156, 175, 136, 0); }
+}
+
+/* 4 seconds in, 6 seconds out. The only thing in the product that loops. */
+.breathe {
+  animation: breathe 10s ease-in-out infinite;
+}
+@keyframes breathe {
+  0% { transform: scale(0.82); opacity: 0.7; }
+  40% { transform: scale(1.18); opacity: 1; }
+  100% { transform: scale(0.82); opacity: 0.7; }
+}
+
+.ff-rise {
+  animation: ff-rise 600ms cubic-bezier(0.2, 0.7, 0.3, 1) both;
+}
+@keyframes ff-rise {
+  from { opacity: 0; transform: translateY(14px); }
+  to { opacity: 1; transform: none; }
+}
+
+.ff-fade {
+  animation: ff-fade 240ms ease both;
+}
+@keyframes ff-fade {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.ff-chip {
+  transition: transform 140ms cubic-bezier(0.2, 0.8, 0.3, 1), background-color 140ms ease, border-color 140ms ease;
+}
+.ff-chip:active {
+  transform: scale(0.96);
+}
+
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,
   *::after {
-    animation-duration: 0.01ms !important;
+    animation-duration: 0.001ms !important;
     animation-iteration-count: 1 !important;
-    transition-duration: 0.01ms !important;
+    transition-duration: 0.001ms !important;
     scroll-behavior: auto !important;
   }
-}
-
-/* Artwork animations. All of them stop under the reduced-motion rule further up, which is
-   why none of them carry meaning on their own. */
-.ff-draw {
-  stroke-dasharray: 420;
-  stroke-dashoffset: 420;
-  animation: ff-draw 2.6s ease-out forwards;
-}
-@keyframes ff-draw {
-  to {
-    stroke-dashoffset: 0;
-  }
-}
-
-.ff-pulse {
-  animation: ff-pulse 2.4s ease-in-out infinite;
-}
-@keyframes ff-pulse {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.35; }
-}
-
-.ff-dash {
-  animation: ff-dash 1.6s linear infinite;
-}
-@keyframes ff-dash {
-  to { stroke-dashoffset: -26; }
-}
-
-.ff-breathe {
-  transform-origin: 100px 86px;
-  animation: ff-breathe 5s ease-in-out infinite;
-}
-@keyframes ff-breathe {
-  0%, 100% { transform: scale(0.75); opacity: 0.7; }
-  50% { transform: scale(1.25); opacity: 1; }
-}
-
-/* Sections arrive as you scroll down the landing page. */
-.ff-rise {
-  animation: ff-rise 600ms cubic-bezier(.2,.7,.3,1) both;
-}
-@keyframes ff-rise {
-  from { opacity: 0; transform: translateY(18px); }
-  to { opacity: 1; transform: none; }
-}
-
-/* ── Interface polish ─────────────────────────────────────────────────────────
-   Motion here is there to make the thing feel alive and responsive, never to
-   decorate. Everything stops under the reduced-motion rule above. */
-
-/* Chat bubbles land rather than appear. */
-.ff-bubble {
-  animation: ff-bubble 260ms cubic-bezier(.2,.8,.3,1) both;
-}
-@keyframes ff-bubble {
-  from { opacity: 0; transform: translateY(10px) scale(0.97); }
-  to { opacity: 1; transform: none; }
-}
-
-/* Home-screen cards arrive one after another, not all at once. */
-.ff-stagger > * {
-  animation: ff-bubble 380ms cubic-bezier(.2,.8,.3,1) both;
-}
-.ff-stagger > *:nth-child(1) { animation-delay: 20ms; }
-.ff-stagger > *:nth-child(2) { animation-delay: 60ms; }
-.ff-stagger > *:nth-child(3) { animation-delay: 100ms; }
-.ff-stagger > *:nth-child(4) { animation-delay: 140ms; }
-.ff-stagger > *:nth-child(5) { animation-delay: 180ms; }
-.ff-stagger > *:nth-child(6) { animation-delay: 220ms; }
-.ff-stagger > *:nth-child(7) { animation-delay: 260ms; }
-.ff-stagger > *:nth-child(8) { animation-delay: 300ms; }
-
-/* The background drifts, very slowly. Long enough that you notice it only if you look.
-   Suppressed by the global reduced-motion rule above. */
-@media (prefers-reduced-motion: no-preference) {
-  body {
-    animation: ff-grove 48s ease-in-out infinite alternate;
-  }
-}
-@keyframes ff-grove {
-  from { background-position: 0% 0%, 100% 0%, 50% 100%; }
-  to { background-position: 12% 6%, 86% 10%, 58% 94%; }
-}
-
-/* Chips invite a tap: they lift slightly on press rather than just changing colour. */
-.ff-chip {
-  transition: transform 140ms cubic-bezier(.2,.8,.3,1), background-color 140ms ease;
-}
-.ff-chip:active {
-  transform: scale(0.94);
-}
-
-/* The cursor that blinks while a reply is still arriving. */
-.ff-caret::after {
-  content: "";
-  display: inline-block;
-  width: 0.5ch;
-  height: 1.05em;
-  margin-left: 2px;
-  vertical-align: -0.16em;
-  background: currentColor;
-  opacity: 0.55;
-  animation: ff-caret 1.05s steps(2, start) infinite;
-}
-@keyframes ff-caret {
-  to { opacity: 0; }
 }

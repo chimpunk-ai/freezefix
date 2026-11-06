@@ -1,64 +1,46 @@
 import type { Metadata, Viewport } from "next";
 import "./globals.css";
 
-// Fonts are loaded via Google's CDN with <link> tags in the head below rather
-// than next/font/google. Reason: Next.js 16's default Turbopack build has an
-// open regression with next/font/google when multiple weights + italic are
-// requested ("next/font/google queries have exactly one entry"), which breaks
-// the Cloudflare Workers production build. The CDN approach is a short-term
-// unblocker; when the upstream fix lands we can move back to next/font/google
-// and self-hosted font files. preconnect keeps the perf cost tiny.
-//
-// Body: Plus Jakarta Sans — clean, humanist sans, matches reference prototype.
-// Display: Newsreader — elegant Google-licensed serif for headlines.
-
+// Fonts are loaded from Google's CDN with <link> tags rather than next/font/google:
+// Next 16's Turbopack build has an open regression with multiple weights + italic
+// ("next/font/google queries have exactly one entry") that breaks the Cloudflare build.
+// Inter: body. Newsreader: the few display lines.
 const SITE_URL = "https://getfreezefix.com";
 const DESCRIPTION =
-  "FreezeFix is the mate for when a smoke leaves you frozen — too self-conscious to be in the room, stuck on a task, can't reply, can't start. One safe next step in under 60 seconds. No lectures, no judgment. Adults 18+. Crisis help is always free.";
+  "A private pattern-mirror for people who smoke weed and wonder how it's sitting in their life. Three taps a night. One card on Sunday. No streaks, no lectures, no one telling you to quit.";
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
   title: {
-    default: "FreezeFix — the mate for when a smoke leaves you frozen",
-    template: "%s · FreezeFix",
+    default: "Fix — a mirror, not a quit app",
+    template: "%s · Fix",
   },
   description: DESCRIPTION,
-  applicationName: "FreezeFix",
-  authors: [{ name: "FreezeFix" }],
-  // A short keyword list helps older crawlers and some chat-link previews pick a sensible category.
-  // Deliberately avoids anything that could be read as encouraging use.
+  applicationName: "Fix",
+  authors: [{ name: "Fix" }],
   keywords: [
-    "anxiety support",
-    "overthinking help",
-    "task avoidance",
-    "paranoia support",
-    "self-care for adults",
-    "mental health support app",
-    "harm-reduction support",
-    "stuck replying",
-    "AI mate",
-    "18+ wellbeing",
+    "cannabis pattern tracker",
+    "weed log",
+    "harm reduction",
+    "mindful cannabis use",
+    "mood and sleep patterns",
+    "private journal",
   ],
   category: "health",
-  // Now that the web beta is live, allow search engines to index the public pages. The /app
-  // and /help routes keep working either way. If a page needs to stay unlisted it can set its
-  // own `robots: { index: false }` in its own metadata.
-  robots: {
-    index: true,
-    follow: true,
-    googleBot: {
-      index: true,
-      follow: true,
-      "max-image-preview": "large",
-      "max-snippet": -1,
-      "max-video-preview": -1,
+  robots: { index: true, follow: true },
+  alternates: {
+    canonical: `${SITE_URL}/`,
+    languages: {
+      en: `${SITE_URL}/`,
+      it: `${SITE_URL}/it`,
+      es: `${SITE_URL}/es`,
+      "x-default": `${SITE_URL}/`,
     },
   },
-  alternates: { canonical: SITE_URL },
   openGraph: {
     type: "website",
-    siteName: "FreezeFix",
-    title: "FreezeFix — the mate for when a smoke leaves you frozen",
+    siteName: "Fix",
+    title: "Fix — a mirror, not a quit app",
     description: DESCRIPTION,
     url: SITE_URL,
     locale: "en_GB",
@@ -67,124 +49,41 @@ export const metadata: Metadata = {
         url: "/og-image.png",
         width: 1200,
         height: 630,
-        alt: "FreezeFix — the mate for when a smoke leaves you frozen. One safe next step in under 60 seconds.",
+        alt: "Fix. A mirror, not a quit app. Three taps a night, one card on Sunday.",
         type: "image/png",
       },
     ],
   },
   twitter: {
     card: "summary_large_image",
-    title: "FreezeFix — the mate for when a smoke leaves you frozen",
+    title: "Fix — a mirror, not a quit app",
     description: DESCRIPTION,
-    site: "@getfreezefix",
-    creator: "@getfreezefix",
     images: ["/og-image.png"],
   },
-  // Add-to-home-screen, so it sits on the phone like an app and opens straight into /app.
   manifest: "/manifest.webmanifest",
   icons: { icon: "/icon.svg", apple: "/icon.svg" },
-  appleWebApp: { capable: true, statusBarStyle: "black-translucent", title: "FreezeFix" },
-  // Help search engines verify the publisher without needing a second site. 'Organization'
-  // (not a MedicalBusiness or HealthClinic) because FreezeFix is a software product, not a
-  // clinical service — same wording as the Terms "FreezeFix is not therapy, medical advice
-  // or an emergency service".
-  other: {
-    "format-detection": "telephone=no",
-  },
+  appleWebApp: { capable: true, statusBarStyle: "black-translucent", title: "Fix" },
+  other: { "format-detection": "telephone=no" },
 };
 
 export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
-  // Both dark and light theme-color values so the browser chrome adapts.
-  // The inline script below picks the right one before first paint.
-  themeColor: [
-    { media: "(prefers-color-scheme: dark)", color: "#0F1F1A" },   /* Grove deep green */
-    { media: "(prefers-color-scheme: light)", color: "#F4F8F5" },  /* Grove cream */
-  ],
-  viewportFit: "cover",
-};
-
-// Minimal, honest structured data. No invented stats, no ratings, no "proven to work",
-// no fake founder bio. Just: who publishes it, what it is, how it is accessed.
-const jsonLd = {
-  "@context": "https://schema.org",
-  "@graph": [
-    {
-      "@type": "Organization",
-      "@id": `${SITE_URL}#org`,
-      name: "FreezeFix",
-      url: SITE_URL,
-      logo: `${SITE_URL}/icon.svg`,
-      email: "hello@getfreezefix.com",
-      sameAs: [SITE_URL],
-    },
-    {
-      "@type": "WebSite",
-      "@id": `${SITE_URL}#site`,
-      url: SITE_URL,
-      name: "FreezeFix",
-      inLanguage: "en-GB",
-      publisher: { "@id": `${SITE_URL}#org` },
-    },
-    {
-      "@type": "SoftwareApplication",
-      name: "FreezeFix",
-      applicationCategory: "HealthApplication",
-      operatingSystem: "Web, iOS add-to-home-screen",
-      description: DESCRIPTION,
-      url: SITE_URL,
-      publisher: { "@id": `${SITE_URL}#org` },
-      // Deliberately omitting offers / aggregateRating. We will not display a star rating
-      // we do not have, and payment copy is handled separately from this metadata.
-      audience: {
-        "@type": "PeopleAudience",
-        suggestedMinAge: 18,
-      },
-    },
-  ],
+  themeColor: "#12100E",
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en">
+    <html lang="en" data-theme="dark">
       <head>
-        {/* Google Fonts: Plus Jakarta Sans (body) + Newsreader (serif).
-            See the comment at the top of this file for why we use the CDN here.
-            preconnect to both hosts first so DNS + TLS happen alongside HTML parse. */}
         <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
         <link
           rel="stylesheet"
-          href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&family=Newsreader:ital,wght@0,300..500;1,300..500&display=swap"
-        />
-        {/* Prevent flash of wrong theme: read localStorage before first paint.
-            Sets data-theme on <html> and updates the theme-color meta tag. */}
-        <script
-          dangerouslySetInnerHTML={{
-            __html: `(function(){try{var t=localStorage.getItem("ff_theme");if(t==="light"||t==="dark"){document.documentElement.setAttribute("data-theme",t);var m=document.querySelector('meta[name="theme-color"]');if(m)m.setAttribute("content",t==="light"?"#F4F8F5":"#0F1F1A")}}catch(e){}})()`,
-          }}
-        />
-        <script
-          type="application/ld+json"
-          dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
-        />
-        {/* Service worker registration (feat/pwa-and-capacitor-scaffold,
-            3 Nov 2026 — audit P3.13). Deferred until after load so the SW
-            install cost never slows down a user's first interactive paint.
-            The SW itself is public/sw.js; see it for exactly what gets
-            cached and what deliberately doesn't (every /api/ route is
-            network-only). The registration is wrapped in try/catch and
-            a feature check so a browser with SW disabled (private window
-            on some iOS versions, locked-down enterprise profiles)
-            silently falls back to a plain web page instead of erroring. */}
-        <script
-          dangerouslySetInnerHTML={{
-            __html: `if("serviceWorker" in navigator){window.addEventListener("load",function(){try{navigator.serviceWorker.register("/sw.js",{scope:"/"})}catch(e){}})}`,
-          }}
+          href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Newsreader:ital,opsz,wght@0,6..72,300;0,6..72,400;1,6..72,300&display=swap"
         />
       </head>
-      <body className="font-sans">{children}</body>
+      <body>{children}</body>
     </html>
   );
 }
