@@ -1,9 +1,9 @@
 name: Deploy to getfreezefix.com
 
 # What this does, in plain words:
-# getfreezefix.com is not served by Vercel or by GitHub Pages — it is a
-# Cloudflare Worker called `freezefix`. OpenNext turns this Next.js app into
-# that single Worker bundle, and `wrangler deploy` pushes it live.
+# getfreezefix.com is not served by Vercel or GitHub Pages — it is a Cloudflare
+# Worker called `freezefix`. OpenNext turns this Next.js app into that single
+# Worker bundle, and `wrangler deploy` pushes it live.
 #
 # Until now nothing in this repo did that. The only way the live site changed
 # was somebody remembering to run `npm run deploy` on their own machine, which
@@ -12,14 +12,15 @@ name: Deploy to getfreezefix.com
 # This workflow closes that gap: every push to `appjet` builds the Worker and
 # deploys it, so what is on the branch is what is on getfreezefix.com.
 #
-# One-time setup — GitHub → Settings → Secrets and variables → Actions → New
-# repository secret, twice:
+# One-time setup — only ONE secret is required:
 #
-#   CLOUDFLARE_API_TOKEN   Create at Cloudflare → My Profile → API Tokens using
-#                          the "Edit Cloudflare Workers" template, and limit it
-#                          to this account. That is all the permission needed.
-#   CLOUDFLARE_ACCOUNT_ID  From the Cloudflare dashboard URL:
-#                          dash.cloudflare.com/<THIS_PART>/workers
+#   CLOUDFLARE_API_TOKEN   Cloudflare → My Profile → API Tokens → Create Token
+#                          → "Edit Cloudflare Workers" template. Nothing else.
+#
+# The account id is looked up automatically from that token, so there is no
+# second value to hunt for in the dashboard URL. If you ever have more than one
+# account on the token, add CLOUDFLARE_ACCOUNT_ID as an optional second secret
+# and it takes priority over the lookup.
 #
 # Application secrets (ANTHROPIC_API_KEY, SUPABASE_URL, SUPABASE_ANON_KEY) do
 # NOT go here. They stay in the Cloudflare dashboard, and wrangler.jsonc sets
@@ -56,13 +57,43 @@ jobs:
         run: npm ci --no-audit --no-fund
 
       - name: Explain what is missing if the token is not configured
-        # A red X with "Input required and not supplied" is not a useful error
-        # for whoever sees this next. Say plainly what to do instead.
+        # A red X reading "Input required and not supplied" is not a useful
+        # error for whoever sees this next. Say plainly what to do instead.
         run: |
           if [ -z "${{ secrets.CLOUDFLARE_API_TOKEN }}" ]; then
-            echo "::error::CLOUDFLARE_API_TOKEN is not set. Add CLOUDFLARE_API_TOKEN and CLOUDFLARE_ACCOUNT_ID in Settings → Secrets and variables → Actions, then re-run this job."
+            echo "::error::CLOUDFLARE_API_TOKEN is not set. Add it in Settings → Secrets and variables → Actions (Cloudflare 'Edit Cloudflare Workers' token), then re-run this job."
             exit 1
           fi
+
+      - name: Resolve the Cloudflare account id
+        id: cf
+        # One secret is enough: ask the API which account the token belongs to.
+        # Only fails when the token spans several accounts, and then it says so.
+        env:
+          CF_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CF_ACCOUNT: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: |
+          set -euo pipefail
+          if [ -n "${CF_ACCOUNT:-}" ]; then
+            echo "account_id=$CF_ACCOUNT" >> "$GITHUB_OUTPUT"
+            echo "Using CLOUDFLARE_ACCOUNT_ID from repository secrets."
+            exit 0
+          fi
+          body=$(curl -sS --fail \
+            -H "Authorization: Bearer $CF_TOKEN" \
+            "https://api.cloudflare.com/client/v4/accounts")
+          count=$(printf '%s' "$body" | jq '.result | length')
+          if [ "$count" -eq 0 ]; then
+            echo "::error::This token cannot see any Cloudflare account. Give it the 'Edit Cloudflare Workers' permission for the account that owns getfreezefix.com."
+            exit 1
+          fi
+          if [ "$count" -gt 1 ]; then
+            echo "::error::This token can see $count accounts. Add CLOUDFLARE_ACCOUNT_ID as a second repository secret so the deploy knows which one to use."
+            exit 1
+          fi
+          id=$(printf '%s' "$body" | jq -r '.result[0].id')
+          echo "account_id=$id" >> "$GITHUB_OUTPUT"
+          echo "Resolved a single account from the token."
 
       - name: Build the Worker bundle (OpenNext)
         run: npx opennextjs-cloudflare build
@@ -73,5 +104,5 @@ jobs:
         uses: cloudflare/wrangler-action@v3
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          accountId: ${{ steps.cf.outputs.account_id }}
           command: deploy
