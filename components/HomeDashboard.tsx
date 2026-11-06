@@ -9,6 +9,16 @@ import { last7Days, last7Summary, getAnswer, setToday, todayISO, type DayShape, 
 import { readGoal, writeGoal, GOALS, GOAL_LABEL, type GoalId } from "@/lib/goals";
 import { allWins } from "@/lib/wins";
 import { count as journalCount } from "@/lib/journal";
+import {
+  MAX_TRIGGERS,
+  MOODS,
+  MOOD_LABELS,
+  NIGHT_TRIGGERS,
+  getNight,
+  setMood as saveMood,
+  toggleTrigger,
+  type Mood,
+} from "@/lib/nights";
 
 // Daily companion home — the Home tab in AppNav. The whole dashboard reads only this
 // device's localStorage (check-ins, goal, wins log) and never writes anything to a
@@ -34,6 +44,29 @@ const HELP_CHIPS: HelpChip[] = [
   { label: "Something else — talk to Fix", href: "/app" },
 ];
 
+/**
+ * The mood face. Drawn, not an emoji — the brief asks for something slightly abstract
+ * and warm, so it is a circle whose mouth curve follows the mood. Decorative only: the
+ * button around it carries the accessible name.
+ */
+function MoodFace({ mood }: { mood: Mood }) {
+  const curve = (mood - 3) * 2.2;
+  return (
+    <svg viewBox="0 0 32 32" className="h-7 w-7" aria-hidden="true" focusable="false">
+      <circle cx="16" cy="16" r="14" fill="none" stroke="currentColor" strokeWidth="1.5" />
+      <circle cx="11.5" cy="13" r="1.4" fill="currentColor" />
+      <circle cx="20.5" cy="13" r="1.4" fill="currentColor" />
+      <path
+        d={`M10.5 20.5 Q16 ${20.5 + curve} 21.5 20.5`}
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="1.6"
+        strokeLinecap="round"
+      />
+    </svg>
+  );
+}
+
 export default function HomeDashboard() {
   const [mounted, setMounted] = useState(false);
   const [greeting, setGreeting] = useState("Hello");
@@ -42,6 +75,8 @@ export default function HomeDashboard() {
   const [shape, setShape] = useState<Shape>({ withoutUse: 0, useDays: 0, recorded: 0, deltaVsLastWeek: null });
   const [goal, setGoal] = useState<GoalId | null>(null);
   const [winsCount, setWinsCount] = useState<number>(0);
+  const [mood, setMood] = useState<Mood | undefined>(undefined);
+  const [triggers, setTriggers] = useState<string[]>([]);
 
   // All of this lives on the device. Reading happens once on mount and whenever the
   // user taps a control; nothing refreshes behind their back.
@@ -49,6 +84,10 @@ export default function HomeDashboard() {
     const now = new Date();
     setGreeting(greet(now.getHours()));
     setTodayAnswer(getAnswer(todayISO(now)));
+    // Mood and triggers are optional detail layered on the yes/no tap.
+    const night = getNight(todayISO(now));
+    setMood(night.mood);
+    setTriggers(night.triggers ?? []);
     setDays(last7Days(now));
     setShape(last7Summary(now));
     setGoal(readGoal());
@@ -63,6 +102,19 @@ export default function HomeDashboard() {
     setTodayAnswer(a);
     setDays(last7Days());
     setShape(last7Summary());
+  }
+
+  // Tapping the same face twice clears it. The detail is optional and must never feel
+  // like a form the user is stuck in.
+  function pickMood(m: Mood) {
+    const next = mood === m ? undefined : m;
+    setMood(next);
+    saveMood(next);
+  }
+
+  function pickTrigger(id: string) {
+    toggleTrigger(id);
+    setTriggers(getNight(todayISO()).triggers ?? []);
   }
 
   function pickGoal(id: GoalId) {
