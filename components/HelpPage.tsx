@@ -1,11 +1,11 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import HelpScreen from "@/components/HelpScreen";
 import SiteFooter from "@/components/SiteFooter";
-import { detectRegion } from "@/lib/country";
+import { useRegion } from "@/components/useRegion";
 import type { HelpScreen as HelpScreenId } from "@/lib/risk";
 
 // A free, unguarded route for crisis / urgent help. Reachable from the landing-page
