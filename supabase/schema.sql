@@ -48,7 +48,7 @@ revoke all on public.safety_counts from anon, authenticated;
 
 create table if not exists public.quota_usage (
   day date not null default (now() at time zone 'utc')::date,
-  kind text not null check (kind in ('voice', 'screenshot', 'check')),
+  kind text not null check (kind in ('voice', 'screenshot', 'check', 'fix')),
   key text not null check (char_length(key) = 64),
   used integer not null default 0,
   primary key (day, kind, key)
@@ -69,7 +69,7 @@ declare
   dev_used int;
   ip_used int;
 begin
-  if p_kind not in ('voice', 'screenshot', 'check') then
+  if p_kind not in ('voice', 'screenshot', 'check', 'fix') then
     return json_build_object('allowed', false, 'used', 0);
   end if;
   -- Hard ceilings so nobody can pass a huge limit.

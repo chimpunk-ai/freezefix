@@ -3,7 +3,7 @@
 // salted, daily-rotating hash of the IP address as a backstop. We never store raw IPs.
 // Help screens and typing are NEVER limited.
 
-export type QuotaKind = "voice" | "screenshot" | "check";
+export type QuotaKind = "voice" | "screenshot" | "check" | "fix";
 
 export const LIMITS = {
   voice: { free: 3, paid: 6 },
@@ -12,6 +12,8 @@ export const LIMITS = {
   // Safety checks the AI runs for people who hit the paywall (so crisis help is never missed
   // just because someone hasn't paid). Cost guard only; Budget & Ops tunes it.
   check: { free: 20, paid: 50 },
+  // Fix is capped for the user's sake, not ours: five turns a day is enough.
+  fix: { free: 5, paid: 20 },
 } as const;
 
 // Per-IP backstop per day (stops someone clearing cookies over and over).
