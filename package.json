@@ -24,6 +24,7 @@
     "test:plans": "tsx scripts/test-plans.ts",
     "test:demo": "tsx scripts/test-demo.ts",
     "test:wins": "tsx scripts/test-wins.ts",
+    "test:mirror": "tsx scripts/test-mirror.ts",
     "test:facts": "tsx scripts/test-facts.ts",
     "test:ndjson": "tsx scripts/test-ndjson.ts",
     "test:offtopic": "tsx scripts/test-offtopic.ts",
