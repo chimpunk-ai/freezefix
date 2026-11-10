@@ -171,6 +171,11 @@ jobs:
       - name: Sunday-chime pref + generator tests
         run: npm run test:chime
 
+      - name: Onboarding profile schema tests
+        # New commitment-onboarding fields (interferesWith / smokeTime /
+        # preferredTriggers) round-trip and legacy profiles still parse.
+        run: npm run test:onboarding
+
       - name: Country / region helper tests
         run: npm run test:country
 
