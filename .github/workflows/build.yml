@@ -162,6 +162,12 @@ jobs:
         # guardrails. The one claim-making piece in the product.
         run: npm run test:mirror
 
+      - name: Fix prompt + post-processor tests
+        # The system prompt's few-shot examples must keep their shape,
+        # every example reply must end on a statement, and the hard voice
+        # bans must survive refactors.
+        run: npm run test:fix
+
       - name: Sunday-chime pref + generator tests
         run: npm run test:chime
 
