@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { HelpChip, Wordmark } from "@/components/Brand";
 import { PatternCard } from "@/components/PatternCard";
+import { TrustBadge } from "@/components/TrustBadge";
 import { weekStats } from "@/lib/pattern";
 import { SAMPLE_END, SAMPLE_GOAL, sampleEntries } from "@/lib/sample";
 
@@ -68,9 +69,9 @@ export default function Landing() {
             what it costs
           </Link>
         </div>
-        <p className="mt-3 text-12 text-ink-faint">
-          seven days free, no card. no email, no password — a name you pick, and that&rsquo;s it.
-        </p>
+        <div className="mt-6">
+          <TrustBadge />
+        </div>
       </section>
 
       <section className="mx-auto mt-12 w-full max-w-[560px] px-5 sm:mt-14">

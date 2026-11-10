@@ -3,6 +3,7 @@
 import { useMemo, useState } from "react";
 import Link from "next/link";
 import { MoodFace } from "@/components/MoodFace";
+import { TrustBadge } from "@/components/TrustBadge";
 import {
   BEDTIMES,
   GOAL_EXAMPLES,
@@ -408,10 +409,14 @@ export default function Onboarding({ onDone }: { onDone: (p: Profile) => void })
           <p className="mt-5 text-14 text-ink-soft">
             the real one fills in with your own nights. seven taps from now.
           </p>
-          <button type="button" onClick={finish} className={`mt-7 ${primaryBtn}`}>
+
+          <div className="mt-6">
+            <TrustBadge />
+          </div>
+
+          <button type="button" onClick={finish} className={`mt-6 ${primaryBtn}`}>
             start the free week
           </button>
-          <p className="mt-3 text-center text-12 text-ink-faint">no card. no email.</p>
         </section>
       ) : null}
 
