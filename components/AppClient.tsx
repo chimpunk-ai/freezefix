@@ -13,6 +13,7 @@ import { clearEntries, readEntries, todayISO, type Entries } from "@/lib/entry";
 import { dueMirror, latestMirror, markSeen } from "@/lib/mirror";
 import { recentWeeks, type WeekStats } from "@/lib/pattern";
 import { BEDTIMES, GOAL_EXAMPLES, bedtimeLabel, clearProfile, patchProfile, readProfile, type Profile } from "@/lib/profile";
+import { readChimePref, writeChimePref, type ChimePref } from "@/lib/chime-pref";
 import { trialState } from "@/lib/trial";
 
 // The app shell. No navigation tree, no home screen, no feed: the log is the
@@ -236,7 +237,17 @@ function SettingsView({
   const [target, setTarget] = useState(profile.goal?.target ?? 2);
   const [saved, setSaved] = useState(false);
   const [confirming, setConfirming] = useState(false);
+  const [chime, setChime] = useState<ChimePref>("unset");
   const router = useRouter();
+
+  useEffect(() => {
+    setChime(readChimePref());
+  }, []);
+
+  function setChimeAnd(answer: "yes" | "no") {
+    writeChimePref(answer);
+    setChime(answer);
+  }
 
   const logged = Object.keys(entries).length;
 
@@ -333,6 +344,45 @@ function SettingsView({
               </button>
             ))}
             <span className="self-center text-12 text-ink-faint">times a week</span>
+          </div>
+        </div>
+
+        <div>
+          <p className="text-14 text-ink-soft">the sunday chime</p>
+          <p className="mt-1 text-12 text-ink-faint">
+            one soft tone when the weekly card finishes drawing. it never plays anywhere else, and it
+            follows your device&rsquo;s reduced-motion setting.
+          </p>
+          <div className="mt-3 flex flex-wrap gap-2">
+            <button
+              type="button"
+              onClick={() => setChimeAnd("yes")}
+              aria-pressed={chime === "yes"}
+              className={[
+                "ff-chip rounded-pill border px-3.5 py-2 text-14",
+                chime === "yes"
+                  ? "border-accent/50 bg-accent/15 text-accent"
+                  : "border-line bg-card text-ink-soft",
+              ].join(" ")}
+            >
+              softly, yes
+            </button>
+            <button
+              type="button"
+              onClick={() => setChimeAnd("no")}
+              aria-pressed={chime === "no"}
+              className={[
+                "ff-chip rounded-pill border px-3.5 py-2 text-14",
+                chime === "no"
+                  ? "border-accent/50 bg-accent/15 text-accent"
+                  : "border-line bg-card text-ink-soft",
+              ].join(" ")}
+            >
+              no, silence
+            </button>
+            {chime === "unset" ? (
+              <span className="self-center text-12 text-ink-faint">pick one — default is silence.</span>
+            ) : null}
           </div>
         </div>
 
