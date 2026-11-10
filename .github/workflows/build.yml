@@ -176,6 +176,13 @@ jobs:
         # preferredTriggers) round-trip and legacy profiles still parse.
         run: npm run test:onboarding
 
+      - name: Sunday-card share surface tests
+        # The viral asset. In node there's no canvas backend, so this covers
+        # the degrade-gracefully surface: every entry point returns a safe
+        # value (null / false) instead of throwing when there's no document
+        # or navigator.
+        run: npm run test:share-card
+
       - name: Country / region helper tests
         run: npm run test:country
 

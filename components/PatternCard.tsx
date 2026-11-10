@@ -14,6 +14,7 @@ import {
   shouldAskOptIn,
   shouldPlayChime,
 } from "@/lib/chime-pref";
+import { canShareImages, downloadSundayCard, shareSundayCard } from "@/lib/share-card";
 
 // The weekly mirror card. The one thing everything else in the app exists to
 // produce. No grade, no trophy, no congratulations: a shape, said plainly.
@@ -108,6 +109,10 @@ export function PatternCard({
   // single small chip under the card asking if they'd like a soft tone
   // next time. No modal, no upsell, no "later this week" nag.
   const [askNow, setAskNow] = useState(false);
+  const [sharing, setSharing] = useState(false);
+  const [sharePanel, setSharePanel] = useState(false);
+  const [redact, setRedact] = useState(false);
+  const [shareHint, setShareHint] = useState<string | null>(null);
 
   useEffect(() => {
     if (dimmed) return;
@@ -130,6 +135,29 @@ export function PatternCard({
     setAskNow(false);
     // Don't retro-play on yes — the card has already drawn. The sound is
     // part of the sunday ritual, not a reward for tapping a chip.
+  }
+
+  async function doShare(mode: "share" | "download") {
+    if (sharing) return;
+    setSharing(true);
+    setShareHint(null);
+    try {
+      const opts = { name, stats, redactName: redact };
+      let ok = false;
+      if (mode === "share" && canShareImages()) {
+        ok = await shareSundayCard(opts);
+      }
+      if (!ok) {
+        ok = await downloadSundayCard(opts);
+        if (ok) setShareHint("saved as a png.");
+      }
+      if (!ok) setShareHint("couldn’t build the image. try again, or a different browser.");
+      else if (mode === "share" && canShareImages()) setShareHint("shared.");
+    } catch {
+      setShareHint("something went wrong. try again.");
+    } finally {
+      setSharing(false);
+    }
   }
 
   return (
@@ -174,12 +202,60 @@ export function PatternCard({
             ask Fix about this week
           </button>
         ) : null}
+        {onAsk ? (
+          <button
+            type="button"
+            onClick={() => setSharePanel((v) => !v)}
+            aria-expanded={sharePanel}
+            className="ff-chip rounded-pill border border-line px-4 py-2 text-14 text-ink-soft hover:border-accent/40 hover:text-ink"
+          >
+            {sharePanel ? "cancel" : "share this week"}
+          </button>
+        ) : null}
         {onClose ? (
           <button type="button" onClick={onClose} className="ff-chip rounded-pill px-3 py-2 text-14 text-ink-faint hover:text-ink-soft">
             close
           </button>
         ) : null}
       </div>
+
+      {sharePanel ? (
+        <div className="mt-4 rounded-card border border-line bg-chip/60 px-4 py-3">
+          <p className="text-14 text-ink-soft">
+            builds a png of this week and {canShareImages() ? "opens the share sheet" : "saves it to your phone"}.
+          </p>
+          <label className="mt-3 flex items-center gap-2 text-14 text-ink-soft">
+            <input
+              type="checkbox"
+              checked={redact}
+              onChange={(e) => setRedact(e.target.checked)}
+              className="h-4 w-4 accent-signpost"
+            />
+            <span>redact my pet-name — share as “fix user”</span>
+          </label>
+          <div className="mt-3 flex flex-wrap gap-2">
+            <button
+              type="button"
+              onClick={() => doShare("share")}
+              disabled={sharing}
+              className="ff-chip rounded-pill bg-signpost px-4 py-2 text-14 font-medium text-signpost-ink disabled:opacity-60"
+            >
+              {sharing ? "building…" : canShareImages() ? "share" : "save png"}
+            </button>
+            {canShareImages() ? (
+              <button
+                type="button"
+                onClick={() => doShare("download")}
+                disabled={sharing}
+                className="ff-chip rounded-pill border border-line px-4 py-2 text-14 text-ink-soft disabled:opacity-60"
+              >
+                save png instead
+              </button>
+            ) : null}
+          </div>
+          {shareHint ? <p className="mt-2 text-12 text-ink-faint">{shareHint}</p> : null}
+        </div>
+      ) : null}
 
       {askNow ? (
         <div className="mt-5 rounded-card border border-line bg-chip/60 px-4 py-3 text-14 text-ink-soft">
