@@ -62,62 +62,64 @@ const stats: WeekStats = {
   goalLine: null,
 };
 
-// In node (no document / window) every entry point must return the
-// documented safe value — never throw.
-{
-  let threw = false;
-  let result: Blob | null = "not-run" as unknown as Blob | null;
-  try {
-    result = await sundayCardBlob({ name: "nico", stats });
-  } catch {
-    threw = true;
+// tsx transpiles to CJS, so top-level await isn't allowed. Wrap the
+// async assertions in an IIFE and keep the same semantics.
+(async () => {
+  // In node (no document / window) every entry point must return the
+  // documented safe value — never throw.
+  {
+    let threw = false;
+    let result: Blob | null = "not-run" as unknown as Blob | null;
+    try {
+      result = await sundayCardBlob({ name: "nico", stats });
+    } catch {
+      threw = true;
+    }
+    check("SC-blob-no-doc-null", !threw && result === null, threw ? "threw" : undefined);
   }
-  check("SC-blob-no-doc-null", !threw && result === null, threw ? "threw" : undefined);
-}
 
-{
   check("SC-canShare-no-nav-false", canShareImages() === false);
-}
 
-{
-  let threw = false;
-  let ok: boolean | string = "not-run";
-  try {
-    ok = await shareSundayCard({ name: "nico", stats });
-  } catch {
-    threw = true;
+  {
+    let threw = false;
+    let ok: boolean | string = "not-run";
+    try {
+      ok = await shareSundayCard({ name: "nico", stats });
+    } catch {
+      threw = true;
+    }
+    check("SC-share-no-nav-false", !threw && ok === false);
   }
-  check("SC-share-no-nav-false", !threw && ok === false);
-}
 
-{
-  let threw = false;
-  let ok: boolean | string = "not-run";
-  try {
-    ok = await downloadSundayCard({ name: "nico", stats });
-  } catch {
-    threw = true;
+  {
+    let threw = false;
+    let ok: boolean | string = "not-run";
+    try {
+      ok = await downloadSundayCard({ name: "nico", stats });
+    } catch {
+      threw = true;
+    }
+    check("SC-download-no-doc-false", !threw && ok === false);
   }
-  check("SC-download-no-doc-false", !threw && ok === false);
-}
 
-// Redacted shares must still accept the full stats shape and not throw.
-{
-  let threw = false;
-  try {
-    await sundayCardBlob({ name: "nico", stats, redactName: true });
-    await shareSundayCard({ name: "nico", stats, redactName: true });
-    await downloadSundayCard({ name: "nico", stats, redactName: true });
-  } catch {
-    threw = true;
+  // Redacted shares must still accept the full stats shape and not throw.
+  {
+    let threw = false;
+    try {
+      await sundayCardBlob({ name: "nico", stats, redactName: true });
+      await shareSundayCard({ name: "nico", stats, redactName: true });
+      await downloadSundayCard({ name: "nico", stats, redactName: true });
+    } catch {
+      threw = true;
+    }
+    check("SC-redact-does-not-throw", !threw);
   }
-  check("SC-redact-does-not-throw", !threw);
-}
 
-const pass = results.filter((r) => r.ok).length;
-const fail = results.length - pass;
-for (const r of results.filter((x) => !x.ok)) {
-  console.log(`  FAIL ${r.id}${r.note ? ` :: ${r.note}` : ""}`);
-}
-console.log(`Share-card API check: ${pass}/${results.length} passed`);
-if (fail > 0) process.exit(1);
+  const pass = results.filter((r) => r.ok).length;
+  const fail = results.length - pass;
+  for (const r of results.filter((x) => !x.ok)) {
+    console.log(`  FAIL ${r.id}${r.note ? ` :: ${r.note}` : ""}`);
+  }
+  console.log(`Share-card API check: ${pass}/${results.length} passed`);
+  if (fail > 0) process.exit(1);
+})();
