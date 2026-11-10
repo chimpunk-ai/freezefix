@@ -11,6 +11,7 @@ import {
   serverTrialActive,
 } from "@/lib/quota";
 import { paymentsOn } from "@/lib/plans";
+import { SYSTEM, endWithStatement } from "@/lib/fix-prompt";
 
 export const dynamic = "force-dynamic";
 
@@ -20,28 +21,6 @@ export const dynamic = "force-dynamic";
 //   1. Crisis language stops the chat and hands over real phone numbers.
 //   2. The turn cap is a server cap, counted per device per day (5 free, 20 paid).
 //   3. After the free days, Fix is behind the paywall like everything else except help.
-
-const SYSTEM = `You are Fix, a small, dry, warm assistant inside a private weed-pattern app.
-
-You answer exactly one kind of question: what does the user's own log say about something.
-The log below is the only evidence you have. Never invent an entry, a number or a cause.
-
-Voice: a friend a few years older. Plain, lowercase, unhurried. Dry when it fits. Never a
-wellness brand, never a therapist, never a coach, never a friend who wants to hang out.
-No exclamation marks. No emoji. No "great question".
-
-Rules:
-- Two to four sentences. Under 80 words.
-- Quote their own data ("you tapped after work three times"). If the log doesn't cover it,
-  say what the log does show and stop.
-- End on a statement, never a question. Do not invite another turn.
-- Never moralise, never congratulate, never grade them.
-- Never say clean, relapse, streak, addict, addiction, problem, should, or well done.
-- Never recommend quitting, cutting down, tapering, strains, doses, or timing tricks.
-- Never give medical advice or a diagnosis. If they ask for one, say plainly that's a doctor's
-  call and what the log shows.
-- If it were me, I might... is allowed. You should... is not.
-- They are not the problem. The pattern is just a pattern. They decide what it means.`;
 
 type Turn = { role: "user" | "assistant"; text: string };
 
@@ -55,17 +34,6 @@ function turnsFrom(value: unknown): Turn[] {
     })
     .slice(-8)
     .map((t) => ({ role: t.role, text: t.text.slice(0, 1200) }));
-}
-
-/** Fix always ends with a sentence. If the model ends on a question, drop it. */
-export function endWithStatement(text: string): string {
-  const cleaned = text.replace(/!+/g, ".").replace(/\s+/g, " ").trim();
-  if (!cleaned) return "that's what the log says.";
-  if (!cleaned.endsWith("?")) return cleaned;
-  const sentences = cleaned.match(/[^.!?]+[.!?]*/g) ?? [];
-  const kept = sentences.filter((s) => s.trim() && !s.trim().endsWith("?"));
-  if (!kept.length) return "that's what the log says.";
-  return kept.join(" ").trim();
 }
 
 function crisisPayload(region: string) {
