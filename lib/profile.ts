@@ -21,7 +21,49 @@ export type Profile = {
   onboarded: boolean;
   /** YYYY-MM-DD the seven free days began. Null until onboarding finishes. */
   trialStart: string | null;
+  /** What weed is quietly getting in the way of. Multi-select from INTERFERES.
+   *  Used to pre-seed goal suggestions and shape the Sunday-card framing. */
+  interferesWith?: string[];
+  /** When this user usually smokes, from SMOKE_TIMES. Single-select.
+   *  Used to tune the daily-log order (if they smoke mornings, show mood
+   *  first; if nights, show the yes/no first). */
+  smokeTime?: string;
+  /** Which trigger chips should appear in the daily log by default. Chosen
+   *  during onboarding from TRIGGER_CHOICES so the first-night log feels
+   *  prepared for them rather than generic. Up to five. */
+  preferredTriggers?: string[];
 };
+
+export const INTERFERES = [
+  "sleep",
+  "the gym",
+  "my focus",
+  "mornings",
+  "money",
+  "someone close",
+  "nothing in particular",
+] as const;
+
+export const SMOKE_TIMES = [
+  "after work",
+  "the evening",
+  "late night",
+  "weekends only",
+  "varies, honestly",
+] as const;
+
+export const TRIGGER_CHOICES = [
+  "after work",
+  "stress",
+  "bored",
+  "with friends",
+  "alone",
+  "couldn't sleep",
+  "after her / him",
+  "just habit",
+  "to focus",
+  "to eat",
+] as const;
 
 export const GOAL_EXAMPLES = [
   "go for a run",
@@ -59,6 +101,16 @@ export function readProfile(): Profile {
     if (!raw) return { ...EMPTY };
     const p = JSON.parse(raw) as Partial<Profile>;
     const bedtime = Number(p.bedtime);
+    // Narrow the optional arrays carefully — stored profiles from before
+    // these fields existed will simply pass through as undefined, which is
+    // what the UI already treats as "not asked".
+    const interferesWith = Array.isArray(p.interferesWith)
+      ? (p.interferesWith.filter((s): s is string => typeof s === "string").slice(0, 8))
+      : undefined;
+    const preferredTriggers = Array.isArray(p.preferredTriggers)
+      ? (p.preferredTriggers.filter((s): s is string => typeof s === "string").slice(0, 5))
+      : undefined;
+    const smokeTime = typeof p.smokeTime === "string" ? p.smokeTime.slice(0, 40) : undefined;
     return {
       name: typeof p.name === "string" ? p.name.slice(0, 24) : "",
       bedtime: Number.isFinite(bedtime) && bedtime >= 0 && bedtime <= 23 ? bedtime : 23,
@@ -73,6 +125,9 @@ export function readProfile(): Profile {
       ageOk: Boolean(p.ageOk),
       onboarded: Boolean(p.onboarded),
       trialStart: typeof p.trialStart === "string" ? p.trialStart : null,
+      interferesWith,
+      smokeTime,
+      preferredTriggers,
     };
   } catch {
     return { ...EMPTY };
