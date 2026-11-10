@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { HelpChip, Wordmark } from "@/components/Brand";
+import { TrustBadge } from "@/components/TrustBadge";
 import { useRegion } from "@/components/useRegion";
 import { plansFor, TRIAL_DAYS, trialDates, type PlanId } from "@/lib/plans";
 
@@ -160,9 +161,12 @@ export default function PlansPage() {
         </div>
 
         <p className="mt-4 text-12 text-ink-faint">
-          {TRIAL_DAYS} days free, from {dates.startsLabel.toLowerCase()} to {dates.chargeLabel}. cancel in
-          the app or in the receipt email; no phone call, no retention gauntlet.
+          {TRIAL_DAYS} days free, from {dates.startsLabel.toLowerCase()} to {dates.chargeLabel}.
         </p>
+
+        <div className="mt-5">
+          <TrustBadge />
+        </div>
 
         {state === "active" ? (
           <div className="mt-6 rounded-card border border-accent/30 bg-accent/[0.07] px-4 py-4">
