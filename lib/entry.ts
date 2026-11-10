@@ -31,6 +31,25 @@ export const TRIGGER_LABEL: Record<TriggerId, string> = {
 
 export const MAX_TRIGGERS = 3;
 
+/** Return TRIGGERS with the user's preferred ones first, in the order they
+ *  picked, then the rest in canonical order. Every trigger still appears
+ *  exactly once; this controls display order only, never availability. */
+export function orderedTriggers(preferred: readonly TriggerId[] | undefined): readonly TriggerId[] {
+  if (!preferred || !preferred.length) return TRIGGERS;
+  const valid = new Set<TriggerId>();
+  const out: TriggerId[] = [];
+  for (const t of preferred) {
+    if ((TRIGGERS as readonly string[]).includes(t) && !valid.has(t)) {
+      out.push(t);
+      valid.add(t);
+    }
+  }
+  for (const t of TRIGGERS) {
+    if (!valid.has(t)) out.push(t);
+  }
+  return out;
+}
+
 export const MOODS = [1, 2, 3, 4, 5] as const;
 export type Mood = (typeof MOODS)[number];
 

@@ -3,6 +3,8 @@
 // A pet-name, a bedtime, and one goal in their own words. No email, no phone,
 // no account, no password. Everything here stays on the device.
 
+import { TRIGGERS, type TriggerId } from "./entry";
+
 export type Goal = {
   /** Their words, e.g. "go for a run". */
   text: string;
@@ -28,10 +30,11 @@ export type Profile = {
    *  Used to tune the daily-log order (if they smoke mornings, show mood
    *  first; if nights, show the yes/no first). */
   smokeTime?: string;
-  /** Which trigger chips should appear in the daily log by default. Chosen
-   *  during onboarding from TRIGGER_CHOICES so the first-night log feels
-   *  prepared for them rather than generic. Up to five. */
-  preferredTriggers?: string[];
+  /** Which trigger chips should appear FIRST in the daily log. Chosen during
+   *  onboarding from the canonical TriggerId set so the first-night log feels
+   *  prepared for them rather than generic. Up to five. The daily log still
+   *  shows every trigger — this list controls order, not availability. */
+  preferredTriggers?: TriggerId[];
 };
 
 export const INTERFERES = [
@@ -50,19 +53,6 @@ export const SMOKE_TIMES = [
   "late night",
   "weekends only",
   "varies, honestly",
-] as const;
-
-export const TRIGGER_CHOICES = [
-  "after work",
-  "stress",
-  "bored",
-  "with friends",
-  "alone",
-  "couldn't sleep",
-  "after her / him",
-  "just habit",
-  "to focus",
-  "to eat",
 ] as const;
 
 export const GOAL_EXAMPLES = [
@@ -108,7 +98,9 @@ export function readProfile(): Profile {
       ? (p.interferesWith.filter((s): s is string => typeof s === "string").slice(0, 8))
       : undefined;
     const preferredTriggers = Array.isArray(p.preferredTriggers)
-      ? (p.preferredTriggers.filter((s): s is string => typeof s === "string").slice(0, 5))
+      ? (p.preferredTriggers
+          .filter((s): s is TriggerId => typeof s === "string" && (TRIGGERS as readonly string[]).includes(s))
+          .slice(0, 5) as TriggerId[])
       : undefined;
     const smokeTime = typeof p.smokeTime === "string" ? p.smokeTime.slice(0, 40) : undefined;
     return {

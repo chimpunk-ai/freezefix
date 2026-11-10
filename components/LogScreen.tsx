@@ -6,9 +6,9 @@ import {
   MAX_TRIGGERS,
   MOODS,
   MOOD_LABEL,
-  TRIGGERS,
   TRIGGER_LABEL,
   addDays,
+  orderedTriggers,
   prettyDay,
   saveEntry,
   todayISO,
@@ -41,6 +41,12 @@ export default function LogScreen({
 }) {
   const today = todayISO();
   const existing = entries[today];
+
+  // Trigger chips are shown in the order the user chose during onboarding,
+  // then the rest. Every trigger is still present; this list controls order,
+  // not availability — so a user whose life changed can still tap one of the
+  // ones they didn't pick, just without having to scan the row twice.
+  const triggerOrder = orderedTriggers(profile.preferredTriggers);
 
   const [smoked, setSmoked] = useState<boolean | null>(existing ? existing.smoked : null);
   const [mood, setMood] = useState<Mood | null>(existing ? existing.mood : null);
@@ -264,7 +270,7 @@ export default function LogScreen({
               <p className="text-14 text-ink-soft">what was around it?</p>
               <p className="mt-1 text-12 text-ink-faint">up to three. skip it if nothing fits.</p>
               <div className="mt-3 flex flex-wrap gap-2">
-                {TRIGGERS.map((t) => {
+                {triggerOrder.map((t) => {
                   const on = triggers.includes(t);
                   const full = !on && triggers.length >= MAX_TRIGGERS;
                   return (
