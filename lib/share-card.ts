@@ -235,17 +235,9 @@ export function drawSundayCard(canvas: HTMLCanvasElement, opts: ShareOptions): H
   return canvas;
 }
 
-export async function sundayCardBlob(opts: ShareOptions): Promise<Blob | null> {
-  if (typeof document === "undefined") return null;
-  const canvas = document.createElement("canvas");
-  drawSundayCard(canvas, opts);
-  return new Promise<Blob | null>((resolve) => {
-    try {
-      canvas.toBlob((b) => resolve(b), "image/png", 0.95);
-    } catch {
-      resolve(null);
-    }
-  });
+export async function sundayCardBlob(_opts: ShareOptions): Promise<Blob | null> {
+  // bisect: pure drawing only, no document.createElement
+  return null;
 }
 
 /** Download-only path (no Web Share API) while we bisect the build. */
