@@ -162,6 +162,9 @@ jobs:
         # guardrails. The one claim-making piece in the product.
         run: npm run test:mirror
 
+      - name: Sunday-chime pref + generator tests
+        run: npm run test:chime
+
       - name: Country / region helper tests
         run: npm run test:country
 
