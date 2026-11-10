@@ -8,13 +8,12 @@ import {
   GOAL_EXAMPLES,
   INTERFERES,
   SMOKE_TIMES,
-  TRIGGER_CHOICES,
   bedtimeLabel,
   patchProfile,
   type Goal,
   type Profile,
 } from "@/lib/profile";
-import { todayISO } from "@/lib/entry";
+import { TRIGGERS, TRIGGER_LABEL, todayISO, type TriggerId } from "@/lib/entry";
 
 // Nine small screens. No email, no password, no phone number: a pet-name,
 // what weed is quietly interfering with, when they usually smoke, the trigger
@@ -57,7 +56,7 @@ export default function Onboarding({ onDone }: { onDone: (p: Profile) => void })
   const [name, setName] = useState("");
   const [interferesWith, setInterferesWith] = useState<string[]>([]);
   const [smokeTime, setSmokeTime] = useState<string>("");
-  const [preferredTriggers, setPreferredTriggers] = useState<string[]>([]);
+  const [preferredTriggers, setPreferredTriggers] = useState<TriggerId[]>([]);
   const [bedtime, setBedtime] = useState<number>(23);
   const [goalText, setGoalText] = useState("");
   const [target, setTarget] = useState(2);
@@ -83,7 +82,7 @@ export default function Onboarding({ onDone }: { onDone: (p: Profile) => void })
     onDone(p);
   }
 
-  function toggle(list: string[], value: string, setter: (v: string[]) => void, max: number) {
+  function toggle<T extends string>(list: T[], value: T, setter: (v: T[]) => void, max: number) {
     if (list.includes(value)) {
       setter(list.filter((v) => v !== value));
     } else if (list.length < max) {
@@ -253,7 +252,7 @@ export default function Onboarding({ onDone }: { onDone: (p: Profile) => void })
           <h1 className="font-display text-28 text-ink">which chips should the log have for you?</h1>
           <p className="mt-2 text-14 text-ink-faint">up to five. these appear as one-tap triggers on the nightly log.</p>
           <div className="mt-5 flex flex-wrap gap-2">
-            {TRIGGER_CHOICES.map((t) => (
+            {TRIGGERS.map((t) => (
               <button
                 key={t}
                 type="button"
@@ -264,7 +263,7 @@ export default function Onboarding({ onDone }: { onDone: (p: Profile) => void })
                   preferredTriggers.includes(t) ? chipActive : chipInactive,
                 ].join(" ")}
               >
-                {t}
+                {TRIGGER_LABEL[t]}
               </button>
             ))}
           </div>

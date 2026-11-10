@@ -15,9 +15,9 @@ import {
   writeProfile,
   INTERFERES,
   SMOKE_TIMES,
-  TRIGGER_CHOICES,
   type Profile,
 } from "../lib/profile";
+import { TRIGGERS, orderedTriggers, type TriggerId } from "../lib/entry";
 
 type Result = { id: string; ok: boolean; note?: string };
 const results: Result[] = [];
@@ -50,7 +50,9 @@ function unmountWindow(): void {
 // Constants have content and the right shape.
 check("OB-INTERFERES-nonempty", INTERFERES.length >= 5);
 check("OB-SMOKE-TIMES-nonempty", SMOKE_TIMES.length >= 3);
-check("OB-TRIGGER-CHOICES-nonempty", TRIGGER_CHOICES.length >= 6);
+// Preferred-trigger picker is drawn from the canonical entry TriggerId set,
+// so the daily log can trivially consume what onboarding stored.
+check("OB-TRIGGERS-nonempty", TRIGGERS.length >= 6);
 
 // Round-trip the new fields.
 {
@@ -65,7 +67,7 @@ check("OB-TRIGGER-CHOICES-nonempty", TRIGGER_CHOICES.length >= 6);
     trialStart: "2026-11-10",
     interferesWith: ["sleep", "the gym"],
     smokeTime: "after work",
-    preferredTriggers: ["after work", "bored", "couldn't sleep"],
+    preferredTriggers: ["after-work", "bored", "couldnt-sleep"],
   };
   writeProfile(p);
   const back = readProfile();
@@ -125,15 +127,17 @@ check("OB-TRIGGER-CHOICES-nonempty", TRIGGER_CHOICES.length >= 6);
       trialStart: "2026-11-10",
       interferesWith: "sleep", // wrong: should be an array
       smokeTime: { nested: "bad" }, // wrong: should be a string
-      preferredTriggers: [{ t: "after work" }, null, "bored"], // mixed
+      preferredTriggers: [{ t: "after-work" }, null, "bored", "made-up-trigger"],
     }),
   );
   mountWindow(store);
   const back = readProfile();
   check("OB-malformed-interferes-becomes-undefined", back.interferesWith === undefined);
   check("OB-malformed-smokeTime-becomes-undefined", back.smokeTime === undefined);
+  // Only "bored" survives — the object is not a string, null is not a
+  // string, and "made-up-trigger" is a string but not a valid TriggerId.
   check(
-    "OB-malformed-triggers-filtered-to-strings",
+    "OB-malformed-triggers-filtered-to-valid-ids",
     Array.isArray(back.preferredTriggers) && back.preferredTriggers.length === 1 && back.preferredTriggers[0] === "bored",
     JSON.stringify(back.preferredTriggers),
   );
@@ -153,7 +157,9 @@ check("OB-TRIGGER-CHOICES-nonempty", TRIGGER_CHOICES.length >= 6);
       onboarded: true,
       trialStart: "2026-11-10",
       interferesWith: Array.from({ length: 50 }).map((_, i) => `thing-${i}`),
-      preferredTriggers: Array.from({ length: 50 }).map((_, i) => `trig-${i}`),
+      // Repeat the full trigger set three times — the parser must accept all
+      // valid IDs (after filter), then slice to 5.
+      preferredTriggers: [...TRIGGERS, ...TRIGGERS, ...TRIGGERS],
     }),
   );
   mountWindow(store);
@@ -161,6 +167,66 @@ check("OB-TRIGGER-CHOICES-nonempty", TRIGGER_CHOICES.length >= 6);
   check("OB-interferes-slice-8", (back.interferesWith?.length ?? 0) === 8);
   check("OB-triggers-slice-5", (back.preferredTriggers?.length ?? 0) === 5);
   unmountWindow();
+}
+
+// A second write-then-read round-trip with an all-valid trigger set.
+{
+  const store: Store = new Map();
+  mountWindow(store);
+  const p: Profile = {
+    name: "ava",
+    bedtime: 23,
+    goal: null,
+    ageOk: true,
+    onboarded: true,
+    trialStart: "2026-11-10",
+    preferredTriggers: ["after-her", "alone", "nothing-really"],
+  };
+  writeProfile(p);
+  const back = readProfile();
+  check(
+    "OB-every-trigger-id-roundtrips",
+    Array.isArray(back.preferredTriggers) &&
+      back.preferredTriggers.length === 3 &&
+      back.preferredTriggers.join(",") === "after-her,alone,nothing-really",
+    JSON.stringify(back.preferredTriggers),
+  );
+  unmountWindow();
+}
+
+// --- orderedTriggers: the pure function the daily log uses --------------
+
+// No preference → canonical order.
+{
+  const out = orderedTriggers(undefined);
+  check("OT-no-pref-equals-canonical", out.length === TRIGGERS.length && out[0] === TRIGGERS[0]);
+}
+{
+  const out = orderedTriggers([]);
+  check("OT-empty-pref-equals-canonical", out.length === TRIGGERS.length && out[0] === TRIGGERS[0]);
+}
+
+// Preferred ones first, in picked order, then the rest.
+{
+  const pref: TriggerId[] = ["after-her", "bored", "alone"];
+  const out = orderedTriggers(pref);
+  check("OT-pref-at-front", out[0] === "after-her" && out[1] === "bored" && out[2] === "alone");
+  check("OT-full-length", out.length === TRIGGERS.length);
+  // Every canonical trigger still appears exactly once.
+  const set = new Set(out);
+  check("OT-no-duplicates", set.size === out.length);
+  check(
+    "OT-every-canonical-present",
+    TRIGGERS.every((t) => set.has(t)),
+  );
+}
+
+// Duplicate preferences are collapsed.
+{
+  const pref = ["bored", "bored", "after-her"] as TriggerId[];
+  const out = orderedTriggers(pref);
+  check("OT-duplicates-collapsed", out[0] === "bored" && out[1] === "after-her");
+  check("OT-full-length-after-dedup", out.length === TRIGGERS.length);
 }
 
 const pass = results.filter((r) => r.ok).length;
