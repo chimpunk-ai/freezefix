@@ -257,23 +257,7 @@ export async function shareSundayCard(opts: ShareOptions): Promise<boolean> {
   return downloadSundayCard(opts);
 }
 
-export async function downloadSundayCard(opts: ShareOptions): Promise<boolean> {
-  const blob = await sundayCardBlob(opts);
-  if (!blob) return false;
-  if (typeof document === "undefined") return false;
-  try {
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = `fix-sunday-${opts.stats.end}.png`;
-    document.body.appendChild(a);
-    a.click();
-    a.remove();
-    if (typeof window !== "undefined") {
-      window.setTimeout(() => URL.revokeObjectURL(url), 2000);
-    }
-    return true;
-  } catch {
-    return false;
-  }
+export async function downloadSundayCard(_opts: ShareOptions): Promise<boolean> {
+  // bisect: drawing + sundayCardBlob only; no DOM anchor / URL.createObjectURL
+  return false;
 }
