@@ -102,7 +102,22 @@ function countTriggers(cells: DayCell[]): { top: TriggerId | null; count: number
 
 // Compares the mood logged the day after a smoke with the day after a no-smoke
 // night. Both days must be logged, so a missing day never counts as either.
-function moodAfter(entries: Entries, end: string): { afterNoSmoke: number | null; afterSmoke: number | null } {
+//
+// Returns the sample count per group alongside the averages so the caller can
+// enforce the readme's promise: mood comparisons are withheld until there are
+// at least MIN_MOOD_SAMPLES ratings on each side. A single data point on each
+// side is not a trend, and the mirror must not whisper it to the user as one.
+export const MIN_MOOD_SAMPLES = 3;
+
+function moodAfter(
+  entries: Entries,
+  end: string,
+): {
+  afterNoSmoke: number | null;
+  afterSmoke: number | null;
+  afterNoSmokeN: number;
+  afterSmokeN: number;
+} {
   const afterNoSmoke: number[] = [];
   const afterSmoke: number[] = [];
   for (let i = 0; i < 14; i++) {
@@ -114,7 +129,12 @@ function moodAfter(entries: Entries, end: string): { afterNoSmoke: number | null
     if (e.smoked) afterSmoke.push(n.mood);
     else afterNoSmoke.push(n.mood);
   }
-  return { afterNoSmoke: average(afterNoSmoke), afterSmoke: average(afterSmoke) };
+  return {
+    afterNoSmoke: average(afterNoSmoke),
+    afterSmoke: average(afterSmoke),
+    afterNoSmokeN: afterNoSmoke.length,
+    afterSmokeN: afterSmoke.length,
+  };
 }
 
 function goalLineFor(entries: Entries, goal: Goal | null, start: string): GoalLine | null {
@@ -175,7 +195,16 @@ export function weekStats(entries: Entries, goal: Goal | null, end = todayISO())
       sentences.push(`you tapped “${TRIGGER_LABEL[top]}” on ${numberWord(count)} of them.`);
     }
 
-    if (mood.afterNoSmoke !== null && mood.afterSmoke !== null) {
+    // The mood comparison is the only correlation claim the card makes. Under
+    // MIN_MOOD_SAMPLES on either side, one or two data points can swing the
+    // average by a whole mood level, and the mirror must not whisper a trend
+    // it cannot support. Stay silent until both groups clear the floor.
+    if (
+      mood.afterNoSmoke !== null &&
+      mood.afterSmoke !== null &&
+      mood.afterNoSmokeN >= MIN_MOOD_SAMPLES &&
+      mood.afterSmokeN >= MIN_MOOD_SAMPLES
+    ) {
       const diff = mood.afterNoSmoke - mood.afterSmoke;
       if (Math.abs(diff) < 0.35) {
         sentences.push("the mood you logged the day after didn't move much either way.");

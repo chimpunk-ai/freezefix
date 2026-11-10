@@ -87,6 +87,125 @@ if (!moodStats.sentences.some((s) => s.includes("the day after a no-smoke night"
 const gappy = fill("2026-10-26", [[true, 2], [false, 4], [true, 2]]);
 if (weekStats(gappy, null, SUNDAY).logged !== 3) throw new Error("only logged days count");
 
+// --- mood comparison is withheld below the sample floor --------------------
+// Two logged days are not three and a half — mood deltas computed from one or
+// two "after" days can swing a whole mood level and read as a trend that
+// isn't there. The mirror must stay silent in that regime.
+//
+// Three logged days (mon smoked, tue !smoked, wed smoked) make exactly ONE
+// after-smoke sample (tue mood) and ONE after-no-smoke sample (wed mood). We
+// want the comparison SILENT.
+const thinMood = fill("2026-10-26", [[true, 2], [false, 5], [true, 3]]);
+const thinMoodStats = weekStats(thinMood, null, SUNDAY);
+if (thinMoodStats.moodAfterNoSmoke === null && thinMoodStats.moodAfterSmoke === null) {
+  throw new Error("fixture should produce one sample per side");
+}
+if (thinMoodStats.sentences.some((s) => s.includes("the day after"))) {
+  throw new Error(
+    "mood comparison must be WITHHELD with only one sample per side, got: " +
+      thinMoodStats.sentences.find((s) => s.includes("the day after")),
+  );
+}
+
+// Three per side is the floor and must fire.
+const firingMood = fill("2026-10-26", [
+  [true, 2], [false, 5],
+  [true, 2], [false, 5],
+  [true, 2], [false, 5],
+  [true, 2],
+]);
+const firingStats = weekStats(firingMood, null, SUNDAY);
+if (!firingStats.sentences.some((s) => s.includes("the day after"))) {
+  throw new Error(
+    "mood comparison must fire at three samples per side, got: " +
+      firingStats.sentences.join(" | "),
+  );
+}
+
+// --- all-smoke week says it plainly, no shame copy -------------------------
+const allSmoke = fill("2026-10-26", [
+  [true, 3, ["after-work"]],
+  [true, 3, ["after-work"]],
+  [true, 3, ["after-work"]],
+  [true, 2, ["bored"]],
+  [true, 3, ["after-work"]],
+  [true, 4, ["with-friends"]],
+  [true, 3, ["bored"]],
+]);
+const allSmokeStats = weekStats(allSmoke, null, SUNDAY);
+if (allSmokeStats.smoked !== 7) throw new Error("fixture should be 7 of 7");
+if (!allSmokeStats.sentences[0].includes("seven of the seven nights")) {
+  throw new Error(`all-smoke week opening: ${allSmokeStats.sentences[0]}`);
+}
+const shamePattern = /too much|a lot|problem|bad|concerning|try to|should/i;
+if (shamePattern.test(allSmokeStats.sentences.join(" "))) {
+  throw new Error("an all-smoke week must not scold");
+}
+
+// --- weekend-only observation ---------------------------------------------
+// 10-31 Sat and 11-01 Sun are the two weekend days in the window.
+const weekendOnly = fill("2026-10-26", [
+  [false, 4],
+  [false, 4],
+  [false, 4],
+  [false, 4],
+  [false, 4],
+  [true, 4, ["with-friends"]],
+  [true, 4, ["with-friends"]],
+]);
+// With smoked===2 (below the >=3 threshold for the observation to fire),
+// we expect no "all at the weekend" observation.
+const weekendLight = weekStats(weekendOnly, null, SUNDAY);
+if (weekendLight.observation !== null) {
+  throw new Error("weekend-only fires only with three or more smokes");
+}
+
+// Add a Friday night smoke so there are 3, all on fri/sat/sun → weekends count
+// = 2. That's MOST but not ALL at the weekend, so the observation still
+// doesn't fire (we only state it when ALL weekend or ALL weekday).
+const mixedThree = fill("2026-10-26", [
+  [false, 4], [false, 4], [false, 4], [false, 4],
+  [true, 4, ["with-friends"]], // Fri
+  [true, 4, ["with-friends"]], // Sat
+  [true, 4, ["with-friends"]], // Sun
+]);
+const mixedStats = weekStats(mixedThree, null, SUNDAY);
+// Verify weekday/weekend counts
+if (mixedStats.weekdaySmokes !== 1 || mixedStats.weekendSmokes !== 2) {
+  throw new Error(
+    `mixed should split 1 weekday / 2 weekend, got ${mixedStats.weekdaySmokes}/${mixedStats.weekendSmokes}`,
+  );
+}
+if (mixedStats.observation !== null) {
+  throw new Error("mixed weekday+weekend must not claim 'all weekend'");
+}
+
+// Now make it truly weekend-only: smoked Sat and Sun plus the prior week
+// backfill is pointless — the observation needs >=3 smokes AND all weekend.
+// 2026-10-25 was a Saturday too, but it's outside the 7-day window. Use three
+// weekend days inside the window — impossible with a Sunday end and a 7-day
+// window. So the observation can only fire if someone smokes >=3 times across
+// at most 2 weekend days (an impossible shape for 7-of-which-2-are-weekend).
+// That means the "all weekend" branch in pattern.ts is effectively unreachable
+// for a 7-day window — document it here so a later refactor doesn't lose
+// sight of that.
+// The weekday equivalent is reachable: three or more smokes all on mon-fri.
+const weekdayOnly = fill("2026-10-26", [
+  [true, 3, ["after-work"]], // Mon
+  [true, 3, ["after-work"]], // Tue
+  [true, 3, ["after-work"]], // Wed
+  [false, 4], [false, 4], [false, 4], [false, 4],
+]);
+const weekdayStats = weekStats(weekdayOnly, null, SUNDAY);
+if (weekdayStats.weekdaySmokes !== 3 || weekdayStats.weekendSmokes !== 0) {
+  throw new Error(
+    `weekday-only should split 3/0, got ${weekdayStats.weekdaySmokes}/${weekdayStats.weekendSmokes}`,
+  );
+}
+if (weekdayStats.observation !== "all of this week's smokes were on weekdays.") {
+  throw new Error(`expected weekday observation, got: ${weekdayStats.observation}`);
+}
+
 // --- the goal line ----------------------------------------------------------
 const lastWeek = fill("2026-10-19", [
   [true, 3, [], false],
