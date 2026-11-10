@@ -157,27 +157,20 @@ jobs:
         # that over-flags makes someone who came to feel normal feel watched.
         run: npm run test:offtopic
 
-      - name: Scenario card tests
-        # Unique ids, non-blank copy, time-of-day filtering, recency float-up.
-        run: npm run test:scenarios
+      - name: Pattern-mirror engine tests
+        # The weekly card's sentences, cells, goal line and correlation
+        # guardrails. The one claim-making piece in the product.
+        run: npm run test:mirror
 
-      - name: Landing-demo tests
-        # Every branch of the landing-page chat demo must lead somewhere:
-        # no reply pointing at a missing node, no dead end that isn't a real ending.
-        run: npm run test:demo
+      - name: Country / region helper tests
+        run: npm run test:country
 
-      - name: Wins log tests
-        # Device-only wins log: ordering, delete-by-displayed-index, weekly summary.
-        run: npm run test:wins
-
-      - name: Facts tests
-        # Rotation + the no-lecture rule the product promises.
-        run: npm run test:facts
-
-      - name: NDJSON streaming parser tests
-        # A reply must rebuild identically however the network splits it.
-        run: npm run test:ndjson
+      - name: Resources (crisis directory) tests
+        run: npm run test:resources
 
       - name: Plans / trial math tests
         # Right currency per region; trial dates calculated not invented.
         run: npm run test:plans
+
+      - name: PWA manifest + service-worker tests
+        run: npm run test:pwa
