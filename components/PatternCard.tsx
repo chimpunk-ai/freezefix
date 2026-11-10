@@ -118,7 +118,7 @@ export function PatternCard({
           <button
             type="button"
             onClick={onAsk}
-            className="ff-chip rounded-pill border border-accent/40 bg-accent/10 px-4 py-2 text-14 font-medium text-accent hover:bg-accent/15"
+            className="ff-chip rounded-pill bg-signpost px-4 py-2 text-14 font-medium text-signpost-ink hover:brightness-105"
           >
             ask Fix about this week
           </button>

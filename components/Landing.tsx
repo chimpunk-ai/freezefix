@@ -46,16 +46,18 @@ export default function Landing() {
           <br />
           you just have to notice.
         </h1>
-        <p className="mt-4 max-w-[38ch] text-16 text-ink-soft">
-          a private log for people who smoke and wonder, quietly, whether it&rsquo;s doing something
-          they can&rsquo;t name. three taps a night. one card on sunday. no streak, no score, nobody
-          telling you off.
+        <p className="mt-5 max-w-[42ch] text-20 leading-[1.35] text-ink">
+          a private nightly check-in for people who smoke weed. we don&rsquo;t make you quit —
+          we show you what your week actually looks like, so you can decide what to do about it.
+        </p>
+        <p className="mt-3 max-w-[38ch] text-14 text-ink-soft">
+          three taps a night. one card on sunday. no streak, no score, nobody telling you off.
         </p>
 
         <div className="mt-6 flex flex-wrap items-center gap-3">
           <Link
             href="/app"
-            className="rounded-pill bg-accent px-6 py-3 text-16 font-medium text-bg no-underline"
+            className="rounded-pill bg-signpost px-6 py-3 text-16 font-medium text-signpost-ink no-underline"
           >
             start the free week
           </Link>
@@ -69,7 +71,7 @@ export default function Landing() {
       </section>
 
       <section className="mx-auto mt-10 w-full max-w-[560px] px-5">
-        <p className="mb-2 text-12 uppercase tracking-[0.14em] text-ink-faint">what sunday looks like</p>
+        <p className="mb-2 text-12 uppercase tracking-[0.14em] text-signpost">what sunday looks like</p>
         <div className="rounded-card border border-line bg-card/60 p-2">
           <PatternCard name="nico" stats={sample} onAsk={() => {}} dimmed />
         </div>
@@ -83,7 +85,7 @@ export default function Landing() {
           {STEPS.map((s) => (
             <div key={s.n} className="border-t border-line pt-5">
               <div className="flex items-baseline gap-3">
-                <span className="text-12 tabular-nums text-ink-faint">{s.n}</span>
+                <span className="font-display text-28 tabular-nums text-signpost">{s.n}</span>
                 <h2 className="font-display text-20 text-ink">{s.title}</h2>
               </div>
               <p className="mt-2 text-14 leading-relaxed text-ink-soft">{s.body}</p>
