@@ -18,6 +18,7 @@
     "test:pwa": "tsx scripts/test-pwa.ts",
     "test:offtopic": "tsx scripts/test-offtopic.ts",
     "test:mirror": "tsx scripts/test-mirror.ts",
+    "test:chime": "tsx scripts/test-chime.ts",
     "preview": "opennextjs-cloudflare build && opennextjs-cloudflare preview",
     "deploy": "opennextjs-cloudflare build && opennextjs-cloudflare deploy",
     "upload": "opennextjs-cloudflare build && opennextjs-cloudflare upload",

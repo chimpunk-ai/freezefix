@@ -1,6 +1,19 @@
+"use client";
+
+import { useEffect, useState } from "react";
+
 import { MoodFace } from "@/components/MoodFace";
 import { MOOD_LABEL, dayFromISO, prettyDay, type Mood } from "@/lib/entry";
 import { goalSentence, type WeekStats } from "@/lib/pattern";
+import { playSundayChime } from "@/lib/chime";
+import {
+  readChimePref,
+  writeChimePref,
+  readLastAsked,
+  stampAsked,
+  shouldAskOptIn,
+  shouldPlayChime,
+} from "@/lib/chime-pref";
 
 // The weekly mirror card. The one thing everything else in the app exists to
 // produce. No grade, no trophy, no congratulations: a shape, said plainly.
@@ -81,6 +94,44 @@ export function PatternCard({
 }) {
   const who = name.trim() || "you";
   const line = stats.goalLine;
+
+  // The chime.
+  //
+  // - Only on real cards, never on the `dimmed` landing-page sample.
+  // - Only if the user has said yes once, persists forever (or until they
+  //   toggle it in settings — a follow-up PR will add that control).
+  // - Timed to land after the week-grid finishes drawing: the last cell
+  //   starts at 660ms and runs for 800ms, so the chime begins at ~1500ms.
+  // - Reduced-motion users get silence, same rule as every other animation.
+  //
+  // We also, exactly once per 7 days and only for an `unset` pref, show a
+  // single small chip under the card asking if they'd like a soft tone
+  // next time. No modal, no upsell, no "later this week" nag.
+  const [askNow, setAskNow] = useState(false);
+
+  useEffect(() => {
+    if (dimmed) return;
+    const p = readChimePref();
+    if (shouldPlayChime(p)) {
+      const t = window.setTimeout(() => {
+        void playSundayChime();
+      }, 1500);
+      return () => window.clearTimeout(t);
+    }
+    if (shouldAskOptIn(p, readLastAsked())) {
+      setAskNow(true);
+      stampAsked();
+    }
+    return undefined;
+  }, [dimmed]);
+
+  function choose(answer: "yes" | "no") {
+    writeChimePref(answer);
+    setAskNow(false);
+    // Don't retro-play on yes — the card has already drawn. The sound is
+    // part of the sunday ritual, not a reward for tapping a chip.
+  }
+
   return (
     <article
       className={[
@@ -129,6 +180,29 @@ export function PatternCard({
           </button>
         ) : null}
       </div>
+
+      {askNow ? (
+        <div className="mt-5 rounded-card border border-line bg-chip/60 px-4 py-3 text-14 text-ink-soft">
+          <p>want a soft chime next sunday when the card arrives?</p>
+          <div className="mt-2 flex flex-wrap gap-2">
+            <button
+              type="button"
+              onClick={() => choose("yes")}
+              className="ff-chip rounded-pill border border-accent/40 bg-accent/10 px-3 py-1.5 text-12 text-accent hover:bg-accent/15"
+            >
+              yes, softly
+            </button>
+            <button
+              type="button"
+              onClick={() => choose("no")}
+              className="ff-chip rounded-pill px-3 py-1.5 text-12 text-ink-faint hover:text-ink-soft"
+            >
+              no thanks
+            </button>
+          </div>
+        </div>
+      ) : null}
+
     </article>
   );
 }
