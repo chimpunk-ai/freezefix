@@ -175,7 +175,7 @@ export default function PlansPage() {
           <div className="mt-6">
             <Link
               href="/app"
-              className="block w-full rounded-pill bg-accent px-6 py-3 text-center text-16 font-medium text-bg no-underline"
+              className="block w-full rounded-pill bg-signpost px-6 py-3 text-center text-16 font-medium text-signpost-ink no-underline shadow-[0_8px_24px_-12px_rgba(240,168,104,0.6)] transition-transform hover:-translate-y-[1px]"
             >
               start the free week
             </Link>
@@ -190,7 +190,7 @@ export default function PlansPage() {
               type="button"
               onClick={start}
               disabled={state === "loading" || state === "opening" || state === "confirming"}
-              className="w-full rounded-pill bg-accent px-6 py-3 text-16 font-medium text-bg disabled:opacity-60"
+              className="w-full rounded-pill bg-signpost px-6 py-3 text-16 font-medium text-signpost-ink shadow-[0_8px_24px_-12px_rgba(240,168,104,0.6)] transition-transform hover:-translate-y-[1px] disabled:opacity-60 disabled:hover:translate-y-0"
             >
               {state === "confirming"
                 ? "waiting for the receipt…"
