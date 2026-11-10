@@ -41,12 +41,12 @@ export default function Landing() {
       </header>
 
       <section className="mx-auto w-full max-w-[560px] px-5">
-        <h1 className="font-display text-40 leading-[1.08] text-ink">
+        <h1 className="font-display text-28 leading-[1.08] text-ink sm:text-40">
           you don&rsquo;t have to quit.
           <br />
           you just have to notice.
         </h1>
-        <p className="mt-5 max-w-[42ch] text-20 leading-[1.35] text-ink">
+        <p className="mt-5 max-w-[42ch] text-16 leading-[1.5] text-ink sm:text-20 sm:leading-[1.35]">
           a private nightly check-in for people who smoke weed. we don&rsquo;t make you quit —
           we show you what your week actually looks like, so you can decide what to do about it.
         </p>
@@ -54,14 +54,17 @@ export default function Landing() {
           three taps a night. one card on sunday. no streak, no score, nobody telling you off.
         </p>
 
-        <div className="mt-6 flex flex-wrap items-center gap-3">
+        <div className="mt-7 flex flex-wrap items-center gap-3">
           <Link
             href="/app"
-            className="rounded-pill bg-signpost px-6 py-3 text-16 font-medium text-signpost-ink no-underline"
+            className="rounded-pill bg-signpost px-6 py-3 text-16 font-medium text-signpost-ink no-underline shadow-[0_8px_24px_-12px_rgba(240,168,104,0.6)] transition-transform hover:-translate-y-[1px]"
           >
             start the free week
           </Link>
-          <Link href="/plans" className="text-14 text-ink-faint underline decoration-line underline-offset-4 hover:text-ink-soft">
+          <Link
+            href="/plans"
+            className="rounded-pill border border-line px-5 py-3 text-14 text-ink-soft no-underline hover:border-ink-faint hover:text-ink"
+          >
             what it costs
           </Link>
         </div>
@@ -70,34 +73,40 @@ export default function Landing() {
         </p>
       </section>
 
-      <section className="mx-auto mt-10 w-full max-w-[560px] px-5">
-        <p className="mb-2 text-12 uppercase tracking-[0.14em] text-signpost">what sunday looks like</p>
-        <div className="rounded-card border border-line bg-card/60 p-2">
-          <PatternCard name="nico" stats={sample} onAsk={() => {}} dimmed />
-        </div>
-        <p className="mt-2 text-12 text-ink-faint">
-          A sample week from a sample log, not a mockup of something we haven&rsquo;t built.
+      <section className="mx-auto mt-12 w-full max-w-[560px] px-5 sm:mt-14">
+        <p className="mb-3 text-12 uppercase tracking-[0.18em] text-signpost">what sunday looks like</p>
+        <PatternCard name="nico" stats={sample} onAsk={() => {}} dimmed />
+        <p className="mt-3 text-12 text-ink-faint">
+          a sample week from a sample log, not a mockup of something we haven&rsquo;t built.
         </p>
       </section>
 
-      <section className="mx-auto mt-14 w-full max-w-[560px] px-5">
-        <div className="space-y-8">
+      <section className="mx-auto mt-16 w-full max-w-[560px] px-5">
+        <div className="space-y-10">
           {STEPS.map((s) => (
-            <div key={s.n} className="border-t border-line pt-5">
-              <div className="flex items-baseline gap-3">
-                <span className="font-display text-28 tabular-nums text-signpost">{s.n}</span>
-                <h2 className="font-display text-20 text-ink">{s.title}</h2>
+            <div key={s.n} className="grid grid-cols-[48px_1fr] gap-x-4 border-t border-line pt-6 sm:grid-cols-[56px_1fr] sm:gap-x-5">
+              <span className="font-display text-40 leading-none tabular-nums text-signpost">
+                {s.n}
+              </span>
+              <div>
+                <h2 className="font-display text-20 leading-tight text-ink">{s.title}</h2>
+                <p className="mt-2 text-14 leading-relaxed text-ink-soft sm:text-16">{s.body}</p>
               </div>
-              <p className="mt-2 text-14 leading-relaxed text-ink-soft">{s.body}</p>
             </div>
           ))}
         </div>
       </section>
 
-      <section className="mx-auto mt-14 w-full max-w-[560px] px-5">
-        <div className="rounded-card border border-line bg-card px-4 py-5">
-          <h2 className="font-display text-20 text-ink">and Fix, when you want a knife not a friend.</h2>
-          <p className="mt-2 text-14 leading-relaxed text-ink-soft">
+      <section className="mx-auto mt-16 w-full max-w-[560px] px-5">
+        <div className="rounded-card border border-signpost/25 bg-signpost/[0.04] px-5 py-6">
+          <div className="mb-2 flex items-center gap-2">
+            <span aria-hidden className="h-[10px] w-[10px] rounded-full bg-signpost/80" />
+            <p className="text-12 uppercase tracking-[0.18em] text-signpost">Fix</p>
+          </div>
+          <h2 className="font-display text-20 leading-tight text-ink">
+            when you want a knife, not a friend.
+          </h2>
+          <p className="mt-2 text-14 leading-relaxed text-ink-soft sm:text-16">
             inside the card there&rsquo;s one button. ask it one question about your week and it answers
             from your own log — dry, brief, and it stops. five questions a day. it never messages you
             first, never asks how you&rsquo;re feeling, and never tells you what to do.
@@ -105,9 +114,9 @@ export default function Landing() {
         </div>
       </section>
 
-      <section className="mx-auto mt-14 w-full max-w-[560px] px-5">
+      <section className="mx-auto mt-16 w-full max-w-[560px] px-5">
         <h2 className="font-display text-20 text-ink">what this isn&rsquo;t</h2>
-        <ul className="mt-3 space-y-2 text-14 text-ink-soft">
+        <ul className="mt-4 space-y-3 text-14 text-ink-soft sm:text-16">
           {[
             "not a quitting app. no counter, no clean days, no relapse.",
             "not a strain tracker. nobody here cares about terpenes.",
@@ -116,50 +125,54 @@ export default function Landing() {
             "not a place that thinks you're broken for smoking.",
           ].map((line) => (
             <li key={line} className="flex gap-3">
-              <span aria-hidden className="mt-2 h-1 w-1 shrink-0 rounded-full bg-accent/60" />
+              <span aria-hidden className="mt-[0.75em] h-px w-3 shrink-0 bg-signpost/70" />
               <span>{line}</span>
             </li>
           ))}
         </ul>
       </section>
 
-      <section className="mx-auto mt-14 w-full max-w-[560px] px-5">
-        <div className="rounded-card border border-accent/30 bg-accent/[0.06] px-4 py-5">
-          <h2 className="font-display text-28 text-ink">$39.99 a year.</h2>
-          <p className="mt-1 text-14 text-ink-soft">
+      <section className="mx-auto mt-16 w-full max-w-[560px] px-5">
+        <div className="rounded-card border border-line bg-card/70 px-5 py-7">
+          <p className="mb-2 text-12 uppercase tracking-[0.18em] text-signpost">the price</p>
+          <h2 className="font-display text-28 leading-tight text-ink sm:text-40">$39.99 a year.</h2>
+          <p className="mt-2 text-14 text-ink-soft sm:text-16">
             or $9.99 a month if you&rsquo;d rather not commit. seven days free first, no card, and the
             whole thing is open for those seven days — log, card, shelf, Fix.
           </p>
           <Link
             href="/plans"
-            className="mt-4 inline-block rounded-pill bg-accent px-5 py-2.5 text-14 font-medium text-bg no-underline"
+            className="mt-5 inline-block rounded-pill bg-signpost px-5 py-2.5 text-14 font-medium text-signpost-ink no-underline shadow-[0_8px_24px_-12px_rgba(240,168,104,0.6)] transition-transform hover:-translate-y-[1px]"
           >
             the price, honestly
           </Link>
         </div>
       </section>
 
-      <footer className="mx-auto mt-14 w-full max-w-[560px] px-5 pb-14">
-        <div className="border-t border-line pt-5 text-12 text-ink-faint">
-          <p className="max-w-[46ch]">
+      <footer className="mx-auto mt-16 w-full max-w-[560px] px-5 pb-14">
+        <div className="border-t border-line pt-6 text-12 text-ink-faint">
+          <p className="max-w-[46ch] text-14 leading-relaxed text-ink-soft">
             everything you write stays on your phone unless you ask for a voice note to be typed out or
             you talk to Fix. no account, no email, no way for us to look you up.
           </p>
-          <div className="mt-4 flex flex-wrap gap-x-5 gap-y-2">
-            <Link href="/help" className="text-frost underline decoration-frost/40 underline-offset-4">
+          <div className="mt-5 flex flex-wrap items-center gap-x-5 gap-y-2">
+            <Link
+              href="/help"
+              className="rounded-pill border border-frost/40 bg-frost/[0.08] px-3 py-1.5 text-12 font-medium text-frost no-underline hover:bg-frost/[0.12]"
+            >
               get help now
             </Link>
-            <Link href="/privacy" className="underline decoration-line underline-offset-4">
+            <Link href="/privacy" className="underline decoration-line underline-offset-4 hover:text-ink-soft">
               privacy
             </Link>
-            <Link href="/terms" className="underline decoration-line underline-offset-4">
+            <Link href="/terms" className="underline decoration-line underline-offset-4 hover:text-ink-soft">
               terms
             </Link>
-            <Link href="/refunds" className="underline decoration-line underline-offset-4">
+            <Link href="/refunds" className="underline decoration-line underline-offset-4 hover:text-ink-soft">
               refunds
             </Link>
           </div>
-          <p className="mt-4">fix · 18+ · made for adults who smoke and wonder</p>
+          <p className="mt-5 text-12">fix · 18+ · made for adults who smoke and wonder</p>
         </div>
       </footer>
     </main>
