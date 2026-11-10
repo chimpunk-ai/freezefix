@@ -19,6 +19,12 @@
   --color-accent-ink: #12100e;
   --color-glow: #b3c49f;
 
+  /* Amber signpost. For the bits a tired, lazy, half-focused user needs to
+     see at a glance at 11pm — primary CTAs, section numbers, the one button
+     on the Sunday card. Loud where attention belongs, nowhere else. */
+  --color-signpost: #f0a868;
+  --color-signpost-ink: #12100e;
+
   /* Terracotta. The get-help-now chip, and nothing else. */
   --color-frost: #d8927a;
   /* Kept so older components keep compiling; same sage family. */
