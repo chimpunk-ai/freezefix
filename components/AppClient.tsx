@@ -10,10 +10,10 @@ import Onboarding from "@/components/Onboarding";
 import { PatternCard } from "@/components/PatternCard";
 import { useRegion } from "@/components/useRegion";
 import { clearEntries, readEntries, todayISO, type Entries } from "@/lib/entry";
-import { dueMirror, latestMirror, markSeen } from "@/lib/mirror";
+import { clearSeen, dueMirror, latestMirror, markSeen } from "@/lib/mirror";
 import { recentWeeks, type WeekStats } from "@/lib/pattern";
 import { BEDTIMES, GOAL_EXAMPLES, bedtimeLabel, clearProfile, patchProfile, readProfile, type Profile } from "@/lib/profile";
-import { readChimePref, writeChimePref, type ChimePref } from "@/lib/chime-pref";
+import { clearChimePref, readChimePref, writeChimePref, type ChimePref } from "@/lib/chime-pref";
 import { trialState } from "@/lib/trial";
 
 // The app shell. No navigation tree, no home screen, no feed: the log is the
@@ -29,6 +29,12 @@ export default function AppClient({ view = "log" }: { view?: View }) {
   const [profile, setProfile] = useState<Profile | null>(null);
   const [entries, setEntries] = useState<Entries>({});
   const [paid, setPaid] = useState(false);
+  // Whether the payment provider is actually configured on the server. While it
+  // isn't, the free week never ends: locking someone out of their own log with
+  // no way to pay would contradict Terms §5 ("until payments are switched on,
+  // the free week does not end and no one can be charged"). Defaults to false,
+  // so a failed fetch fails open to "free".
+  const [paymentsOn, setPaymentsOn] = useState(false);
   const [fixOpen, setFixOpen] = useState(false);
   const [manualSheet, setManualSheet] = useState<WeekStats | null>(null);
   const [dismissed, setDismissed] = useState<string | null>(null);
@@ -46,8 +52,14 @@ export default function AppClient({ view = "log" }: { view?: View }) {
     /* eslint-enable react-hooks/set-state-in-effect */
     fetch("/api/paywall")
       .then((r) => r.json())
-      .then((d: { active?: boolean }) => setPaid(Boolean(d.active)))
-      .catch(() => setPaid(false));
+      .then((d: { active?: boolean; paymentsOn?: boolean }) => {
+        setPaid(Boolean(d.active));
+        setPaymentsOn(Boolean(d.paymentsOn));
+      })
+      .catch(() => {
+        setPaid(false);
+        setPaymentsOn(false);
+      });
   }, []);
 
   // The Sunday card arrives on its own, once. It is derived from the log instead
@@ -75,7 +87,7 @@ export default function AppClient({ view = "log" }: { view?: View }) {
   }
 
   const trial = trialState(profile);
-  const locked = Boolean(profile.onboarded && trial.ended && !paid);
+  const locked = Boolean(profile.onboarded && trial.ended && !paid && paymentsOn);
   const stats = latestMirror(entries, profile.goal);
 
   return (
@@ -137,6 +149,7 @@ export default function AppClient({ view = "log" }: { view?: View }) {
           daysLeft={trial?.daysLeft ?? 0}
           ended={Boolean(trial?.ended)}
           paid={paid}
+          paymentsOn={paymentsOn}
           onChange={(p) => setProfile(p)}
         />
       ) : (
@@ -159,7 +172,13 @@ export default function AppClient({ view = "log" }: { view?: View }) {
               what it costs
             </Link>
             <span className="text-ink-faint">
-              {paid ? "subscribed" : trial?.daysLeft ? `${trial.daysLeft} free days left` : "free week"}
+              {paid
+                ? "subscribed"
+                : !paymentsOn
+                  ? "free, for now"
+                  : trial?.daysLeft
+                    ? `${trial.daysLeft} free days left`
+                    : "free week"}
             </span>
           </nav>
         </>
@@ -222,6 +241,7 @@ function SettingsView({
   daysLeft,
   ended,
   paid,
+  paymentsOn,
   onChange,
 }: {
   profile: Profile;
@@ -229,6 +249,7 @@ function SettingsView({
   daysLeft: number;
   ended: boolean;
   paid: boolean;
+  paymentsOn: boolean;
   onChange: (p: Profile) => void;
 }) {
   const [name, setName] = useState(profile.name);
@@ -264,8 +285,18 @@ function SettingsView({
   }
 
   function forget() {
-    clearEntries();
-    clearProfile();
+    // Every ff_* key the app writes, not just the two big ones. The privacy
+    // policy (§9) promises this removes "the log, your name, your settings and
+    // the help-page country choice"; scripts/test-legal.ts pins the list.
+    clearEntries(); // ff_entries
+    clearProfile(); // ff_profile
+    clearSeen(); // ff_mirror_seen
+    clearChimePref(); // ff_chime, ff_chime_asked
+    try {
+      window.localStorage.removeItem("ff_region"); // help-page country pick
+    } catch {
+      /* storage can be blocked */
+    }
     router.replace("/");
   }
 
@@ -394,7 +425,13 @@ function SettingsView({
 
       <div className="mt-10 rounded-card border border-line bg-card px-4 py-4">
         <p className="text-14 text-ink">
-          {paid ? "subscribed" : ended ? "the free week is over" : `${daysLeft} of 7 free days left`}
+          {paid
+            ? "subscribed"
+            : !paymentsOn
+              ? "free, for now. payments aren't switched on, so nothing can be charged."
+              : ended
+                ? "the free week is over"
+                : `${daysLeft} of 7 free days left`}
         </p>
         <p className="mt-1 text-12 text-ink-faint">
           {logged} {logged === 1 ? "night" : "nights"} logged on this phone. nothing here has an email

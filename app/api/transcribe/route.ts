@@ -2,9 +2,11 @@ import { NextResponse } from "next/server";
 import { consumeQuota, refundQuota, readDeviceId, newDeviceId, deviceCookie } from "@/lib/quota";
 import { voiceOn } from "@/lib/features";
 
-// Voice note → text. Up to 60 seconds. The audio is sent to the transcription service once
-// and never stored by FreezeFix. The text goes back to the phone, where the user can see it,
-// and then through the same safety check as typed words before any moves.
+// Voice note → text. The log UI records up to 10 seconds; this route accepts up to 60. The
+// audio is sent to the transcription service once and never stored by us. The text goes back
+// to the phone, where the user can read it, change it, or drop it before the night is saved.
+// Transcription happens on the provider's servers, not in the browser — the privacy policy
+// (lib/legal.ts §4) says so in those words; keep them in sync.
 //
 // Provider is set in Cloudflare secrets (Budget & Ops picks it, HQ T33). Any service with an
 // OpenAI-style /audio/transcriptions endpoint works. Until a key is set, voice is switched off.

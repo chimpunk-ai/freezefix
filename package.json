@@ -21,6 +21,7 @@
     "test:fix": "tsx scripts/test-fix.ts",
     "test:chime": "tsx scripts/test-chime.ts",
     "test:onboarding": "tsx scripts/test-onboarding.ts",
+    "test:legal": "tsx scripts/test-legal.ts",
     "preview": "opennextjs-cloudflare build && opennextjs-cloudflare preview",
     "deploy": "opennextjs-cloudflare build && opennextjs-cloudflare deploy",
     "upload": "opennextjs-cloudflare build && opennextjs-cloudflare upload",

@@ -19,7 +19,7 @@ const STEPS = [
   {
     n: "01",
     title: "the log",
-    body: "yes or no. one face. up to three chips. nine seconds, at bedtime, in the dark. hold the mic if you want to say it out loud — we keep the words, throw the audio away.",
+    body: "yes or no. one face. up to three chips. nine seconds, at bedtime, in the dark. a few words if you want them, typed or said — the words are kept, the audio isn't.",
   },
   {
     n: "02",

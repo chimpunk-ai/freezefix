@@ -38,6 +38,17 @@ export function writeChimePref(v: "yes" | "no"): void {
   }
 }
 
+/** Remove both chime keys. Part of Settings → "forget everything". */
+export function clearChimePref(): void {
+  if (typeof window === "undefined") return;
+  try {
+    window.localStorage.removeItem(PREF_KEY);
+    window.localStorage.removeItem(ASKED_KEY);
+  } catch {
+    // ignore
+  }
+}
+
 /** When was the opt-in question last shown, as ms since epoch, or 0. */
 export function readLastAsked(): number {
   if (typeof window === "undefined") return 0;
