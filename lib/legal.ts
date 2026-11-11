@@ -113,6 +113,7 @@ We never sell your data or share it for advertising. We only use service provide
 | Cloudflare | Hosts the site and the server that handles a Fix question | Global network |
 | Anthropic | Writes the Fix reply from the week you send (section 3) | USA |
 | Supabase | A database holding the daily-limit counts, the free-week start record and, if payments go live, subscription status — all keyed by one-way hashes | EU (Frankfurt, Germany) |
+| Google Fonts | Serves the two typefaces every page uses. Your browser fetches them from Google, which sees your IP address and browser type as any web server does; it is not told who you are or what you logged | Global |
 | Transcription provider (not yet switched on) | Turns a voice note into text (section 4) | To be named before voice is switched on |
 | Paddle (not yet switched on) | Would take payments and handle VAT and receipts as merchant of record | — |
 | Zoho Mail | Our support inbox, if you write to us | India |
@@ -121,7 +122,7 @@ We may also share data if the law requires it, to protect someone's life in an e
 
 ## 7. Cookies and technical data
 
-We don't use analytics or advertising cookies, and there is no tracking script on the site.
+We don't use analytics or advertising cookies, and there is no tracking script on the site. The only third-party request a page makes on its own is for the typefaces, from Google Fonts (section 6); no page sends your log anywhere.
 
 - **A device cookie** (\`ff_did\`): a random identifier set by our server the first time your phone talks to it. It can't be read by page scripts. It is used only to count daily Fix questions, to record the start of the free week, and, if payments go live, to recognise a subscription. It holds nothing about you.
 - **A fallback counter** (\`ff_q\`): only when our database is unavailable, a two-day cookie holds the day's count so limits still work.
