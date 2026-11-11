@@ -61,12 +61,18 @@ export default function PlansPage() {
     fetch("/api/paywall", { cache: "no-store" })
       .then((r) => r.json())
       .then((d) => {
+        // While payments are off the server reports everyone as active (open
+        // beta). That must read as "free, for now", not "already subscribed".
+        if (!d.paymentsOn) {
+          setState("off");
+          return;
+        }
         if (d.active) {
           setState("active");
           return;
         }
         cfg.current = { ref: d.ref, checkout: d.checkout };
-        setState(d.paymentsOn ? "ready" : "off");
+        setState("ready");
       })
       .catch(() => setState("error"));
   }, []);
