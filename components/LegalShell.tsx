@@ -1,13 +1,15 @@
-import Link from "next/link";
-import Markdown from "@/components/Markdown";
+import Markdown, { headingsOf } from "@/components/Markdown";
+import SectionIndex from "@/components/SectionIndex";
+import { Container, Main, SiteHeader } from "@/components/Shell";
 import SiteFooter from "@/components/SiteFooter";
 import type { ReactNode } from "react";
 
-// Shell for the long-form legal pages (privacy, terms, refunds). The header mirrors
-// the landing page so the whole site reads as one piece: round "f" badge in mint,
-// "Fix" wordmark in Newsreader, a "Get help now" link that keeps crisis help within
-// one tap of any page. The `aboveContent` slot lets a specific page (e.g. /privacy)
-// prepend a classy summary panel without duplicating the whole shell.
+// Shell for the long-form legal pages (privacy, terms, refunds).
+//
+// Reading measure is 680px (~70ch). On a laptop the section index sits in a
+// sticky column to the left of the text; on a phone it is a compact list
+// under the title that the reader can jump from. The `aboveContent` slot lets
+// /privacy prepend its at-a-glance card without duplicating the shell.
 export default function LegalShell({
   source,
   aboveContent,
@@ -15,43 +17,27 @@ export default function LegalShell({
   source: string;
   aboveContent?: ReactNode;
 }) {
+  const headings = headingsOf(source);
   return (
-    <div className="mx-auto flex min-h-dvh w-full max-w-3xl flex-col px-5 pb-10 pt-4">
-      <header className="mb-8 flex items-center justify-between py-2">
-        <Link href="/" aria-label="GetFreezeFix home" className="flex items-center gap-2.5">
-          <span
-            aria-hidden="true"
-            className="flex h-9 w-9 items-center justify-center rounded-full bg-accent font-serif text-lg italic text-accent-ink"
-            style={{ fontFamily: "var(--font-display)" }}
-          >
-            f
-          </span>
-          <span className="font-serif text-xl text-ink" style={{ fontFamily: "var(--font-display)" }}>
-            Fix
-          </span>
-        </Link>
-        <nav className="flex items-center gap-3 text-sm">
-          <Link
-            href="/help"
-            className="flex min-h-[40px] items-center gap-2 rounded-full border border-frost/60 px-4 py-1.5 text-frost transition hover:border-frost hover:bg-frost/10"
-          >
-            Get help now
-          </Link>
-          <Link
-            href="/"
-            className="hidden min-h-[40px] items-center rounded-full bg-chip px-4 py-1.5 text-ink transition hover:bg-chip/80 sm:flex"
-          >
-            Back
-          </Link>
-        </nav>
-      </header>
-      <main className="flex-1">
-        {aboveContent}
-        <Markdown source={source} />
-      </main>
-      <div className="mt-12">
-        <SiteFooter />
-      </div>
-    </div>
+    <>
+      <SiteHeader />
+      <Main>
+        <Container className="pb-10 lg:grid lg:grid-cols-[220px_minmax(0,680px)] lg:justify-center lg:gap-16 lg:pt-4">
+          <div className="lg:order-2">
+            {aboveContent}
+            <div className="lg:hidden">
+              <SectionIndex headings={headings} compact />
+            </div>
+            <Markdown source={source} />
+          </div>
+          <div className="hidden lg:order-1 lg:block">
+            <SectionIndex headings={headings} />
+          </div>
+        </Container>
+        <Container className="pb-14">
+          <SiteFooter />
+        </Container>
+      </Main>
+    </>
   );
 }

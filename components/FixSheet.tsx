@@ -133,9 +133,9 @@ export default function FixSheet({
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/60" role="dialog" aria-modal="true" aria-label="Fix">
+    <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/60 md:items-center md:p-6" role="dialog" aria-modal="true" aria-label="Fix">
       <button type="button" aria-label="close" onClick={onClose} className="absolute inset-0 cursor-default" />
-      <div className="ff-sheet relative flex max-h-[88vh] w-full max-w-[560px] flex-col rounded-t-sheet border border-line bg-bg">
+      <div className="ff-sheet relative flex max-h-[88vh] w-full max-w-[560px] flex-col rounded-t-sheet border border-line bg-bg md:max-h-[80vh] md:rounded-sheet">
         <div className="flex items-center justify-between border-b border-line/70 px-5 py-3">
           <div className="flex items-baseline gap-1.5">
             <span className="font-display text-20 text-ink">fix</span>
@@ -145,13 +145,13 @@ export default function FixSheet({
             <span className="text-12 text-ink-faint">
               {used}/{limit} today
             </span>
-            <button type="button" onClick={onClose} className="text-14 text-ink-faint hover:text-ink-soft">
+            <button type="button" onClick={onClose} className="inline-flex min-h-11 items-center text-14 text-ink-faint hover:text-ink-soft">
               close
             </button>
           </div>
         </div>
 
-        <div className="min-h-0 flex-1 space-y-3 overflow-y-auto px-5 py-4">
+        <div className="min-h-0 flex-1 space-y-3 overflow-y-auto px-5 py-4" role="log" aria-live="polite" aria-label="conversation">
           {thread.map((t, i) => (
             <p
               key={i}
@@ -162,11 +162,12 @@ export default function FixSheet({
                   : "ml-auto bg-accent/15 text-ink",
               ].join(" ")}
             >
+              <span className="ff-sr">{t.role === "assistant" ? "fix: " : "you: "}</span>
               {t.text}
             </p>
           ))}
 
-          {sending ? <p className="text-12 text-ink-faint">fix is reading your week…</p> : null}
+          {sending ? <p className="text-12 text-ink-faint" role="status">fix is reading your week…</p> : null}
 
           {crisis ? (
             <div className="rounded-card border border-frost/40 bg-frost/10 p-4">
@@ -192,7 +193,7 @@ export default function FixSheet({
             </div>
           ) : null}
 
-          {note ? <p className="text-12 text-frost">{note}</p> : null}
+          {note ? <p className="text-12 text-frost" role="status">{note}</p> : null}
 
           {note?.includes("free week") ? (
             <button type="button" onClick={onPaywall} className="text-14 text-accent underline decoration-accent/40 underline-offset-4">
@@ -251,6 +252,8 @@ export default function FixSheet({
                 value={input}
                 onChange={(e) => setInput(e.target.value.slice(0, 600))}
                 disabled={capped || sending}
+                aria-label="ask about your week"
+                autoComplete="off"
                 placeholder={capped ? "that's today's turns" : "ask about your week"}
                 className="min-w-0 flex-1 rounded-pill border border-line bg-card px-4 py-3 text-14 text-ink placeholder:text-ink-faint focus:border-accent/50 focus:outline-none disabled:opacity-60"
               />

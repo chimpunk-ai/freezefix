@@ -222,9 +222,14 @@ export function ContactButton({ contact, big = false }: { contact: Contact; big?
 }
 
 export function CountrySwitcher({ region, onChange }: { region: string; onChange: (r: string) => void }) {
-  const current = (VERIFIED_COUNTRIES as string[]).includes(region) ? region : "OTHER";
+  const verified = (VERIFIED_COUNTRIES as string[]).includes(region);
+  // An unverified but known country (say, "IT") keeps its own name in the
+  // list, so an Italian sees "Italy" selected — with 112 and the directories —
+  // rather than being told they are "somewhere else".
+  const other = !verified && /^[A-Z]{2}$/.test(region) ? region : null;
+  const current = verified ? region : other ?? "OTHER";
   return (
-    <label className="flex items-center justify-center gap-2 text-sm text-ink-faint">
+    <label className="flex flex-wrap items-center justify-center gap-2 text-sm text-ink-faint">
       Showing help for
       <select
         value={current}
@@ -236,10 +241,23 @@ export function CountrySwitcher({ region, onChange }: { region: string; onChange
             {RESOURCES[c].name}
           </option>
         ))}
-        <option value="OTHER">Somewhere else</option>
+        {other ? (
+          <option value={other}>
+            {countryName(other)} (local emergency number + directories)
+          </option>
+        ) : null}
+        <option value="OTHER">Another country</option>
       </select>
     </label>
   );
+}
+
+function countryName(code: string): string {
+  try {
+    return new Intl.DisplayNames(["en"], { type: "region" }).of(code) ?? code;
+  } catch {
+    return code;
+  }
 }
 
 function name(c: Contact | undefined, fallback: string) {

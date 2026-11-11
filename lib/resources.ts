@@ -173,27 +173,49 @@ export const RESOURCES: Record<CountryCode, CountryResources> = {
     youth: [{ label: "Child Helpline", display: "1098", tel: "1098", note: "24/7, free", blurb: "India's national free helpline for children in distress." }],
     youthNightBackup: { label: "Tele-MANAS", display: "14416", tel: "14416", note: "24/7, free" },
   },
-  // Outside the six verified countries: never show a UK or US number.
-  // Show the local emergency number (from the standard list below, if we know it) plus findahelpline.com.
+  // Outside the verified countries: never show a UK or US number.
+  // Show the national emergency number (from the list below, if it is a
+  // well-established single number) plus two international directories that
+  // maintain their own verified, per-country crisis lines. The directories are
+  // the honest answer for a country we haven't verified ourselves: a real
+  // path to a real local line, not a guess at one.
   OTHER: {
-    name: "Somewhere else",
+    name: "Another country",
     emergency: { label: "Your local emergency number", display: "Local emergency number", note: "" },
-    crisis: [{ label: "Find a free helpline near you", display: "findahelpline.com", url: "https://findahelpline.com", note: "", blurb: "An international directory of free, verified helplines, run by ThroughLine." }],
-    urgentMentalHealth: [{ label: "Find a free helpline near you", display: "findahelpline.com", url: "https://findahelpline.com", note: "", blurb: "An international directory of free, verified helplines, run by ThroughLine." }],
-    substances: [{ label: "Find a free helpline near you", display: "findahelpline.com", url: "https://findahelpline.com", note: "", blurb: "An international directory of free, verified helplines, run by ThroughLine." }],
-    youth: [{ label: "Find a free helpline near you", display: "findahelpline.com", url: "https://findahelpline.com", note: "", blurb: "An international directory of free, verified helplines, run by ThroughLine." }],
+    crisis: [
+      { label: "Find a free helpline near you", display: "findahelpline.com", url: "https://findahelpline.com", note: "Pick your country; free, verified lines", blurb: "An international directory of free, verified helplines, run by ThroughLine." },
+      { label: "Befrienders Worldwide", display: "befrienders.org", url: "https://befrienders.org", note: "Emotional support centres by country", blurb: "A worldwide network of listening centres, affiliated with the International Association for Suicide Prevention." },
+    ],
+    urgentMentalHealth: [
+      { label: "Find a free helpline near you", display: "findahelpline.com", url: "https://findahelpline.com", note: "Pick your country; free, verified lines", blurb: "An international directory of free, verified helplines, run by ThroughLine." },
+      { label: "Befrienders Worldwide", display: "befrienders.org", url: "https://befrienders.org", note: "Emotional support centres by country" },
+    ],
+    substances: [
+      { label: "Find a free helpline near you", display: "findahelpline.com", url: "https://findahelpline.com", note: "Pick your country; free, verified lines", blurb: "An international directory of free, verified helplines, run by ThroughLine." },
+    ],
+    youth: [
+      { label: "Find a free helpline near you", display: "findahelpline.com", url: "https://findahelpline.com", note: "Pick your country; lines for under-18s are marked", blurb: "An international directory of free, verified helplines, run by ThroughLine." },
+    ],
   },
 };
 
-// Standard national emergency numbers for countries outside the verified six.
-// These are well-known national numbers, not crisis lines.
+// National emergency numbers for countries outside the verified list. Only
+// well-established single numbers that reach medical help are listed; where a
+// country splits police / ambulance across numbers it is left out, and the
+// person sees the directories instead of a number that might be the wrong one.
+// 112 is the EU-wide number by law and also works from mobiles across most of
+// Europe. Re-check with each new verified-country launch.
 export const OTHER_EMERGENCY_NUMBERS: Record<string, string> = {
+  // 112 — EU / EEA and neighbours
   AT: "112", BE: "112", BG: "112", HR: "112", CY: "112", CZ: "112", DK: "112", EE: "112",
-  FI: "112", FR: "112", GR: "112", HU: "112", IT: "112", LV: "112", LT: "112", LU: "112",
-  MT: "112", PL: "112", PT: "112", RO: "112", SK: "112", SI: "112", ES: "112", SE: "112",
-  NO: "112", IS: "112", CH: "112",
-  CA: "911", MX: "911",
-  AU: "000", NZ: "111", ZA: "112",
+  FI: "112", GR: "112", HU: "112", IT: "112", LV: "112", LT: "112", LU: "112", MT: "112",
+  PL: "112", PT: "112", RO: "112", SK: "112", SI: "112", ES: "112", SE: "112",
+  NO: "112", IS: "112", LI: "112", CH: "112", TR: "112", UA: "112", RS: "112", ME: "112",
+  MK: "112", AL: "112", BA: "112", MD: "112", GE: "112", KZ: "112", ZA: "112",
+  // 911
+  CA: "911", MX: "911", PH: "911", DO: "911", CR: "911", PA: "911", AR: "911", SA: "911",
+  // others
+  AU: "000", NZ: "111", HK: "999", KE: "999", BD: "999", JP: "119", KR: "119",
 };
 
 export const VERIFIED_COUNTRIES: CountryCode[] = ["GB", "US", "IE", "NL", "DE", "FR", "IN"];
