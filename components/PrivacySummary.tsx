@@ -51,6 +51,11 @@ export default function PrivacySummary() {
           detail="A random device cookie and a daily hash of your IP, so Fix can be capped at five questions a day and the free week can't be restarted. No raw IDs or addresses are stored."
         />
         <Row
+          what="Hosting and typefaces"
+          where="Cloudflare serves the site; Google Fonts serves the two typefaces."
+          detail="Both see your IP address and browser type, as any web server does. Neither is sent your log. No analytics, no trackers."
+        />
+        <Row
           what="Payments"
           where="Not switched on. Nothing can be charged today."
           detail="When a paid plan goes live, a payment provider (merchant of record) would handle your card and receipt; we would never see the card number."
