@@ -30,12 +30,12 @@ export const metadata: Metadata = {
   robots: { index: true, follow: true },
   alternates: {
     canonical: `${SITE_URL}/`,
-    languages: {
-      en: `${SITE_URL}/`,
-      it: `${SITE_URL}/it`,
-      es: `${SITE_URL}/es`,
-      "x-default": `${SITE_URL}/`,
-    },
+    // hreflang alternates removed 11 Nov 2026 while /it and /es don't yet exist
+    // as real routes (brief audit P0-8). Google was following these links,
+    // finding only a 308 to /, and treating the signal as broken. Re-add each
+    // language when its localized pages ship, with their own translated copy
+    // reviewed by a qualified human (brief: "qualified human review for
+    // safety/legal translations").
   },
   openGraph: {
     type: "website",
