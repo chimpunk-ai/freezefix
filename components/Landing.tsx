@@ -34,11 +34,11 @@ export default function Landing({ paymentsOn }: { paymentsOn: boolean }) {
       <Main>
         {/* Hero: words left, the real card right. */}
         <section aria-labelledby="hero-heading">
-          <Container className="grid items-center gap-10 pb-6 pt-6 lg:grid-cols-[minmax(0,1.05fr)_minmax(0,0.95fr)] lg:gap-16 lg:pb-12 lg:pt-10">
+          <Container className="grid items-center gap-10 pb-6 pt-6 lg:grid-cols-[minmax(0,1.15fr)_minmax(0,0.85fr)] lg:gap-16 lg:pb-12 lg:pt-10">
             <div className="max-w-[46ch]">
               <h1 id="hero-heading" className="font-display text-28 leading-[1.08] text-ink sm:text-40 lg:text-56">
                 you don&rsquo;t have to quit.
-                <br />
+                <br className="lg:hidden" />
                 you just have to notice.
               </h1>
               <p className="mt-5 text-16 leading-[1.5] text-ink sm:text-20 sm:leading-[1.35]">
@@ -61,7 +61,7 @@ export default function Landing({ paymentsOn }: { paymentsOn: boolean }) {
               </div>
             </div>
 
-            <figure className="lg:justify-self-end lg:w-full lg:max-w-[520px]">
+            <figure className="lg:w-full lg:max-w-[480px] lg:justify-self-end">
               <Kicker>what sunday looks like</Kicker>
               <div className="mt-3 rounded-sheet shadow-[0_32px_80px_-40px_rgba(156,175,136,0.35)]">
                 <PatternCard name="nico" stats={sample} dimmed />
@@ -79,7 +79,7 @@ export default function Landing({ paymentsOn }: { paymentsOn: boolean }) {
             <h2 id="how-heading" className="font-display text-28 text-ink lg:text-40">
               the whole app, in order.
             </h2>
-            <ol className="mt-8 grid gap-10 lg:grid-cols-3 lg:gap-8">
+            <ol className="mt-8 grid items-start gap-10 lg:grid-cols-3 lg:gap-8">
               <Step
                 n="1"
                 title="the log"
@@ -137,7 +137,7 @@ export default function Landing({ paymentsOn }: { paymentsOn: boolean }) {
               </div>
             </div>
 
-            <div className="lg:pt-2">
+            <div className="lg:self-center">
               <h2 className="font-display text-20 text-ink lg:text-28">what this isn&rsquo;t</h2>
               <ul className="mt-4 space-y-3 text-14 text-ink-soft lg:text-16">
                 {[
@@ -195,7 +195,7 @@ export default function Landing({ paymentsOn }: { paymentsOn: boolean }) {
 
 function Step({ n, title, body, children }: { n: string; title: string; body: string; children: ReactNode }) {
   return (
-    <li className="grid grid-cols-[40px_1fr] gap-x-4 border-t border-line pt-6 lg:grid-cols-1 lg:gap-x-0 lg:border-t-0 lg:pt-0">
+    <li className="grid grid-cols-[40px_1fr] content-start gap-x-4 border-t border-line pt-6 lg:grid-cols-1 lg:gap-x-0 lg:border-t-0 lg:pt-0">
       <span aria-hidden className="font-display text-28 leading-none text-signpost lg:text-40">
         {n}
       </span>
