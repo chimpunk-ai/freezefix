@@ -30,7 +30,7 @@ export default function HelpScreen({ screen, region, onRegionChange, onBack }: P
       lines = [
         "Okay. Let's get you a real person, right now.",
         `Call ${emNumber}, or ask someone near you to call.`,
-        "FreezeFix doesn't know who you are and doesn't share anything.",
+        "Fix doesn't know who you are and doesn't share anything.",
       ];
       primary = em;
       break;
@@ -59,7 +59,7 @@ export default function HelpScreen({ screen, region, onRegionChange, onBack }: P
     case "mixed": {
       const line = r.substances[0];
       lines = [
-        "Mixing changes things, so this needs real help. FreezeFix is only built for weed, and we can't tell what a mix is doing to your body.",
+        "Mixing changes things, so this needs real help. Fix is only built for weed, and we can't tell what a mix is doing to your body.",
         `If you feel very unwell, can't breathe, have chest pain or someone won't wake up: call ${emNumber}.`,
         `For advice right now: ${name(line, "a helpline")}. Stay with someone. Don't take anything else tonight.`,
       ];
@@ -98,7 +98,7 @@ export default function HelpScreen({ screen, region, onRegionChange, onBack }: P
     case "under18": {
       const youth = r.youth;
       lines = [
-        "FreezeFix is for adults, so we can't help here.",
+        "Fix is for adults, so we can't help here.",
         `If you're having a hard time, these people talk to under-18s every day, free and confidential: ${name(youth[0], "a youth line")}.`,
         `If you're in danger, call ${emNumber}.`,
       ];
@@ -151,7 +151,7 @@ export default function HelpScreen({ screen, region, onRegionChange, onBack }: P
 
       {onBack && (
         <button onClick={onBack} className="self-center py-2 text-sm text-ink-faint underline underline-offset-4">
-          Back to FreezeFix
+          Back to Fix
         </button>
       )}
     </div>
@@ -247,7 +247,7 @@ function name(c: Contact | undefined, fallback: string) {
   return c.tel || c.sms ? `${c.label}, ${c.display}` : `${c.label} (${c.display})`;
 }
 
-// Opens the phone's own messages app. FreezeFix never reads contacts and never sends anything itself.
+// Opens the phone's own messages app. Fix never reads contacts and never sends anything itself.
 export function smsHref(to: string | undefined, body?: string) {
   const b = body ? `body=${encodeURIComponent(body)}` : "";
   return `sms:${to ?? ""}${b ? `?&${b}` : ""}`;

@@ -1,72 +1,69 @@
-// A classy, honest at-a-glance summary that sits above the full Privacy Policy on /privacy.
-// Reads as "the one-page map" that the Emergent reference prototype offered, while keeping
-// the full legal policy intact underneath. Nothing on this card is a replacement for the
-// policy — the policy wins on anything that disagrees, and the Setup & Legal review still
-// owns the policy copy.
+// The at-a-glance map that sits above the full Privacy Policy on /privacy.
+//
+// Every row here is read from the code, not from the brief. If a data flow
+// changes in lib/entry.ts, lib/pattern.ts, app/api/fix/route.ts,
+// app/api/transcribe/route.ts or lib/quota.ts, this card changes with it.
+// scripts/test-legal.ts checks that it never names a feature that no longer
+// ships. The full policy underneath wins on anything that disagrees.
 export default function PrivacySummary() {
   return (
     <section
       aria-labelledby="privacy-summary-heading"
-      className="mb-10 rounded-[1.5rem] border border-line bg-card p-6 shadow-[0_14px_32px_-24px_rgba(175,215,182,0.35)]"
+      className="mb-10 rounded-sheet border border-line bg-card p-5 sm:p-6"
     >
-      <p className="font-mono text-xs uppercase tracking-[0.22em] text-ink-soft">At a glance</p>
-      <h2
-        id="privacy-summary-heading"
-        className="mt-2 font-serif text-2xl text-ink"
-        style={{ fontFamily: "var(--font-display)", fontWeight: 400, letterSpacing: "-0.015em" }}
-      >
-        What stays on this device, and what gets sent.
+      <p className="text-12 uppercase tracking-[0.18em] text-signpost">at a glance</p>
+      <h2 id="privacy-summary-heading" className="mt-2 font-display text-28 text-ink">
+        What stays on your phone, and the one thing that leaves it.
       </h2>
-      <p className="mt-3 max-w-[55ch] text-sm leading-relaxed text-ink-soft">
-        A plain-language map of how data actually moves. The full policy below is the
-        authoritative version; this card is here so you can tell at a glance.
+      <p className="mt-3 max-w-[58ch] text-14 leading-relaxed text-ink-soft">
+        A plain map of how your data actually moves. The full policy below is the version that
+        counts; this card is so you can tell at a glance.
       </p>
       <ul className="mt-5 flex flex-col divide-y divide-line/70">
         <Row
-          what="Chat messages"
-          where="Sent to the AI provider to generate a reply."
-          detail="Not stored by FreezeFix. The provider's own retention is covered in the policy below."
+          what="The nightly log"
+          where="This phone's local storage."
+          detail="Smoked or not, one mood, up to three trigger chips, your goal tick, any words. Never uploaded, never synced, no copy anywhere."
         />
         <Row
-          what="Wins log, moments, scenario history"
-          where="This browser's local storage."
-          detail="Never uploaded. Delete one from the Wins screen, or clear everything in Settings."
+          what="The Sunday card"
+          where="Worked out on this phone, from the log above."
+          detail="Opening it writes nothing new and sends nothing anywhere. The shelf of past weeks is the same log, read back."
         />
         <Row
-          what="Patterns page"
-          where="Computed on this device, from the data above."
-          detail="Nothing new is written and nothing is sent anywhere when you open it."
+          what="Your name, bedtime, your one thing, the chime choice"
+          where="This phone's local storage."
+          detail="The name is one you make up. There is no account, no email, no password."
         />
         <Row
-          what="Theme, name, onboarding answers"
-          where="This browser's local storage."
-          detail="Used only to greet you and keep the look you picked."
+          what="Asking Fix about your week"
+          where="Our server, then our AI provider (Anthropic), only when you tap send."
+          detail="Sends the last seven nights of your log, your question, and the last few messages of that conversation. Not stored by us; deleted by the provider within 30 days. A crisis keyword stops the request before the AI sees it."
         />
         <Row
-          what="Anonymous counts"
-          where="A privacy-first database in the EU."
-          detail="Risk level, country code, timestamps and whether a move helped — never the words you wrote."
+          what="Voice notes"
+          where="Switched off today. When on: a remote transcription provider, once."
+          detail="Up to ten seconds of audio, turned into text and sent back. Audio is not kept by us. Transcription happens on the provider's servers, not in your browser."
         />
         <Row
-          what="Daily rate limits"
-          where="A hashed, salted device cookie and IP."
-          detail="Rows are deleted after two days. No raw identifiers are stored."
+          what="Daily limits and the free week"
+          where="A database in the EU, keyed by one-way hashes."
+          detail="A random device cookie and a daily hash of your IP, so Fix can be capped at five questions a day and the free week can't be restarted. No raw IDs or addresses are stored."
         />
         <Row
-          what="Payments (when enabled)"
-          where="Our payment provider (merchant of record)."
-          detail="FreezeFix never sees your full card number. Receipts and VAT are the provider's."
+          what="Hosting and typefaces"
+          where="Cloudflare serves the site; Google Fonts serves the two typefaces."
+          detail="Both see your IP address and browser type, as any web server does. Neither is sent your log. No analytics, no trackers."
         />
         <Row
-          what="Voice & photos (when enabled)"
-          where="Processed to generate a reply, then discarded."
-          detail="Not stored by FreezeFix. The provider's lifecycle is in the policy below."
+          what="Payments"
+          where="Not switched on. Nothing can be charged today."
+          detail="When a paid plan goes live, a payment provider (merchant of record) would handle your card and receipt; we would never see the card number."
         />
       </ul>
-      <p className="mt-5 text-xs leading-relaxed text-ink-faint">
-        FreezeFix is adults-only (18+) and does not sell data, run ads, or share with anyone
-        outside the vendors named in the policy. Crisis help is always free and never behind
-        a paywall.
+      <p className="mt-5 text-12 leading-relaxed text-ink-faint">
+        Fix is adults-only (18+). No analytics, no ads, no tracking script. The help page is free
+        and never behind a paywall.
       </p>
     </section>
   );
@@ -76,10 +73,10 @@ function Row({ what, where, detail }: { what: string; where: string; detail: str
   return (
     <li className="grid grid-cols-1 gap-1 py-3 sm:grid-cols-[1fr_1.4fr] sm:gap-6">
       <div>
-        <p className="text-sm font-semibold text-ink">{what}</p>
-        <p className="text-sm text-ink-soft">{where}</p>
+        <p className="text-14 font-medium text-ink">{what}</p>
+        <p className="text-14 text-ink-soft">{where}</p>
       </div>
-      <p className="text-sm leading-relaxed text-ink-soft">{detail}</p>
+      <p className="text-14 leading-relaxed text-ink-soft">{detail}</p>
     </li>
   );
 }

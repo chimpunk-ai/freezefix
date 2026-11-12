@@ -156,7 +156,7 @@ export default function Onboarding({ onDone }: { onDone: (p: Profile) => void })
       {step === 0 ? (
         <section className="ff-rise">
           <h1 className="font-display text-28 text-ink">this is for adults.</h1>
-          <p className="mt-3 text-16 text-ink-soft">are you 18 or over?</p>
+          <p className="mt-3 text-16 text-ink-soft">are you 18 or over, and an adult where you live?</p>
           <div className="mt-6 flex gap-3">
             <button
               type="button"
@@ -174,7 +174,7 @@ export default function Onboarding({ onDone }: { onDone: (p: Profile) => void })
             </button>
           </div>
           <p className="mt-6 text-12 text-ink-faint">
-            no account, no email, no phone number. a name you make up is the whole sign-up.
+            no account is created. no email, no phone number. a name you make up is all we ask.
           </p>
         </section>
       ) : null}

@@ -126,11 +126,24 @@ export default function PlansPage() {
       </header>
 
       <section className="mx-auto w-full max-w-[560px] px-5 pb-16">
-        <h1 className="font-display text-40 leading-tight text-ink">one price. one week free.</h1>
-        <p className="mt-3 text-16 text-ink-soft">
-          everything is in the free week: the log, the Sunday card, the shelf, Fix. no card to start.
-          no trial that quietly turns into a charge.
-        </p>
+        {state === "off" ? (
+          <>
+            <h1 className="font-display text-40 leading-tight text-ink">free, for now.</h1>
+            <p className="mt-3 text-16 text-ink-soft">
+              everything is open: the log, the Sunday card, the shelf, Fix. no card, no email. the
+              price below is the price it will be once payments are switched on — you&rsquo;ll see
+              it here first, and nothing can be charged until then.
+            </p>
+          </>
+        ) : (
+          <>
+            <h1 className="font-display text-40 leading-tight text-ink">one price. one week free.</h1>
+            <p className="mt-3 text-16 text-ink-soft">
+              everything is in the free week: the log, the Sunday card, the shelf, Fix. no card to
+              start. no trial that quietly turns into a charge.
+            </p>
+          </>
+        )}
 
         <div className="mt-7 space-y-3">
           {(["yearly", "monthly"] as PlanId[]).map((id) => {
@@ -161,7 +174,9 @@ export default function PlansPage() {
         </div>
 
         <p className="mt-4 text-12 text-ink-faint">
-          {TRIAL_DAYS} days free, from {dates.startsLabel.toLowerCase()} to {dates.chargeLabel}.
+          {state === "off"
+            ? `when payments switch on: ${TRIAL_DAYS} days free first, then the price above.`
+            : `${TRIAL_DAYS} days free, from ${dates.startsLabel.toLowerCase()} to ${dates.chargeLabel}.`}
         </p>
 
         <div className="mt-5">
@@ -181,11 +196,11 @@ export default function PlansPage() {
               href="/app"
               className="block w-full rounded-pill bg-signpost px-6 py-3 text-center text-16 font-medium text-signpost-ink no-underline shadow-[0_8px_24px_-12px_rgba(240,168,104,0.6)] transition-transform hover:-translate-y-[1px]"
             >
-              start the free week
+              open the app, free
             </Link>
             <p className="mt-3 text-12 text-ink-faint">
-              payments aren&rsquo;t switched on yet, so nothing can be charged. the free week is real,
-              and the price above is the price it will be.
+              payments aren&rsquo;t switched on yet, so nothing can be charged and nothing runs out.
+              the price above is the price it will be.
             </p>
           </div>
         ) : (
@@ -214,8 +229,8 @@ export default function PlansPage() {
         <div className="mt-10 space-y-4 text-14 text-ink-soft">
           <p>
             <span className="text-ink">what you get:</span> the nightly log, the Sunday mirror, the shelf
-            of past weeks, and Fix — five questions a day on the free week and on the paid plan, more if
-            you write to us and ask.
+            of past weeks, and Fix — five questions a day on the free week, twenty a day on the paid
+            plan. it&rsquo;s capped on purpose; a chart with manners shouldn&rsquo;t be a chat habit.
           </p>
           <p>
             <span className="text-ink">what you don&rsquo;t get:</span> a streak, a leaderboard, a
