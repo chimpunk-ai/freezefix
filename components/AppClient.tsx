@@ -299,7 +299,8 @@ function WeekRail({
   );
 }
 
-function WeeksView({ weeks, name, onAsk }: { weeks: WeekStats[]; name: string; onAsk: () => void }) {
+/** The shelf. Exported so the landing can show the real one inside a phone frame. */
+export function WeeksView({ weeks, name, onAsk }: { weeks: WeekStats[]; name: string; onAsk: () => void }) {
   return (
     <Container className="pb-16">
       <section className="lg:max-w-[720px]">

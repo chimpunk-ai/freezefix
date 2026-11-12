@@ -72,3 +72,22 @@ grows past the size it has in the app.
 - No numbers that drift (user counts, ratings). No testimonials we didn't
   collect. The only "proof" on the landing is interface pulled from the app.
 - One `main#main` per route; the skip link is the first focusable element.
+
+## Product screens on the landing (12 Nov 2026)
+
+- `components/PhoneFrame.tsx` is a CSS-only device frame: a 390×844 logical
+  screen scaled to a given width. Content is `inert` + `aria-hidden` with the
+  frame as `role="img"`, so real app components can be shown without being
+  operable or touching storage. Captions size themselves with
+  `phoneOuterWidth()`.
+- `components/AppScreens.tsx` shows the real `LogScreen`, `PatternCard` and
+  `WeeksView` with the sample log. Phone widths: 260 below `lg` (snap
+  scroller), 280 at `lg` (3 × 280 + 2 × 48 fits the 1024 measure), 300 at `xl`.
+- `components/RitualDemo.tsx` plays the real `LogScreen` through a scripted
+  night via its `demo` prop (no storage writes, mic never opens). User-started,
+  silent, ~9 s; under reduced motion it jumps to the end. The phone fits its
+  card (ResizeObserver), max 300.
+- The app icon is the wordmark's atom: a serif `f` (Lora outline, closest
+  installed to Newsreader) with the sage dot, on warm black. SVG for browsers,
+  PNG 180/192/512 for iOS and Android installers, a maskable variant with the
+  mark inside the 80 % safe zone. Source of the mark is `public/icon.svg`.

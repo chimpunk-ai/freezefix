@@ -24,6 +24,17 @@ import type { Profile } from "@/lib/profile";
 // like it, a tick for their own goal if they feel like that. Save, and the app
 // says one line and gets out of the way. No streak, no count, no praise.
 
+// A scripted state for the landing-page demo. When `demo` is set the screen
+// mirrors it instead of storage: nothing is saved, no microphone is opened.
+// The markup is the real log, so the demo can't drift from the product.
+export type LogDemoState = {
+  smoked: boolean | null;
+  mood: Mood | null;
+  triggers: TriggerId[];
+  goalDone?: boolean;
+  saved: boolean;
+};
+
 export default function LogScreen({
   profile,
   entries,
@@ -31,6 +42,7 @@ export default function LogScreen({
   onOpenFix,
   onOpenMirror,
   mirrorReady,
+  demo,
 }: {
   profile: Profile;
   entries: Entries;
@@ -38,6 +50,7 @@ export default function LogScreen({
   onOpenFix: () => void;
   onOpenMirror: () => void;
   mirrorReady: boolean;
+  demo?: LogDemoState;
 }) {
   const today = todayISO();
   const existing = entries[today];
@@ -48,12 +61,22 @@ export default function LogScreen({
   // ones they didn't pick, just without having to scan the row twice.
   const triggerOrder = orderedTriggers(profile.preferredTriggers);
 
-  const [smoked, setSmoked] = useState<boolean | null>(existing ? existing.smoked : null);
-  const [mood, setMood] = useState<Mood | null>(existing ? existing.mood : null);
-  const [triggers, setTriggers] = useState<TriggerId[]>(existing ? existing.triggers : []);
+  const [smoked, setSmoked] = useState<boolean | null>(demo ? demo.smoked : existing ? existing.smoked : null);
+  const [mood, setMood] = useState<Mood | null>(demo ? demo.mood : existing ? existing.mood : null);
+  const [triggers, setTriggers] = useState<TriggerId[]>(demo ? demo.triggers : existing ? existing.triggers : []);
   const [note, setNote] = useState(existing?.note ?? "");
-  const [goalDone, setGoalDone] = useState<boolean | undefined>(existing?.goalDone);
-  const [saved, setSaved] = useState(Boolean(existing));
+  const [goalDone, setGoalDone] = useState<boolean | undefined>(demo ? demo.goalDone : existing?.goalDone);
+  const [saved, setSaved] = useState(demo ? demo.saved : Boolean(existing));
+
+  // Demo mode: follow the script whenever it moves on.
+  useEffect(() => {
+    if (!demo) return;
+    setSmoked(demo.smoked);
+    setMood(demo.mood);
+    setTriggers(demo.triggers);
+    setGoalDone(demo.goalDone);
+    setSaved(demo.saved);
+  }, [demo]);
 
   const [recording, setRecording] = useState(false);
   const [seconds, setSeconds] = useState(0);
@@ -113,7 +136,7 @@ export default function LogScreen({
   }
 
   async function startRec() {
-    if (recording) return;
+    if (recording || demo) return;
     setVoiceMsg(null);
     if (typeof navigator === "undefined" || !navigator.mediaDevices?.getUserMedia) {
       setVoiceMsg("this phone won't record here. type instead.");
@@ -162,6 +185,10 @@ export default function LogScreen({
 
   function onSave() {
     if (smoked === null || mood === null) return;
+    if (demo) {
+      setSaved(true);
+      return;
+    }
     const next = saveEntry({
       smoked,
       mood,
