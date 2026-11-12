@@ -4,7 +4,7 @@ import { useEffect, useState, type ReactNode } from "react";
 import { WeeksView } from "@/components/AppClient";
 import LogScreen from "@/components/LogScreen";
 import { PatternCard } from "@/components/PatternCard";
-import PhoneFrame from "@/components/PhoneFrame";
+import PhoneFrame, { phoneOuterWidth } from "@/components/PhoneFrame";
 import { Container } from "@/components/Shell";
 import { recentWeeks, weekStats } from "@/lib/pattern";
 import type { Profile } from "@/lib/profile";
@@ -30,17 +30,23 @@ const noop = () => {};
 
 // Phone width: 300 on a laptop, 260 in the phone-width scroller. One frame per
 // screen (not one per breakpoint) so each real component mounts once.
-const WIDE = 300;
+const WIDE = 300; // xl: 3 × 300 + 2 × 56 = 1012 inside the 1120 measure
+const LAPTOP = 280; // lg: 3 × 280 + 2 × 48 = 936 inside the 1024 − 64 gutters
 const NARROW = 260;
 
 function usePhoneWidth() {
   const [w, setW] = useState(WIDE);
   useEffect(() => {
     const mq = window.matchMedia("(min-width: 64rem)");
-    const apply = () => setW(mq.matches ? WIDE : NARROW);
+    const xl = window.matchMedia("(min-width: 80rem)");
+    const apply = () => setW(xl.matches ? WIDE : mq.matches ? LAPTOP : NARROW);
     apply();
     mq.addEventListener("change", apply);
-    return () => mq.removeEventListener("change", apply);
+    xl.addEventListener("change", apply);
+    return () => {
+      mq.removeEventListener("change", apply);
+      xl.removeEventListener("change", apply);
+    };
   }, []);
   return w;
 }
@@ -87,7 +93,7 @@ function screens(): Screen[] {
       caption: "every sunday card is kept, up to twelve weeks. by week six, it's a bookshelf.",
       // WeeksView goes two-up at md; inside a 390px phone it must stay one-up.
       node: (
-        <div className="pt-2 [&_.grid]:grid-cols-1!">
+        <div className="pt-2 [&_section>.grid]:grid-cols-1!">
           <WeeksView weeks={shelf} name="nico" onAsk={noop} />
         </div>
       ),
@@ -116,15 +122,15 @@ export default function AppScreens() {
             (half the viewport, minus half a 274px phone, minus the gutter). */}
         <ul
           data-reveal
-          className="mt-10 flex snap-x snap-mandatory gap-6 overflow-x-auto px-[calc(50vw-137px-1.25rem)] pb-4 [scrollbar-width:none] sm:px-[calc(50vw-137px-2rem)] lg:justify-center lg:gap-14 lg:overflow-visible lg:px-0 lg:pb-0 [&::-webkit-scrollbar]:hidden"
+          className="mt-10 flex snap-x snap-mandatory gap-6 overflow-x-auto px-[calc(50vw-137px-1.25rem)] pb-4 [scrollbar-width:none] sm:px-[calc(50vw-137px-2rem)] lg:justify-center lg:gap-12 lg:overflow-visible xl:gap-14 lg:px-0 lg:pb-0 [&::-webkit-scrollbar]:hidden"
         >
           {list.map((s) => (
-            <li key={s.key} className="flex shrink-0 snap-center flex-col items-start">
+            <li key={s.key} className="flex shrink-0 snap-center flex-col items-start" style={{ width: phoneOuterWidth(width) }}>
               <PhoneFrame label={s.label} width={width}>
                 {s.node}
               </PhoneFrame>
-              <p className="mt-4 w-[260px] text-12 uppercase tracking-[0.14em] text-ink-faint lg:w-[314px]">{s.title}</p>
-              <p className="mt-1 w-[260px] text-14 text-ink-soft lg:w-[314px]">{s.caption}</p>
+              <p className="mt-4 text-12 uppercase tracking-[0.14em] text-ink-faint">{s.title}</p>
+              <p className="mt-1 text-14 text-ink-soft">{s.caption}</p>
             </li>
           ))}
         </ul>

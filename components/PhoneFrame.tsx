@@ -9,6 +9,11 @@ import type { ReactNode } from "react";
 const SCREEN_W = 390;
 const SCREEN_H = 844;
 
+/** Outer width of the frame (screen + bezel both sides) for a given screen width. */
+export function phoneOuterWidth(width: number): number {
+  return width + Math.round(10 * (width / SCREEN_W)) * 2;
+}
+
 export default function PhoneFrame({
   label,
   children,

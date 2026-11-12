@@ -67,6 +67,24 @@ export default function RitualDemo() {
   const [caption, setCaption] = useState(STEPS[0].caption);
   const timers = useRef<number[]>([]);
 
+  // The phone is 300 wide where it fits and shrinks to the card on narrow
+  // screens (a 320px viewport leaves ~220px once the gutters are gone).
+  const host = useRef<HTMLDivElement>(null);
+  const [width, setWidth] = useState(300);
+  useEffect(() => {
+    const el = host.current;
+    if (!el) return;
+    const fit = () => {
+      const avail = el.clientWidth;
+      // phoneOuterWidth(w) = w + 2·round(10·w/390) ≈ 1.051·w
+      setWidth(Math.max(180, Math.min(300, Math.floor(avail / 1.052))));
+    };
+    fit();
+    const ro = new ResizeObserver(fit);
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, []);
+
   const clearTimers = () => {
     timers.current.forEach((t) => window.clearTimeout(t));
     timers.current = [];
@@ -106,8 +124,8 @@ export default function RitualDemo() {
   const label = phase === "idle" ? "play the nightly ritual · 9s" : phase === "playing" ? "playing…" : "play it again";
 
   return (
-    <div role="group" aria-label="demo of the nightly log" className="flex flex-col items-center">
-      <PhoneFrame label="the nightly log, a sample night" width={300}>
+    <div ref={host} role="group" aria-label="demo of the nightly log" className="flex w-full flex-col items-center">
+      <PhoneFrame label="the nightly log, a sample night" width={width}>
         <div className="px-5 pt-4">
           <LogScreen
             profile={sampleProfile}

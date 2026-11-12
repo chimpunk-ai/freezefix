@@ -3,13 +3,15 @@ import type { ReactNode } from "react";
 import { MoodFace } from "@/components/MoodFace";
 import { PatternCard, WeekGrid } from "@/components/PatternCard";
 import Reveal from "@/components/Reveal";
+import RitualDemo from "@/components/RitualDemo";
+import AppScreens from "@/components/AppScreens";
 import { Container, Kicker, Main, SiteHeader } from "@/components/Shell";
 import SiteFooter from "@/components/SiteFooter";
 import { TrustBadge } from "@/components/TrustBadge";
 import { MOOD_LABEL, TRIGGER_LABEL } from "@/lib/entry";
 import { goalSentence, weekStats } from "@/lib/pattern";
 import { plansFor, TRIAL_DAYS } from "@/lib/plans";
-import { SAMPLE_END, SAMPLE_GOAL, SAMPLE_WEEK_ENDS, sampleEntries, sampleShelfEntries } from "@/lib/sample";
+import { SAMPLE_END, SAMPLE_GOAL, sampleEntries } from "@/lib/sample";
 
 // The front door. One idea, three steps, one real card, a shelf, a boundary.
 //
@@ -24,8 +26,6 @@ import { SAMPLE_END, SAMPLE_GOAL, SAMPLE_WEEK_ENDS, sampleEntries, sampleShelfEn
 // Both collapse to nothing under prefers-reduced-motion.
 
 const sample = weekStats(sampleEntries(), SAMPLE_GOAL, SAMPLE_END);
-const shelfEntries = sampleShelfEntries();
-const shelf = SAMPLE_WEEK_ENDS.map((end) => weekStats(shelfEntries, SAMPLE_GOAL, end));
 const prices = plansFor("US");
 
 const cta =
@@ -59,7 +59,8 @@ export default function Landing({ paymentsOn }: { paymentsOn: boolean }) {
               </h1>
               <p className="mt-5 max-w-[46ch] text-16 leading-[1.5] text-ink sm:text-20 sm:leading-[1.35]">
                 a private nightly check-in for people who smoke weed. we don&rsquo;t make you quit —
-                we show you what your week actually looks like, so you can decide what to do about it.
+                we show you what your week actually looks like, what it touches, and leave the small
+                next step to you. if there is one.
               </p>
               <p className="mt-3 max-w-[38ch] text-14 text-ink-soft">
                 three taps a night. one card on sunday. no streak, no score, nobody telling you off.
@@ -89,82 +90,62 @@ export default function Landing({ paymentsOn }: { paymentsOn: boolean }) {
           </Container>
         </section>
 
-        {/* How it works: three steps, each with the piece of interface it describes. */}
+        {/* How it works: the ritual, playable, beside the three steps it leads to.
+            On a laptop the phone sits left and the steps stack right, so the
+            eye goes demo → reflect → notice → choose. */}
         <section aria-labelledby="how-heading" className="mt-6 border-t border-line lg:mt-10">
           <Container className="pt-10 lg:pt-14">
-            <div data-reveal>
+            <div data-reveal className="max-w-[52ch]">
               <Kicker tone="faint">how it works</Kicker>
               <h2 id="how-heading" className="mt-2 font-display text-28 text-ink lg:text-40">
-                the whole app, in order.
+                reflect. notice. choose.
               </h2>
+              <p className="mt-3 text-14 text-ink-soft lg:text-16">
+                nine seconds a night, one card a week, one small thing that&rsquo;s yours. press play
+                and watch a whole night go by.
+              </p>
             </div>
-            <ol className="mt-8 grid items-start gap-10 lg:grid-cols-3 lg:gap-8">
-              <Step
-                n="1"
-                title="the log"
-                body="yes or no. one face. up to three chips. nine seconds, at bedtime, in the dark. a few words if you want them — typed, or spoken once voice notes are switched on."
-              >
-                <LogPreview />
-              </Step>
-              <Step
-                n="2"
-                title="the mirror"
-                body="sunday, 8:15pm, one notification. a card slides up and tells you what the week looked like in plain english. four nights out of seven. mostly after work. that's it. no grade."
-              >
-                <div className="rounded-card border border-line bg-card p-4">
-                  <p className="text-14 text-ink-soft">{sample.sentences[0]}</p>
-                  <div className="mt-3">
-                    <WeekGrid stats={sample} />
+            <div className="mt-8 grid grid-cols-[minmax(0,1fr)] gap-10 lg:mt-10 lg:grid-cols-[minmax(0,420px)_minmax(0,1fr)] lg:items-start lg:gap-16">
+              <div data-reveal className="rounded-sheet border border-line bg-card/60 px-5 py-7 sm:px-8 lg:sticky lg:top-6">
+                <RitualDemo />
+              </div>
+              <ol className="grid gap-8 lg:gap-10">
+                <Step
+                  n="1"
+                  verb="reflect"
+                  title="the log"
+                  body="yes or no. one face. up to three chips. nine seconds, at bedtime, in the dark. a few words if you want them — typed, or spoken once voice notes are switched on."
+                >
+                  <LogPreview />
+                </Step>
+                <Step
+                  n="2"
+                  verb="notice"
+                  title="the mirror"
+                  body="sunday, 8:15pm, one notification. a card slides up and tells you what the week looked like in plain english. four nights out of seven. mostly after work. that's it. no grade."
+                >
+                  <div className="rounded-card border border-line bg-card p-4">
+                    <p className="text-14 text-ink-soft">{sample.sentences[0]}</p>
+                    <div className="mt-3">
+                      <WeekGrid stats={sample} />
+                    </div>
                   </div>
-                </div>
-              </Step>
-              <Step
-                n="3"
-                title="your thing"
-                body="one small thing you'd like to do more of. run twice. call your brother back. the card notices whether you did, and says so without a party."
-              >
-                <GoalPreview />
-              </Step>
-            </ol>
+                </Step>
+                <Step
+                  n="3"
+                  verb="choose"
+                  title="your thing"
+                  body="one small thing you'd like to do more of. run twice. call your brother back. the card notices whether you did, and says so without a party. what you do next is yours."
+                >
+                  <GoalPreview />
+                </Step>
+              </ol>
+            </div>
           </Container>
         </section>
 
-        {/* The shelf: three real weeks, oldest first. One is thin on purpose. */}
-        <section aria-labelledby="shelf-heading" className="mt-16 lg:mt-24">
-          <Container>
-            <div data-reveal className="max-w-[52ch]">
-              <Kicker tone="faint">the shelf</Kicker>
-              <h2 id="shelf-heading" className="mt-2 font-display text-28 text-ink lg:text-40">
-                by week six, it&rsquo;s a bookshelf.
-              </h2>
-              <p className="mt-3 text-14 text-ink-soft lg:text-16">
-                every sunday card is kept, up to twelve weeks, on your phone. you can flick back
-                through them and watch your own shape change. a week with gaps is shown with gaps —
-                a night you didn&rsquo;t log is a dot, never a no.
-              </p>
-            </div>
-          </Container>
-          <Container className="mt-8">
-            <ol
-              data-reveal
-              className="ff-shelf -mx-5 flex snap-x gap-4 overflow-x-auto px-5 pb-2 sm:mx-0 sm:px-0 lg:grid lg:grid-cols-3 lg:overflow-visible"
-              aria-label="three sample weeks, oldest first"
-            >
-              {shelf.map((w, i) => (
-                <li key={w.end} className="flex w-[86%] shrink-0 flex-col sm:w-[70%] lg:w-auto">
-                  {/* Cards stretch to the tallest in the row so the three
-                      captions sit on one baseline instead of floating. */}
-                  <div className="flex flex-1 flex-col [&>article]:flex-1">
-                    <PatternCard name="nico" stats={w} dimmed compact />
-                  </div>
-                  <p className="mt-3 px-1 text-12 text-ink-faint">
-                    {i === 0 ? "three nights logged. the card says so instead of guessing." : i === 1 ? "the run happened once." : "twice. one more than last week — that's the whole message."}
-                  </p>
-                </li>
-              ))}
-            </ol>
-          </Container>
-        </section>
+        {/* The app, screen by screen: three real screens in phone frames. */}
+        <AppScreens />
 
         {/* Fix, and what this isn't. Two columns on a laptop. */}
         <section aria-labelledby="fix-heading" className="mt-16 lg:mt-24">
@@ -260,6 +241,31 @@ export default function Landing({ paymentsOn }: { paymentsOn: boolean }) {
           </Container>
         </section>
 
+        {/* Early access, honestly: no reviews exist yet, so none are shown. */}
+        <section aria-labelledby="early-heading" className="mt-16 lg:mt-24">
+          <Container>
+            <div data-reveal className="grid gap-6 rounded-sheet border border-line p-6 lg:grid-cols-2 lg:gap-16 lg:p-10">
+              <div>
+                <Kicker tone="faint">early access</Kicker>
+                <h2 id="early-heading" className="mt-2 font-display text-28 leading-tight text-ink lg:text-40">
+                  no reviews yet. on purpose.
+                </h2>
+              </div>
+              <div className="text-14 text-ink-soft lg:text-16">
+                <p>
+                  fix is new. when real people have used it for a few weeks, their words go here &mdash;
+                  unedited, the good and the off. until then we&rsquo;d rather show you the app than
+                  quote someone we made up.
+                </p>
+                <p className="mt-3">
+                  the screens above are the real thing with a sample log in them. the quickest way to
+                  know if it&rsquo;s for you is a week of your own.
+                </p>
+              </div>
+            </div>
+          </Container>
+        </section>
+
         {/* The price, honestly. The copy changes with whether a checkout exists. */}
         <section aria-labelledby="price-heading" className="mt-16 lg:mt-24">
           <Container>
@@ -296,16 +302,17 @@ export default function Landing({ paymentsOn }: { paymentsOn: boolean }) {
   );
 }
 
-function Step({ n, title, body, children }: { n: string; title: string; body: string; children: ReactNode }) {
+function Step({ n, verb, title, body, children }: { n: string; verb: string; title: string; body: string; children: ReactNode }) {
   return (
-    <li data-reveal className="grid grid-cols-[40px_1fr] content-start gap-x-4 border-t border-line pt-6 lg:grid-cols-1 lg:gap-x-0 lg:border-t-0 lg:pt-0">
-      <span aria-hidden className="font-display text-28 leading-none text-signpost lg:text-40">
+    <li data-reveal className="grid grid-cols-[40px_1fr] content-start gap-x-4 border-t border-line pt-6">
+      <span aria-hidden className="font-display text-28 leading-none text-signpost">
         {n}
       </span>
-      <div className="lg:mt-3">
-        <h3 className="font-display text-20 leading-tight text-ink">{title}</h3>
-        <p className="mt-2 text-14 leading-relaxed text-ink-soft">{body}</p>
-        <div className="mt-4">{children}</div>
+      <div>
+        <p className="text-12 uppercase tracking-[0.14em] text-accent">{verb}</p>
+        <h3 className="mt-1 font-display text-20 leading-tight text-ink">{title}</h3>
+        <p className="mt-2 max-w-[52ch] text-14 leading-relaxed text-ink-soft">{body}</p>
+        <div className="mt-4 max-w-[52ch]">{children}</div>
       </div>
     </li>
   );
@@ -314,14 +321,8 @@ function Step({ n, title, body, children }: { n: string; title: string; body: st
 /** A still of the nightly log: the three taps, as they look in the app. */
 function LogPreview() {
   return (
-    <div className="rounded-card border border-line bg-card p-4" aria-label="the nightly log, as it looks in the app">
-      <p className="font-display text-20 text-ink">did you smoke today?</p>
-      <div className="mt-3 grid grid-cols-3 gap-2">
-        <div className="col-span-2 flex h-11 items-center justify-center rounded-card border border-accent bg-accent/15 text-14 font-medium text-accent">
-          yes
-        </div>
-        <div className="flex h-11 items-center justify-center rounded-card border border-line text-14 text-ink-soft">no</div>
-      </div>
+    <div className="rounded-card border border-line bg-card p-4" aria-label="the mood faces and trigger chips, as they look in the app">
+      <p className="text-14 text-ink-soft">then one face, and up to three chips.</p>
       <div className="mt-3 flex justify-between" aria-hidden>
         {([1, 2, 3, 4, 5] as const).map((m) => (
           <span key={m} className={m === 3 ? "text-accent" : "text-ink-faint"} title={MOOD_LABEL[m]}>
