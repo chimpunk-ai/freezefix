@@ -1,10 +1,11 @@
 "use client";
 
+import { useEffect, useState, type ReactNode } from "react";
 import { WeeksView } from "@/components/AppClient";
 import LogScreen from "@/components/LogScreen";
 import { PatternCard } from "@/components/PatternCard";
 import PhoneFrame from "@/components/PhoneFrame";
-import { Container, Kicker } from "@/components/Shell";
+import { Container } from "@/components/Shell";
 import { recentWeeks, weekStats } from "@/lib/pattern";
 import type { Profile } from "@/lib/profile";
 import { SAMPLE_END, SAMPLE_GOAL, sampleEntries, sampleShelfEntries } from "@/lib/sample";
@@ -27,16 +28,33 @@ const SAMPLE_PROFILE: Profile = {
 
 const noop = () => {};
 
-type Screen = { key: string; label: string; title: string; caption: string; node: React.ReactNode };
+// Phone width: 300 on a laptop, 260 in the phone-width scroller. One frame per
+// screen (not one per breakpoint) so each real component mounts once.
+const WIDE = 300;
+const NARROW = 260;
+
+function usePhoneWidth() {
+  const [w, setW] = useState(WIDE);
+  useEffect(() => {
+    const mq = window.matchMedia("(min-width: 64rem)");
+    const apply = () => setW(mq.matches ? WIDE : NARROW);
+    apply();
+    mq.addEventListener("change", apply);
+    return () => mq.removeEventListener("change", apply);
+  }, []);
+  return w;
+}
+
+type Screen = { key: string; label: string; title: string; caption: string; node: ReactNode };
 
 function screens(): Screen[] {
-  const entries = sampleEntries();
-  const sunday = weekStats(entries, SAMPLE_GOAL, SAMPLE_END);
+  const sunday = weekStats(sampleEntries(), SAMPLE_GOAL, SAMPLE_END);
   const shelf = recentWeeks(sampleShelfEntries(), SAMPLE_GOAL, 3, SAMPLE_END);
   return [
     {
       key: "tonight",
-      label: "the nightly log, as it looks in the app: did you smoke today, one of five faces, trigger chips, a tick for your goal",
+      label:
+        "the nightly log, as it looks in the app: did you smoke today, one of five faces, trigger chips, and a tick for your own goal",
       title: "tonight",
       caption: "yes or no, one face, up to three chips. nine seconds.",
       node: (
@@ -52,7 +70,8 @@ function screens(): Screen[] {
     },
     {
       key: "sunday",
-      label: "the sunday card, as it looks in the app: one sentence about the week, seven nights in a row, the goal line, and the ask-Fix button",
+      label:
+        "the sunday card, as it looks in the app: one sentence about the week, seven nights in a row, the goal line, and the ask-Fix button",
       title: "sunday",
       caption: "one card. what the week looked like, in plain english. no grade.",
       node: (
@@ -66,8 +85,9 @@ function screens(): Screen[] {
       label: "the shelf, as it looks in the app: past sunday cards, newest first",
       title: "the shelf",
       caption: "every sunday card is kept, up to twelve weeks. by week six, it's a bookshelf.",
+      // WeeksView goes two-up at md; inside a 390px phone it must stay one-up.
       node: (
-        <div className="pt-2">
+        <div className="pt-2 [&_.grid]:grid-cols-1!">
           <WeeksView weeks={shelf} name="nico" onAsk={noop} />
         </div>
       ),
@@ -77,13 +97,12 @@ function screens(): Screen[] {
 
 export default function AppScreens() {
   const list = screens();
+  const width = usePhoneWidth();
   return (
     <section aria-labelledby="screens-heading" className="py-16 lg:py-24">
       <Container>
         <div data-reveal className="max-w-[52ch]">
-          <Kicker>
-            <span className="text-12 uppercase tracking-[0.14em] text-signpost">the app, screen by screen</span>
-          </Kicker>
+          <p className="text-12 uppercase tracking-[0.14em] text-signpost">the app, screen by screen</p>
           <h2 id="screens-heading" className="mt-3 font-display text-28 text-ink lg:text-40">
             three screens. that&rsquo;s the whole thing.
           </h2>
@@ -93,21 +112,19 @@ export default function AppScreens() {
         </div>
 
         {/* lg: three phones in a row. Below: a snap scroller, one phone per
-            swipe, with padding so the first and last can sit centred. */}
+            swipe, with side padding so the first and last can sit centred
+            (half the viewport, minus half a 274px phone, minus the gutter). */}
         <ul
           data-reveal
-          className="mt-10 flex snap-x snap-mandatory gap-6 overflow-x-auto px-[calc(50vw-130px-1.25rem)] pb-4 [scrollbar-width:none] sm:px-[calc(50vw-130px-2rem)] lg:justify-center lg:gap-14 lg:overflow-visible lg:px-0 lg:pb-0 [&::-webkit-scrollbar]:hidden"
+          className="mt-10 flex snap-x snap-mandatory gap-6 overflow-x-auto px-[calc(50vw-137px-1.25rem)] pb-4 [scrollbar-width:none] sm:px-[calc(50vw-137px-2rem)] lg:justify-center lg:gap-14 lg:overflow-visible lg:px-0 lg:pb-0 [&::-webkit-scrollbar]:hidden"
         >
           {list.map((s) => (
-            <li key={s.key} className="flex w-[260px] shrink-0 snap-center flex-col items-center lg:w-auto">
-              <PhoneFrame label={s.label} width={260} className="lg:hidden">
+            <li key={s.key} className="flex shrink-0 snap-center flex-col items-start">
+              <PhoneFrame label={s.label} width={width}>
                 {s.node}
               </PhoneFrame>
-              <PhoneFrame label={s.label} width={300} className="hidden lg:block">
-                {s.node}
-              </PhoneFrame>
-              <p className="mt-4 w-full text-12 uppercase tracking-[0.14em] text-ink-faint lg:w-[320px]">{s.title}</p>
-              <p className="mt-1 w-full text-14 text-ink-soft lg:w-[320px]">{s.caption}</p>
+              <p className="mt-4 w-[260px] text-12 uppercase tracking-[0.14em] text-ink-faint lg:w-[314px]">{s.title}</p>
+              <p className="mt-1 w-[260px] text-14 text-ink-soft lg:w-[314px]">{s.caption}</p>
             </li>
           ))}
         </ul>
