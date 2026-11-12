@@ -4,7 +4,8 @@
    Warm black, not OLED black. One accent (sage) for anything that matters.
    One second accent (terracotta) for safety and nothing else.
    Type: Inter for everything, Newsreader for the few display lines.
-   Scale is exactly 12 / 14 / 16 / 20 / 28 / 40. Grid is 8pt. */
+   Scale is exactly 12 / 14 / 16 / 20 / 28 / 40, plus 56 for the desktop
+   hero only. Grid is 8pt. See docs/design-system.md for the layout rules. */
 
 @theme {
   --color-bg: #12100e;
@@ -35,22 +36,32 @@
   --font-sans: var(--font-body);
   --font-serif: var(--font-display);
 
-  --text-12: 12px;
-  --text-12--line-height: 16px;
-  --text-14: 14px;
-  --text-14--line-height: 20px;
-  --text-16: 16px;
-  --text-16--line-height: 24px;
-  --text-20: 20px;
-  --text-20--line-height: 28px;
-  --text-28: 28px;
-  --text-28--line-height: 36px;
-  --text-40: 40px;
-  --text-40--line-height: 48px;
+  /* rem, not px: the scale follows the reader's browser font-size setting
+     (WCAG 1.4.4 text-only enlargement), and still renders identically at
+     the 16px default. 1rem = 16px. */
+  --text-12: 0.75rem;
+  --text-12--line-height: 1rem;
+  --text-14: 0.875rem;
+  --text-14--line-height: 1.25rem;
+  --text-16: 1rem;
+  --text-16--line-height: 1.5rem;
+  --text-20: 1.25rem;
+  --text-20--line-height: 1.75rem;
+  --text-28: 1.75rem;
+  --text-28--line-height: 2.25rem;
+  --text-40: 2.5rem;
+  --text-40--line-height: 3rem;
+  --text-56: 3.5rem;
+  --text-56--line-height: 3.75rem;
 
   --radius-card: 16px;
   --radius-sheet: 20px;
   --radius-pill: 999px;
+
+  /* Layout widths. Three measures, used everywhere; nothing else. */
+  --container-app: 560px;    /* the log, the mirror, settings: a phone-shaped ritual */
+  --container-read: 680px;   /* legal body copy: ~70ch at 16px */
+  --container-site: 1120px;  /* landing, plans, help: composed, not stretched */
 }
 
 :root {
@@ -61,6 +72,12 @@ html,
 body {
   background: var(--color-bg);
   color: var(--color-ink);
+}
+
+html {
+  /* Anchor jumps from the section index land below the header, and the
+     native smooth scroll is turned off for reduced-motion below. */
+  scroll-padding-top: 5rem;
 }
 
 body {
@@ -80,6 +97,7 @@ h3 {
   font-family: var(--font-display);
   font-weight: 400;
   letter-spacing: -0.015em;
+  text-wrap: balance;
 }
 
 p {
@@ -95,10 +113,48 @@ a {
   background: rgba(156, 175, 136, 0.28);
 }
 
+/* Focus is a sage ring outside the element. Hover only ever changes a border
+   or a text colour, and selected states use the amber/sage fill, so the three
+   never look alike. */
 :focus-visible {
   outline: 2px solid var(--color-accent);
   outline-offset: 3px;
   border-radius: 8px;
+}
+
+/* "Skip to main content". The first focusable thing on every public route.
+   Invisible until a keyboard reaches it, then it sits on top of the header. */
+.ff-skip {
+  position: absolute;
+  left: 1rem;
+  top: -4rem;
+  z-index: 100;
+  padding: 0.625rem 1rem;
+  border-radius: var(--radius-pill);
+  background: var(--color-accent);
+  color: var(--color-accent-ink);
+  font-size: var(--text-14);
+  line-height: var(--text-14--line-height);
+  font-weight: 500;
+  text-decoration: none;
+  transition: top 120ms ease;
+}
+.ff-skip:focus-visible {
+  top: 1rem;
+  outline-color: var(--color-ink);
+}
+
+/* Visually hidden, still read by screen readers. */
+.ff-sr {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
 }
 
 /* ── The three animations ──────────────────────────────────────────────────
@@ -192,6 +248,61 @@ a {
 }
 .ff-chip:active {
   transform: scale(0.96);
+}
+
+/* ── Landing reveal ───────────────────────────────────────────────────────
+   Below-the-fold sections fade up 10px once, when they first scroll into
+   view (components/Reveal.tsx). The hidden state only exists after the
+   client has marked the document ready, so first paint, no-JS and crawlers
+   always see everything; reduced-motion users never get the ready mark. */
+[data-reveal] {
+  transition:
+    opacity 520ms ease,
+    transform 520ms cubic-bezier(0.2, 0.7, 0.3, 1);
+}
+html[data-reveal-ready] [data-reveal]:not([data-shown]) {
+  opacity: 0;
+  transform: translateY(10px);
+}
+
+/* The hero's Sunday card sits on a faint second card, the way the shelf
+   stacks weeks. Decoration only; the real card is the one with the text. */
+.ff-stack::before {
+  content: "";
+  position: absolute;
+  inset: -0.75rem 1rem auto 1rem;
+  height: 100%;
+  border-radius: var(--radius-sheet);
+  border: 1px solid color-mix(in srgb, var(--color-line) 70%, transparent);
+  background: color-mix(in srgb, var(--color-card) 55%, transparent);
+  transform: scale(0.97);
+  z-index: -1;
+}
+.ff-stack::after {
+  content: "";
+  position: absolute;
+  inset: -2.5rem -2.5rem -2rem -2.5rem;
+  border-radius: 2.5rem;
+  background: radial-gradient(60% 55% at 50% 45%, rgba(156, 175, 136, 0.13), transparent 72%);
+  z-index: -2;
+  pointer-events: none;
+}
+
+/* Horizontal shelf on narrow screens: one card at a time, snapping. */
+.ff-shelf {
+  scroll-snap-type: x mandatory;
+  scrollbar-width: none;
+}
+.ff-shelf::-webkit-scrollbar {
+  display: none;
+}
+.ff-shelf > * {
+  scroll-snap-align: center;
+}
+
+/* Section index on long pages: the current section's link gets the amber dot. */
+.ff-toc a[aria-current="true"] {
+  color: var(--color-ink);
 }
 
 @media (prefers-reduced-motion: reduce) {

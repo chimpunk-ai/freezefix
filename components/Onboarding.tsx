@@ -28,6 +28,20 @@ import { TRIGGERS, TRIGGER_LABEL, todayISO, type TriggerId } from "@/lib/entry";
 // enough that none of the screens fake data, a progress bar, or a "scanning…"
 // moment.
 
+// Spoken by the progress bar. Required steps gate "next"; optional ones don't.
+const STEP_NAMES = [
+  "are you an adult",
+  "a name",
+  "what weed is in the way of",
+  "when you usually smoke",
+  "your trigger chips",
+  "your bedtime",
+  "one small thing",
+  "what this is",
+  "a preview of sunday",
+] as const;
+const STEP_OPTIONAL = new Set([5, 6]);
+
 const SMOKE_TIME_LABEL: Record<string, string> = {
   "after work": "evenings, mostly after work",
   "the evening": "evenings generally",
@@ -144,14 +158,26 @@ export default function Onboarding({ onDone }: { onDone: (p: Profile) => void })
 
   return (
     <div className="mx-auto flex min-h-[78vh] w-full max-w-[560px] flex-col justify-center px-5 py-10">
-      <div className="mb-8 flex gap-1" aria-hidden>
+      <div
+        className="mb-8 flex gap-1"
+        role="progressbar"
+        aria-label="set-up progress"
+        aria-valuemin={1}
+        aria-valuemax={steps}
+        aria-valuenow={step + 1}
+        aria-valuetext={`step ${step + 1} of ${steps}${STEP_NAMES[step] ? `: ${STEP_NAMES[step]}` : ""}`}
+      >
         {Array.from({ length: steps }).map((_, i) => (
           <span
             key={i}
+            aria-hidden
             className={["h-1 flex-1 rounded-pill", i <= step ? "bg-signpost" : "bg-line"].join(" ")}
           />
         ))}
       </div>
+      <p className="ff-sr" aria-live="polite">
+        step {step + 1} of {steps}. {STEP_OPTIONAL.has(step) ? "optional." : ""}
+      </p>
 
       {step === 0 ? (
         <section className="ff-rise">
@@ -277,7 +303,7 @@ export default function Onboarding({ onDone }: { onDone: (p: Profile) => void })
       {step === 5 ? (
         <section className="ff-rise">
           <h1 className="font-display text-28 text-ink">when do you usually go to bed?</h1>
-          <p className="mt-2 text-14 text-ink-faint">one quiet ping, around then. that&rsquo;s the only one.</p>
+          <p className="mt-2 text-14 text-ink-faint">one quiet ping on sunday, around then. that&rsquo;s the only one. optional.</p>
           <div className="mt-6 flex flex-wrap gap-2">
             {BEDTIMES.map((h) => (
               <button

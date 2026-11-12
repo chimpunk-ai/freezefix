@@ -1,4 +1,5 @@
 import type { Metadata, Viewport } from "next";
+import { SkipLink } from "@/components/Shell";
 import "./globals.css";
 
 // Fonts are loaded from Google's CDN with <link> tags rather than next/font/google:
@@ -86,7 +87,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Newsreader:ital,opsz,wght@0,6..72,300;0,6..72,400;1,6..72,300&display=swap"
         />
       </head>
-      <body>{children}</body>
+      <body>
+        <SkipLink />
+        {children}
+      </body>
     </html>
   );
 }

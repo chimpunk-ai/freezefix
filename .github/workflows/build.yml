@@ -188,3 +188,14 @@ jobs:
 
       - name: PWA manifest + service-worker tests
         run: npm run test:pwa
+
+      - name: Legal copy matches the code
+        # Privacy/Terms/Refunds and the at-a-glance card must describe the
+        # product that ships: retired phrases out, real flows in, the lockout
+        # gated on payments, every ff_* key cleared by "forget everything".
+        run: npm run test:legal
+
+      - name: Landing sample-data tests
+        # The shelf's three sample weeks go through the real weekStats; the
+        # first stays thin so "a gap is a dot, never a no" is visibly true.
+        run: npm run test:landing

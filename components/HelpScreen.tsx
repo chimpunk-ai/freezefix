@@ -12,9 +12,14 @@ type Props = {
   region: string;
   onRegionChange: (r: string) => void;
   onBack?: () => void; // undefined = no way back (under-18 stop)
+  /** True when /help was opened on its own (footer link, typed URL) rather
+   *  than from an in-app handoff. Only the crisis opener changes: a visitor
+   *  who hasn't said anything isn't thanked for telling us. Safety Pack v1.0
+   *  §2 wording is kept verbatim for the handoff path. */
+  direct?: boolean;
 };
 
-export default function HelpScreen({ screen, region, onRegionChange, onBack }: Props) {
+export default function HelpScreen({ screen, region, onRegionChange, onBack, direct = false }: Props) {
   const r = resourcesFor(region);
   const em = r.emergency;
   const emNumber = em.tel ? em.display : "your local emergency number";
@@ -37,7 +42,7 @@ export default function HelpScreen({ screen, region, onRegionChange, onBack }: P
     case "crisis": {
       const line = r.crisis[0];
       lines = [
-        "Thanks for telling me. You don't have to carry this alone.",
+        direct ? "You don't have to carry this alone." : "Thanks for telling me. You don't have to carry this alone.",
         `Talk to someone now, free: ${name(line, "a crisis line")}. Or message someone who's got your back.`,
         `If you might act on this soon, call ${emNumber}.`,
       ];
@@ -222,9 +227,14 @@ export function ContactButton({ contact, big = false }: { contact: Contact; big?
 }
 
 export function CountrySwitcher({ region, onChange }: { region: string; onChange: (r: string) => void }) {
-  const current = (VERIFIED_COUNTRIES as string[]).includes(region) ? region : "OTHER";
+  const verified = (VERIFIED_COUNTRIES as string[]).includes(region);
+  // An unverified but known country (say, "IT") keeps its own name in the
+  // list, so an Italian sees "Italy" selected — with 112 and the directories —
+  // rather than being told they are "somewhere else".
+  const other = !verified && /^[A-Z]{2}$/.test(region) ? region : null;
+  const current = verified ? region : other ?? "OTHER";
   return (
-    <label className="flex items-center justify-center gap-2 text-sm text-ink-faint">
+    <label className="flex flex-wrap items-center justify-center gap-2 text-sm text-ink-faint">
       Showing help for
       <select
         value={current}
@@ -236,10 +246,23 @@ export function CountrySwitcher({ region, onChange }: { region: string; onChange
             {RESOURCES[c].name}
           </option>
         ))}
-        <option value="OTHER">Somewhere else</option>
+        {other ? (
+          <option value={other}>
+            {countryName(other)} (local emergency number + directories)
+          </option>
+        ) : null}
+        <option value="OTHER">Another country</option>
       </select>
     </label>
   );
+}
+
+function countryName(code: string): string {
+  try {
+    return new Intl.DisplayNames(["en"], { type: "region" }).of(code) ?? code;
+  } catch {
+    return code;
+  }
 }
 
 function name(c: Contact | undefined, fallback: string) {
