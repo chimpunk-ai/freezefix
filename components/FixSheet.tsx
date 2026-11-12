@@ -42,6 +42,7 @@ export default function FixSheet({
   goal,
   region,
   onPaywall,
+  banner,
 }: {
   open: boolean;
   onClose: () => void;
@@ -51,6 +52,8 @@ export default function FixSheet({
   goal: Goal | null;
   region: string;
   onPaywall: () => void;
+  /** One line under the header, e.g. when the week being asked about is a sample. */
+  banner?: string;
 }) {
   const [turns, setTurns] = useState<Turn[]>([]);
   const [input, setInput] = useState("");
@@ -150,6 +153,10 @@ export default function FixSheet({
             </button>
           </div>
         </div>
+
+        {banner ? (
+          <p className="border-b border-line/70 bg-card/60 px-5 py-2 text-12 text-ink-faint">{banner}</p>
+        ) : null}
 
         <div className="min-h-0 flex-1 space-y-3 overflow-y-auto px-5 py-4" role="log" aria-live="polite" aria-label="conversation">
           {thread.map((t, i) => (
