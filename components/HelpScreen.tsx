@@ -12,9 +12,14 @@ type Props = {
   region: string;
   onRegionChange: (r: string) => void;
   onBack?: () => void; // undefined = no way back (under-18 stop)
+  /** True when /help was opened on its own (footer link, typed URL) rather
+   *  than from an in-app handoff. Only the crisis opener changes: a visitor
+   *  who hasn't said anything isn't thanked for telling us. Safety Pack v1.0
+   *  §2 wording is kept verbatim for the handoff path. */
+  direct?: boolean;
 };
 
-export default function HelpScreen({ screen, region, onRegionChange, onBack }: Props) {
+export default function HelpScreen({ screen, region, onRegionChange, onBack, direct = false }: Props) {
   const r = resourcesFor(region);
   const em = r.emergency;
   const emNumber = em.tel ? em.display : "your local emergency number";
@@ -37,7 +42,7 @@ export default function HelpScreen({ screen, region, onRegionChange, onBack }: P
     case "crisis": {
       const line = r.crisis[0];
       lines = [
-        "Thanks for telling me. You don't have to carry this alone.",
+        direct ? "You don't have to carry this alone." : "Thanks for telling me. You don't have to carry this alone.",
         `Talk to someone now, free: ${name(line, "a crisis line")}. Or message someone who's got your back.`,
         `If you might act on this soon, call ${emNumber}.`,
       ];

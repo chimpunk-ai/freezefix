@@ -30,7 +30,12 @@ export default function HelpPage() {
   const [picked, setPicked] = useState<string | null>(null);
   const region = picked ?? detected;
 
-  const screen = parseScreen(params.get("screen"));
+  // No ?screen= means the visitor typed /help or tapped it in a footer: they
+  // haven't disclosed anything to Fix, so the opener must not thank them for
+  // doing so. The in-app crisis handoff always passes ?screen=.
+  const screenParam = params.get("screen");
+  const screen = parseScreen(screenParam);
+  const direct = screenParam === null;
 
   function onBack() {
     // Go back if the user got here from inside the site; otherwise home.
@@ -71,7 +76,7 @@ export default function HelpPage() {
       </header>
       <Main>
         <Container measure="read" className="pb-10">
-          <HelpScreen screen={screen} region={region} onRegionChange={onRegionChange} onBack={back} />
+          <HelpScreen screen={screen} region={region} onRegionChange={onRegionChange} onBack={back} direct={direct} />
         </Container>
         <Container measure="read" className="pb-14">
           <SiteFooter />

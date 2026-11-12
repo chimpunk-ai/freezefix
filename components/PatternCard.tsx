@@ -85,12 +85,15 @@ export function PatternCard({
   onAsk,
   onClose,
   dimmed = false,
+  compact = false,
 }: {
   name: string;
   stats: WeekStats;
   onAsk?: () => void;
   onClose?: () => void;
   dimmed?: boolean;
+  /** Smaller heading and padding, for three-up shelves. Same content. */
+  compact?: boolean;
 }) {
   const who = name.trim() || "you";
   const line = stats.goalLine;
@@ -135,16 +138,19 @@ export function PatternCard({
   return (
     <article
       className={[
-        "rounded-sheet border border-line bg-card p-6",
+        "rounded-sheet border border-line bg-card",
+        compact ? "p-5" : "p-6",
         dimmed ? "opacity-70" : "",
       ].join(" ")}
     >
       <p className="text-12 uppercase tracking-[0.14em] text-ink-faint">{range(stats.start, stats.end)}</p>
-      <h2 className="mt-2 font-display text-28 text-ink">{who}, here&rsquo;s your week</h2>
+      <h2 className={["mt-2 font-display text-ink", compact ? "text-20" : "text-28"].join(" ")}>
+        {who}, here&rsquo;s your week
+      </h2>
 
       <div className="mt-4 space-y-2">
         {stats.sentences.map((s, i) => (
-          <p key={i} className="text-16 text-ink-soft">
+          <p key={i} className={compact ? "text-14 text-ink-soft" : "text-16 text-ink-soft"}>
             {s}
           </p>
         ))}

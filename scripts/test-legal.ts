@@ -100,7 +100,7 @@ check("BRAND-summary-uses-fix", !/\bFreezeFix\b/.test(summary));
 // True only while AppClient gates the lockout on paymentsOn.
 check(
   "CODE-lockout-gated-on-paymentsOn",
-  /locked\s*=\s*Boolean\([^)]*paymentsOn\)/.test(appClient),
+  /locked\s*=\s*Boolean\([^)]*paymentsOn[^)]*\)/.test(appClient),
   "AppClient must include paymentsOn in the `locked` expression, or Terms §5 is false"
 );
 // Plans page: 5 free / 20 paid, matching lib/quota.ts LIMITS.fix.

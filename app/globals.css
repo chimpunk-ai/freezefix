@@ -250,6 +250,56 @@ a {
   transform: scale(0.96);
 }
 
+/* ── Landing reveal ───────────────────────────────────────────────────────
+   Below-the-fold sections fade up 10px once, when they first scroll into
+   view (components/Reveal.tsx). The hidden state only exists after the
+   client has marked the document ready, so first paint, no-JS and crawlers
+   always see everything; reduced-motion users never get the ready mark. */
+[data-reveal] {
+  transition:
+    opacity 520ms ease,
+    transform 520ms cubic-bezier(0.2, 0.7, 0.3, 1);
+}
+html[data-reveal-ready] [data-reveal]:not([data-shown]) {
+  opacity: 0;
+  transform: translateY(10px);
+}
+
+/* The hero's Sunday card sits on a faint second card, the way the shelf
+   stacks weeks. Decoration only; the real card is the one with the text. */
+.ff-stack::before {
+  content: "";
+  position: absolute;
+  inset: -0.75rem 1rem auto 1rem;
+  height: 100%;
+  border-radius: var(--radius-sheet);
+  border: 1px solid color-mix(in srgb, var(--color-line) 70%, transparent);
+  background: color-mix(in srgb, var(--color-card) 55%, transparent);
+  transform: scale(0.97);
+  z-index: -1;
+}
+.ff-stack::after {
+  content: "";
+  position: absolute;
+  inset: -2.5rem -2.5rem -2rem -2.5rem;
+  border-radius: 2.5rem;
+  background: radial-gradient(60% 55% at 50% 45%, rgba(156, 175, 136, 0.13), transparent 72%);
+  z-index: -2;
+  pointer-events: none;
+}
+
+/* Horizontal shelf on narrow screens: one card at a time, snapping. */
+.ff-shelf {
+  scroll-snap-type: x mandatory;
+  scrollbar-width: none;
+}
+.ff-shelf::-webkit-scrollbar {
+  display: none;
+}
+.ff-shelf > * {
+  scroll-snap-align: center;
+}
+
 /* Section index on long pages: the current section's link gets the amber dot. */
 .ff-toc a[aria-current="true"] {
   color: var(--color-ink);

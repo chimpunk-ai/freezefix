@@ -15,6 +15,14 @@ route composes at each width, and what to check before calling a layout done.
   settings scale the whole page (WCAG 1.4.4).
 - Three animations and one loop, all in `globals.css`; `prefers-reduced-motion`
   collapses every one of them to zero. Motion never carries information.
+- The landing adds one quiet entrance: sections below the fold fade up 10px
+  once as they scroll in (`components/Reveal.tsx`, `[data-reveal]`). The
+  hidden state only exists after the client marks the document ready, so
+  first paint, no-JS, crawlers and print always get the whole page; reduced
+  motion never gets the ready mark. Not used inside the app.
+- No photography. The only pictures on the landing are the app's own
+  interface — the Sunday card, the log, the week grid, the shelf — rendered
+  from the same components and sample data the app uses.
 - Lowercase voice everywhere, including kickers. No tracked-out all-caps labels.
 
 ## The three measures
@@ -33,7 +41,7 @@ Tailwind defaults: `sm` 640, `md` 768, `lg` 1024, `xl` 1280.
 
 | Route | < 640 | 640–1023 | ≥ 1024 |
 | --- | --- | --- | --- |
-| `/` landing | one column; card under the headline | same, larger type | hero is two columns (words 1.05fr, real card 0.95fr, card ≤ 520px); the three steps sit 3-up, each with its interface fragment; Fix + "what this isn't" 2-up; price band 2-up |
+| `/` landing | one column; card under the headline; the shelf is a horizontal snap row, one card at a time with the next peeking | same, larger type; boundary cards 2-up from `md` | hero is two columns (words 1.15fr, real card 0.85fr, card ≤ 480px on a faint second card); the three steps sit 3-up, each with its interface fragment; the shelf is three compact cards 3-up; Fix + "what this isn't" 2-up; "where your words go" is two cards with an arrow between; price band 2-up |
 | `/app` log | one column, 560 | one column, 560 | two columns: log 560 + sticky rail ≤ 400 (this week's grid, last card, plan line); whole thing centred in 1120 |
 | `/app/weeks` shelf | one column | cards 2-up from `md` | one column ≤ 720 (reading, not browsing) |
 | `/app/settings` | one column | one column | form 560 + plan/data card in a right column |

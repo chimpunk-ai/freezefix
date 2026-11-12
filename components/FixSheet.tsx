@@ -187,7 +187,7 @@ export default function FixSheet({
                   </li>
                 ))}
               </ul>
-              <Link href="/help" className="mt-3 inline-block text-14 text-frost underline decoration-frost/40 underline-offset-4">
+              <Link href="/help?screen=crisis" className="mt-3 inline-block text-14 text-frost underline decoration-frost/40 underline-offset-4">
                 everything else on the help page
               </Link>
             </div>

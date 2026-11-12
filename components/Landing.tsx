@@ -2,23 +2,30 @@ import Link from "next/link";
 import type { ReactNode } from "react";
 import { MoodFace } from "@/components/MoodFace";
 import { PatternCard, WeekGrid } from "@/components/PatternCard";
+import Reveal from "@/components/Reveal";
 import { Container, Kicker, Main, SiteHeader } from "@/components/Shell";
 import SiteFooter from "@/components/SiteFooter";
 import { TrustBadge } from "@/components/TrustBadge";
 import { MOOD_LABEL, TRIGGER_LABEL } from "@/lib/entry";
 import { goalSentence, weekStats } from "@/lib/pattern";
 import { plansFor, TRIAL_DAYS } from "@/lib/plans";
-import { SAMPLE_END, SAMPLE_GOAL, sampleEntries } from "@/lib/sample";
+import { SAMPLE_END, SAMPLE_GOAL, SAMPLE_WEEK_ENDS, sampleEntries, sampleShelfEntries } from "@/lib/sample";
 
-// The front door. One idea, three steps, one real card.
+// The front door. One idea, three steps, one real card, a shelf, a boundary.
 //
 // On a phone it reads top to bottom. On a laptop the headline and the
 // Sunday card sit side by side, because the card is the product and the
 // only honest proof we have; everything else on the page is interface
 // pulled from the app itself, not illustration. No scenario cards, no
-// founder pitch, no waitlist, no countdown.
+// founder pitch, no waitlist, no countdown, no photographs of anyone.
+//
+// Motion: the week grid in the hero draws itself (the app's own animation),
+// and sections below the fold fade up once as they arrive (Reveal.tsx).
+// Both collapse to nothing under prefers-reduced-motion.
 
 const sample = weekStats(sampleEntries(), SAMPLE_GOAL, SAMPLE_END);
+const shelfEntries = sampleShelfEntries();
+const shelf = SAMPLE_WEEK_ENDS.map((end) => weekStats(shelfEntries, SAMPLE_GOAL, end));
 const prices = plansFor("US");
 
 const cta =
@@ -30,14 +37,15 @@ export default function Landing({ paymentsOn }: { paymentsOn: boolean }) {
   return (
     <>
       <SiteHeader cta={{ href: "/app", label: "open the app" }} />
+      <Reveal />
 
       <Main>
         {/* Hero: words left, the real card right. */}
-        <section aria-labelledby="hero-heading">
-          <Container className="grid items-center gap-10 pb-6 pt-6 lg:grid-cols-[minmax(0,1.15fr)_minmax(0,0.85fr)] lg:gap-16 lg:pb-12 lg:pt-10">
+        <section aria-labelledby="hero-heading" className="overflow-x-clip">
+          <Container className="grid items-center gap-12 pb-8 pt-6 lg:grid-cols-[minmax(0,1.15fr)_minmax(0,0.85fr)] lg:gap-16 lg:pb-16 lg:pt-12">
             <div className="max-w-[46ch]">
               <h1 id="hero-heading" className="font-display text-28 leading-[1.08] text-ink sm:text-40 lg:text-56">
-                you don&rsquo;t have to quit.
+                you don&rsquo;t have to quit.{" "}
                 <br className="lg:hidden" />
                 you just have to notice.
               </h1>
@@ -61,7 +69,7 @@ export default function Landing({ paymentsOn }: { paymentsOn: boolean }) {
               </div>
             </div>
 
-            <figure className="lg:w-full lg:max-w-[480px] lg:justify-self-end">
+            <figure className="ff-stack relative mt-4 lg:mt-0 lg:w-full lg:max-w-[480px] lg:justify-self-end">
               <Kicker>what sunday looks like</Kicker>
               <div className="mt-3 rounded-sheet shadow-[0_32px_80px_-40px_rgba(156,175,136,0.35)]">
                 <PatternCard name="nico" stats={sample} dimmed />
@@ -74,16 +82,19 @@ export default function Landing({ paymentsOn }: { paymentsOn: boolean }) {
         </section>
 
         {/* How it works: three steps, each with the piece of interface it describes. */}
-        <section aria-labelledby="how-heading" className="mt-10 border-t border-line lg:mt-16">
+        <section aria-labelledby="how-heading" className="mt-6 border-t border-line lg:mt-10">
           <Container className="pt-10 lg:pt-14">
-            <h2 id="how-heading" className="font-display text-28 text-ink lg:text-40">
-              the whole app, in order.
-            </h2>
+            <div data-reveal>
+              <Kicker tone="faint">how it works</Kicker>
+              <h2 id="how-heading" className="mt-2 font-display text-28 text-ink lg:text-40">
+                the whole app, in order.
+              </h2>
+            </div>
             <ol className="mt-8 grid items-start gap-10 lg:grid-cols-3 lg:gap-8">
               <Step
                 n="1"
                 title="the log"
-                body="yes or no. one face. up to three chips. nine seconds, at bedtime, in the dark. hold the mic if you want to say it out loud — we keep the words, throw the audio away."
+                body="yes or no. one face. up to three chips. nine seconds, at bedtime, in the dark. a few words if you want them — typed, or spoken once voice notes are switched on."
               >
                 <LogPreview />
               </Step>
@@ -112,10 +123,43 @@ export default function Landing({ paymentsOn }: { paymentsOn: boolean }) {
           </Container>
         </section>
 
+        {/* The shelf: three real weeks, oldest first. One is thin on purpose. */}
+        <section aria-labelledby="shelf-heading" className="mt-16 lg:mt-24">
+          <Container>
+            <div data-reveal className="max-w-[52ch]">
+              <Kicker tone="faint">the shelf</Kicker>
+              <h2 id="shelf-heading" className="mt-2 font-display text-28 text-ink lg:text-40">
+                by week six, it&rsquo;s a bookshelf.
+              </h2>
+              <p className="mt-3 text-14 text-ink-soft lg:text-16">
+                every sunday card is kept, up to twelve weeks, on your phone. you can flick back
+                through them and watch your own shape change. a week with gaps is shown with gaps —
+                a night you didn&rsquo;t log is a dot, never a no.
+              </p>
+            </div>
+          </Container>
+          <Container className="mt-8">
+            <ol
+              data-reveal
+              className="ff-shelf -mx-5 flex snap-x gap-4 overflow-x-auto px-5 pb-2 sm:mx-0 sm:px-0 lg:grid lg:grid-cols-3 lg:overflow-visible"
+              aria-label="three sample weeks, oldest first"
+            >
+              {shelf.map((w, i) => (
+                <li key={w.end} className="w-[86%] shrink-0 sm:w-[70%] lg:w-auto">
+                  <PatternCard name="nico" stats={w} dimmed compact />
+                  <p className="mt-2 px-1 text-12 text-ink-faint">
+                    {i === 0 ? "three nights logged. the card says so instead of guessing." : i === 1 ? "the run happened once." : "twice. one more than last week — that's the whole message."}
+                  </p>
+                </li>
+              ))}
+            </ol>
+          </Container>
+        </section>
+
         {/* Fix, and what this isn't. Two columns on a laptop. */}
         <section aria-labelledby="fix-heading" className="mt-16 lg:mt-24">
           <Container className="grid gap-10 lg:grid-cols-2 lg:gap-16">
-            <div className="rounded-sheet border border-signpost/25 bg-signpost/[0.04] p-6 lg:p-8">
+            <div data-reveal className="rounded-sheet border border-signpost/25 bg-signpost/[0.04] p-6 lg:p-8">
               <div className="flex items-center gap-2">
                 <span aria-hidden className="h-[10px] w-[10px] rounded-full bg-signpost/80" />
                 <Kicker>fix</Kicker>
@@ -137,7 +181,7 @@ export default function Landing({ paymentsOn }: { paymentsOn: boolean }) {
               </div>
             </div>
 
-            <div className="lg:self-center">
+            <div data-reveal className="lg:self-center">
               <h2 className="font-display text-20 text-ink lg:text-28">what this isn&rsquo;t</h2>
               <ul className="mt-4 space-y-3 text-14 text-ink-soft lg:text-16">
                 {[
@@ -157,10 +201,59 @@ export default function Landing({ paymentsOn }: { paymentsOn: boolean }) {
           </Container>
         </section>
 
+        {/* Where your words go. Drawn from the privacy policy, not from the pitch. */}
+        <section aria-labelledby="boundary-heading" className="mt-16 lg:mt-24">
+          <Container>
+            <div data-reveal className="max-w-[52ch]">
+              <Kicker tone="faint">privacy</Kicker>
+              <h2 id="boundary-heading" className="mt-2 font-display text-28 text-ink lg:text-40">
+                where your words go.
+              </h2>
+              <p className="mt-3 text-14 text-ink-soft lg:text-16">
+                no account, no email, no phone number. a name you make up is the whole sign-in. the
+                line between your phone and us is drawn below, and the{" "}
+                <Link href="/privacy" className="text-ink underline decoration-line underline-offset-4 hover:decoration-ink-faint">
+                  privacy page
+                </Link>{" "}
+                says the same thing in full.
+              </p>
+            </div>
+            <div data-reveal className="mt-8 grid gap-4 md:grid-cols-[1fr_auto_1fr] md:items-stretch md:gap-0">
+              <BoundaryCard
+                tone="phone"
+                title="stays on this phone"
+                lines={[
+                  "every night you log — yes or no, the face, the chips, the note",
+                  "the sunday card and the shelf, worked out on the phone itself",
+                  "the name you made up, your bedtime, your one thing",
+                  "whether you wanted the sunday chime",
+                ]}
+                foot="nothing syncs, nothing uploads, nothing is in a backup we hold. clear your browser data and it's gone — there is no copy to recover."
+              />
+              <div aria-hidden className="hidden items-center md:flex">
+                <div className="relative mx-2 h-px w-10 bg-line">
+                  <span className="absolute -right-1 top-1/2 h-2 w-2 -translate-y-1/2 rotate-45 border-r border-t border-ink-faint" />
+                </div>
+              </div>
+              <BoundaryCard
+                tone="away"
+                title="leaves only when you ask fix"
+                lines={[
+                  "the last seven nights of taps and the first 160 characters of any note",
+                  "your question and the last few lines of that chat (the opener can include your made-up name), your one thing, and a two-letter country code",
+                  "read by our AI provider (Anthropic) to write the reply, not to train on, and deleted on their side within 30 days",
+                  "we keep no copy of the question or the answer — only a daily count, hashed",
+                ]}
+                foot="voice notes are switched off today. payments aren't switched on. when either changes, it says so here first."
+              />
+            </div>
+          </Container>
+        </section>
+
         {/* The price, honestly. The copy changes with whether a checkout exists. */}
         <section aria-labelledby="price-heading" className="mt-16 lg:mt-24">
           <Container>
-            <div className="grid gap-6 rounded-sheet border border-line bg-card/70 p-6 lg:grid-cols-[auto_1fr] lg:items-center lg:gap-12 lg:p-10">
+            <div data-reveal className="grid gap-6 rounded-sheet border border-line bg-card/70 p-6 lg:grid-cols-[auto_1fr] lg:items-center lg:gap-12 lg:p-10">
               <div>
                 <Kicker>{paymentsOn ? "the price" : "the price, when it arrives"}</Kicker>
                 <h2 id="price-heading" className="mt-2 font-display text-28 leading-tight text-ink lg:text-40">
@@ -195,7 +288,7 @@ export default function Landing({ paymentsOn }: { paymentsOn: boolean }) {
 
 function Step({ n, title, body, children }: { n: string; title: string; body: string; children: ReactNode }) {
   return (
-    <li className="grid grid-cols-[40px_1fr] content-start gap-x-4 border-t border-line pt-6 lg:grid-cols-1 lg:gap-x-0 lg:border-t-0 lg:pt-0">
+    <li data-reveal className="grid grid-cols-[40px_1fr] content-start gap-x-4 border-t border-line pt-6 lg:grid-cols-1 lg:gap-x-0 lg:border-t-0 lg:pt-0">
       <span aria-hidden className="font-display text-28 leading-none text-signpost lg:text-40">
         {n}
       </span>
@@ -239,6 +332,42 @@ function LogPreview() {
           </span>
         ))}
       </div>
+    </div>
+  );
+}
+
+function BoundaryCard({
+  tone,
+  title,
+  lines,
+  foot,
+}: {
+  tone: "phone" | "away";
+  title: string;
+  lines: string[];
+  foot: string;
+}) {
+  const phone = tone === "phone";
+  return (
+    <div
+      className={[
+        "flex flex-col rounded-sheet border p-6",
+        phone ? "border-accent/30 bg-accent/[0.06]" : "border-line bg-card/70",
+      ].join(" ")}
+    >
+      <div className="flex items-center gap-2">
+        <span aria-hidden className={["h-2 w-2 rounded-full", phone ? "bg-accent" : "bg-signpost/80"].join(" ")} />
+        <h3 className={["font-display text-20 leading-tight", phone ? "text-accent" : "text-ink"].join(" ")}>{title}</h3>
+      </div>
+      <ul className="mt-4 space-y-2.5 text-14 text-ink-soft">
+        {lines.map((l) => (
+          <li key={l} className="flex gap-3">
+            <span aria-hidden className={["mt-[0.7em] h-px w-3 shrink-0", phone ? "bg-accent/70" : "bg-signpost/60"].join(" ")} />
+            <span>{l}</span>
+          </li>
+        ))}
+      </ul>
+      <p className="mt-5 border-t border-line/70 pt-4 text-12 leading-relaxed text-ink-faint">{foot}</p>
     </div>
   );
 }
