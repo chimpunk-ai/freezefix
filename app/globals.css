@@ -4,8 +4,8 @@
    Warm black, not OLED black. One accent (sage) for anything that matters.
    One second accent (terracotta) for safety and nothing else.
    Type: Inter for everything, Newsreader for the few display lines.
-   Scale is exactly 12 / 14 / 16 / 20 / 28 / 40, plus 56 for the desktop
-   hero only. Grid is 8pt. See docs/design-system.md for the layout rules. */
+   Scale is exactly 12 / 14 / 16 / 20 / 28 / 40; the landing hero alone
+   uses 44 on lg (see docs/design-system.md for why 56 did not fit). Grid is 8pt. See docs/design-system.md for the layout rules. */
 
 @theme {
   --color-bg: #12100e;
@@ -305,13 +305,34 @@ html[data-reveal-ready] [data-reveal]:not([data-shown]) {
   color: var(--color-ink);
 }
 
+/* The hero card arrives the way the real Sunday card does: one rise, then
+   the week grid inside it draws itself. Runs once, on first paint. */
+.ff-hero-card {
+  animation: ff-hero-card 560ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+@keyframes ff-hero-card {
+  from {
+    opacity: 0;
+    transform: translateY(18px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,
   *::after {
     animation-duration: 0.001ms !important;
+    /* The week grid staggers its cells with per-child delays and
+       `animation-fill-mode: both`, so without this a reduced-motion reader
+       would see the cells invisible for up to 660ms, then pop. */
+    animation-delay: 0ms !important;
     animation-iteration-count: 1 !important;
     transition-duration: 0.001ms !important;
+    transition-delay: 0ms !important;
     scroll-behavior: auto !important;
   }
 }

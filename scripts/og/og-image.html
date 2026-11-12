@@ -1,0 +1,47 @@
+<!-- Source for public/og-image.png (1200x630). Regenerate: open in Chromium at 1200x630 and screenshot, e.g.
+     npx playwright screenshot --viewport-size=1200,630 scripts/og/og-image.html public/og-image.png
+     Headline serif is Lora here because Newsreader is not installed on the render box; swap the font-family if it is. -->
+<!doctype html><html><head><meta charset="utf-8"><style>
+  html,body{margin:0;width:1200px;height:630px;background:#12100e;color:#f2ede6;font-family:Inter,ui-sans-serif,system-ui,sans-serif;-webkit-font-smoothing:antialiased}
+  body{position:relative;overflow:hidden;background-image:radial-gradient(52% 44% at 14% 8%,rgba(156,175,136,.10),transparent 70%),radial-gradient(46% 42% at 92% 30%,rgba(216,146,122,.05),transparent 72%)}
+  .serif{font-family:Lora,Georgia,serif;font-weight:400;letter-spacing:-.015em}
+  .wm{position:absolute;left:72px;top:60px;display:flex;align-items:baseline;gap:7px}
+  .wm span.t{font-size:40px;line-height:1}
+  .wm span.d{width:9px;height:9px;border-radius:50%;background:#9caf88;margin-bottom:4px}
+  .left{position:absolute;left:72px;top:150px;width:560px;display:flex;flex-direction:column;gap:26px}
+  .h1{font-size:52px;line-height:1.08;color:#f2ede6}
+  .sub{width:520px;font-size:22px;line-height:1.4;color:#c9beb1}
+  .foot{position:absolute;left:72px;bottom:56px;display:flex;gap:28px;align-items:center;font-size:18px;color:#94897c}
+  .pill{display:inline-block;padding:10px 20px;border-radius:999px;background:#f0a868;color:#12100e;font-weight:500;font-size:18px}
+  .card{position:absolute;right:72px;top:120px;width:400px;border-radius:20px;border:1px solid #332c25;background:#1b1815;padding:26px;box-shadow:0 40px 90px -40px rgba(156,175,136,.35)}
+  .card .k{font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:#94897c}
+  .card .t{font-size:26px;margin-top:8px}
+  .card .s{font-size:15px;line-height:1.45;color:#c9beb1;margin-top:12px}
+  .grid{display:grid;grid-template-columns:repeat(7,1fr);gap:6px;margin-top:18px}
+  .c{border-radius:14px;border:1px solid #332c25;background:#1b1815;padding:9px 4px;display:flex;flex-direction:column;align-items:center;gap:6px;font-size:11px;color:#c9beb1}
+  .c.g{border-color:rgba(156,175,136,.3);background:rgba(156,175,136,.10);color:#9caf88}
+  .c.f{border-color:rgba(216,146,122,.3);background:rgba(216,146,122,.10);color:#d8927a}
+  .c svg{display:block}
+  .goal{margin-top:16px;border-radius:14px;border:1px solid rgba(156,175,136,.25);background:rgba(156,175,136,.07);padding:12px 14px;font-size:14px;color:#f2ede6}
+  .back{position:absolute;right:88px;top:104px;width:368px;height:360px;border-radius:20px;border:1px solid rgba(51,44,37,.7);background:rgba(27,24,21,.55);transform:scale(.97)}
+</style></head><body>
+<div class="wm"><span class="t serif">fix</span><span class="d"></span></div>
+<div class="left"><div class="h1 serif">you don’t have to quit.<br>you just have to notice.</div>
+<div class="sub">a private nightly check-in for people who smoke weed. three taps a night, one card on sunday. no streak, no score, nobody telling you off.</div></div>
+<div class="foot"><span class="pill">start, it’s free</span><span>no card · no email · 18+ · getfreezefix.com</span></div>
+<div class="back"></div>
+<div class="card">
+  <div class="k">26 oct – 1 nov</div>
+  <div class="t serif">nico, here’s your week</div>
+  <div class="s">you smoked on four of the seven nights this week. you tapped “after work” on three of them.</div>
+  <div class="grid" id="g"></div>
+  <div class="goal">you wanted to go for a run twice this week. you did it twice.</div>
+</div>
+<script>
+const leaf='<svg width="12" height="12" viewBox="0 0 24 24" fill="none"><path d="M20 4c-8 0-14 3.6-14 10a6 6 0 0 0 6 6c6.4 0 8-6 8-16Z" stroke="currentColor" stroke-width="1.6"/><path d="M6 20c2-5 5-8 10-10" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>';
+const sun='<svg width="12" height="12" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="4" stroke="currentColor" stroke-width="1.6"/><path d="M12 2v2M12 20v2M2 12h2M20 12h2M5 5l1.5 1.5M17.5 17.5 19 19M19 5l-1.5 1.5M6.5 17.5 5 19" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>';
+const face=(m)=>{const mouth={1:"M8.6 17.4c1.1-1.5 2.4-2.2 3.4-2.2s2.3.7 3.4 2.2",2:"M8.9 16.9c1.1-1 2.3-1.4 3.1-1.4s2 .4 3.1 1.4",3:"M9 16.6h6",4:"M8.9 15.9c1.1 1 2.3 1.4 3.1 1.4s2-.4 3.1-1.4",5:"M8.6 15.2c1.1 1.6 2.4 2.3 3.4 2.3s2.3-.7 3.4-2.3"}[m];return `<svg width="18" height="18" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9.25" stroke="currentColor" stroke-width="1.4"/><circle cx="9.1" cy="10.2" r="1.05" fill="currentColor"/><circle cx="14.9" cy="10.2" r="1.05" fill="currentColor"/><path d="${mouth}" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>`};
+// same rows as lib/sample.ts sampleEntries(): [smoked, mood]
+const rows=[["mon",false,4],["tue",true,3],["wed",true,2],["thu",false,3],["fri",true,3],["sat",true,2],["sun",false,4]];
+document.getElementById('g').innerHTML=rows.map(([d,s,m])=>`<div class="c ${m>=4?'g':m<=2?'f':''}"><span style="opacity:.7">${d}</span>${s?leaf:sun}${face(m)}</div>`).join('');
+</script></body></html>
