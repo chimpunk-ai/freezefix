@@ -43,13 +43,21 @@ export default function Landing({ paymentsOn }: { paymentsOn: boolean }) {
         {/* Hero: words left, the real card right. */}
         <section aria-labelledby="hero-heading" className="overflow-x-clip">
           <Container className="grid items-center gap-12 pb-8 pt-6 lg:grid-cols-[minmax(0,1.15fr)_minmax(0,0.85fr)] lg:gap-16 lg:pb-16 lg:pt-12">
-            <div className="max-w-[46ch]">
-              <h1 id="hero-heading" className="font-display text-28 leading-[1.08] text-ink sm:text-40 lg:text-56">
-                you don&rsquo;t have to quit.{" "}
-                <br className="lg:hidden" />
-                you just have to notice.
+            <div>
+              {/* One sentence per line. The text column is ~560px at the 1120
+                  site measure, and each sentence is 23 characters, so 44px is
+                  the largest size that keeps "you don't have to quit." on one
+                  line in Newsreader with room to spare; 56 forced three or
+                  four uneven lines. text-wrap: balance is off here for the
+                  same reason. */}
+              <h1
+                id="hero-heading"
+                className="font-display text-28 leading-[1.1] text-ink [text-wrap:initial] sm:text-40 lg:text-[2.75rem] lg:leading-[1.08]"
+              >
+                <span className="block">you don&rsquo;t have to quit.</span>
+                <span className="block">you just have to notice.</span>
               </h1>
-              <p className="mt-5 text-16 leading-[1.5] text-ink sm:text-20 sm:leading-[1.35]">
+              <p className="mt-5 max-w-[46ch] text-16 leading-[1.5] text-ink sm:text-20 sm:leading-[1.35]">
                 a private nightly check-in for people who smoke weed. we don&rsquo;t make you quit —
                 we show you what your week actually looks like, so you can decide what to do about it.
               </p>
@@ -71,7 +79,7 @@ export default function Landing({ paymentsOn }: { paymentsOn: boolean }) {
 
             <figure className="ff-stack relative mt-4 lg:mt-0 lg:w-full lg:max-w-[480px] lg:justify-self-end">
               <Kicker>what sunday looks like</Kicker>
-              <div className="mt-3 rounded-sheet shadow-[0_32px_80px_-40px_rgba(156,175,136,0.35)]">
+              <div className="ff-hero-card mt-3 rounded-sheet shadow-[0_32px_80px_-40px_rgba(156,175,136,0.35)]">
                 <PatternCard name="nico" stats={sample} dimmed />
               </div>
               <figcaption className="mt-3 text-12 text-ink-faint">
@@ -115,9 +123,7 @@ export default function Landing({ paymentsOn }: { paymentsOn: boolean }) {
                 title="your thing"
                 body="one small thing you'd like to do more of. run twice. call your brother back. the card notices whether you did, and says so without a party."
               >
-                <div className="rounded-card border border-accent/25 bg-accent/[0.07] px-4 py-3 text-14 text-ink">
-                  {sample.goalLine ? goalSentence(sample.goalLine) : null}
-                </div>
+                <GoalPreview />
               </Step>
             </ol>
           </Container>
@@ -145,9 +151,13 @@ export default function Landing({ paymentsOn }: { paymentsOn: boolean }) {
               aria-label="three sample weeks, oldest first"
             >
               {shelf.map((w, i) => (
-                <li key={w.end} className="w-[86%] shrink-0 sm:w-[70%] lg:w-auto">
-                  <PatternCard name="nico" stats={w} dimmed compact />
-                  <p className="mt-2 px-1 text-12 text-ink-faint">
+                <li key={w.end} className="flex w-[86%] shrink-0 flex-col sm:w-[70%] lg:w-auto">
+                  {/* Cards stretch to the tallest in the row so the three
+                      captions sit on one baseline instead of floating. */}
+                  <div className="flex flex-1 flex-col [&>article]:flex-1">
+                    <PatternCard name="nico" stats={w} dimmed compact />
+                  </div>
+                  <p className="mt-3 px-1 text-12 text-ink-faint">
                     {i === 0 ? "three nights logged. the card says so instead of guessing." : i === 1 ? "the run happened once." : "twice. one more than last week — that's the whole message."}
                   </p>
                 </li>
@@ -331,6 +341,27 @@ function LogPreview() {
             {TRIGGER_LABEL[t]}
           </span>
         ))}
+      </div>
+    </div>
+  );
+}
+
+/** The goal tick from the nightly log, then the line the Sunday card makes of it. */
+function GoalPreview() {
+  return (
+    <div className="space-y-3" aria-label="your thing, as it looks in the app">
+      <div className="rounded-card border border-line bg-card p-4">
+        <p className="text-14 text-ink-soft">
+          did you get to &ldquo;{SAMPLE_GOAL.text}&rdquo; today?
+        </p>
+        <div className="mt-3 flex gap-2" aria-hidden>
+          <span className="rounded-pill border border-accent/50 bg-accent/15 px-4 py-2 text-14 text-accent">yes</span>
+          <span className="rounded-pill border border-line bg-card px-4 py-2 text-14 text-ink-soft">no</span>
+          <span className="rounded-pill px-3 py-2 text-14 text-ink-faint">skip</span>
+        </div>
+      </div>
+      <div className="rounded-card border border-accent/25 bg-accent/[0.07] px-4 py-3 text-14 text-ink">
+        {sample.goalLine ? goalSentence(sample.goalLine) : null}
       </div>
     </div>
   );

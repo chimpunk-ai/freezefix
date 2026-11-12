@@ -109,7 +109,12 @@ export default function AppClient({ view = "log" }: { view?: View }) {
   return (
     <Main className="min-h-dvh">
       <header>
-        <Container measure={profile?.onboarded && !locked ? "site" : "app"} className="flex items-center justify-between py-5">
+        {/* Always the site measure, so the wordmark stays where it was on the
+            landing page when someone taps "start" — on a laptop the set-up
+            header otherwise floats in a 560px column in the middle of the
+            window. The set-up and the locked screen below still use the
+            560px app measure for their own content. */}
+        <Container measure="site" className="flex items-center justify-between py-5">
           <Wordmark href={profile?.onboarded ? "/app" : "/"} />
           <nav aria-label="app" className="flex items-center gap-2 sm:gap-4">
             {profile?.onboarded ? (

@@ -11,7 +11,10 @@ route composes at each width, and what to check before calling a layout done.
   CTA, the one button on the Sunday card, section numbers); terracotta
   `#D8927A` for safety and nothing else.
 - Inter for UI, Newsreader for display lines. Scale 12 / 14 / 16 / 20 / 28 /
-  40, plus 56 for the desktop hero only. All in `rem`, so browser text-size
+  40. The landing hero is the one exception at 44px on `lg`: its text column
+  is ~560px at the 1120 site measure and each sentence is 23 characters, so
+  44 is the largest size that keeps one sentence per line (56 forced three
+  or four uneven lines, which is why the `--text-56` token is unused). All in `rem`, so browser text-size
   settings scale the whole page (WCAG 1.4.4).
 - Three animations and one loop, all in `globals.css`; `prefers-reduced-motion`
   collapses every one of them to zero. Motion never carries information.
@@ -51,7 +54,9 @@ Tailwind defaults: `sm` 640, `md` 768, `lg` 1024, `xl` 1280.
 | mirror / Fix sheets | bottom sheet | centred dialog from `md`, all corners rounded | same |
 
 Checked widths: 320, 375, 390, 430, 768, 1024, 1280, 1440, 1600, 1920, and
-a 740×360 landscape phone. The 1120 site measure means 1600 and 1920 gain
+a 740×360 landscape phone. Reduced-motion must also zero `animation-delay`,
+not just duration: the week grid's per-cell stagger otherwise leaves cells
+invisible for up to 660ms under `prefers-reduced-motion`. The 1120 site measure means 1600 and 1920 gain
 margin, not stretch; the hero card stays ≤ 520px so the week grid never
 grows past the size it has in the app.
 
