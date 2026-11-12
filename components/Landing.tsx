@@ -5,6 +5,8 @@ import { PatternCard, WeekGrid } from "@/components/PatternCard";
 import Reveal from "@/components/Reveal";
 import RitualDemo from "@/components/RitualDemo";
 import AppScreens from "@/components/AppScreens";
+import TryFix from "@/components/TryFix";
+import Faq, { faqItems } from "@/components/Faq";
 import { Container, Kicker, Main, SiteHeader } from "@/components/Shell";
 import SiteFooter from "@/components/SiteFooter";
 import { TrustBadge } from "@/components/TrustBadge";
@@ -73,6 +75,13 @@ export default function Landing({ paymentsOn }: { paymentsOn: boolean }) {
                   what it costs
                 </Link>
               </div>
+              <p className="mt-4 text-14 text-ink-faint">
+                or{" "}
+                <TryFix className="inline min-h-0 underline decoration-line underline-offset-4 hover:text-ink-soft">
+                  ask fix about a sample week
+                </TryFix>{" "}
+                before you type a name.
+              </p>
               <div className="mt-6 max-w-[420px]">
                 <TrustBadge />
               </div>
@@ -170,6 +179,12 @@ export default function Landing({ paymentsOn }: { paymentsOn: boolean }) {
                   &ldquo;after work&rdquo;. that&rsquo;s the shape. what it means is yours.
                 </Bubble>
               </div>
+              <div className="mt-6 flex flex-wrap items-center gap-x-4 gap-y-2">
+                <TryFix className={cta}>ask it yourself</TryFix>
+                <p className="text-12 text-ink-faint">
+                  the real fix, about nico&rsquo;s sample week. five questions a day, same as the app.
+                </p>
+              </div>
             </div>
 
             <div data-reveal className="lg:self-center">
@@ -240,6 +255,24 @@ export default function Landing({ paymentsOn }: { paymentsOn: boolean }) {
             </div>
           </Container>
         </section>
+
+        {/* The questions people ask before they type a name. */}
+        <Faq paymentsOn={paymentsOn} />
+        <script
+          type="application/ld+json"
+          // FAQPage structured data: the same questions and answers the section renders.
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              "@context": "https://schema.org",
+              "@type": "FAQPage",
+              mainEntity: faqItems(paymentsOn).map((it) => ({
+                "@type": "Question",
+                name: it.q,
+                acceptedAnswer: { "@type": "Answer", text: it.a },
+              })),
+            }),
+          }}
+        />
 
         {/* Early access, honestly: no reviews exist yet, so none are shown. */}
         <section aria-labelledby="early-heading" className="mt-16 lg:mt-24">
