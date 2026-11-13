@@ -32,6 +32,8 @@ export type DayCell = {
   smoked: boolean | null;
   mood: Mood | null;
   triggers: TriggerId[];
+  /** true / false when they answered the goal tap that night; null when they didn't, or didn't log. */
+  goalDone: boolean | null;
 };
 
 export type GoalLine = {
@@ -73,6 +75,7 @@ function cellsFor(entries: Entries, end: string): DayCell[] {
       smoked: e ? e.smoked : null,
       mood: e ? e.mood : null,
       triggers: e ? e.triggers : [],
+      goalDone: e && typeof e.goalDone === "boolean" ? e.goalDone : null,
     });
   }
   return cells;

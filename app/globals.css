@@ -305,6 +305,19 @@ html[data-reveal-ready] [data-reveal]:not([data-shown]) {
   color: var(--color-ink);
 }
 
+/* The mood line on the Sunday card traces itself left to right once. Paths
+   carry pathLength="1" so the dash maths is the same for any length. */
+.ff-trace {
+  stroke-dasharray: 1;
+  stroke-dashoffset: 1;
+  animation: ff-trace 900ms cubic-bezier(0.2, 0.8, 0.3, 1) 120ms both;
+}
+@keyframes ff-trace {
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
 /* The hero card arrives the way the real Sunday card does: one rise, then
    the week grid inside it draws itself. Runs once, on first paint. */
 .ff-hero-card {
