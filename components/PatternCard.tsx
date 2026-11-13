@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 
 import { MoodFace } from "@/components/MoodFace";
+import { WeekCurve, WeekCurveKey } from "@/components/WeekCurve";
 import { MOOD_LABEL, dayFromISO, prettyDay, type Mood } from "@/lib/entry";
 import { goalSentence, type WeekStats } from "@/lib/pattern";
 import { playSundayChime } from "@/lib/chime";
@@ -157,6 +158,10 @@ export function PatternCard({
       </div>
 
       <div className="mt-5">
+        <WeekCurve stats={stats} id={compact ? `c${stats.end.replace(/-/g, "")}` : undefined} />
+        {compact ? null : <WeekCurveKey />}
+      </div>
+      <div className="mt-4">
         <WeekGrid stats={stats} />
       </div>
 

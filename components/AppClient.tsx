@@ -8,6 +8,7 @@ import FixSheet from "@/components/FixSheet";
 import LogScreen from "@/components/LogScreen";
 import Onboarding from "@/components/Onboarding";
 import { PatternCard, WeekGrid } from "@/components/PatternCard";
+import { ShelfTrend, ShelfTrendKey } from "@/components/ShelfTrend";
 import { Container, Main } from "@/components/Shell";
 import { useRegion } from "@/components/useRegion";
 import { clearEntries, readEntries, todayISO, type Entries } from "@/lib/entry";
@@ -307,6 +308,16 @@ export function WeeksView({ weeks, name, onAsk }: { weeks: WeekStats[]; name: st
       <p className="text-12 uppercase tracking-[0.14em] text-ink-faint">the shelf</p>
       <h1 className="mt-2 font-display text-28 text-ink">your weeks</h1>
       <p className="mt-2 text-14 text-ink-faint">newest first. quiet, not a feed.</p>
+
+      {weeks.length >= 2 ? (
+        <section aria-labelledby="shelf-shape" className="mt-6 rounded-card border border-line bg-card px-4 pt-4 pb-3">
+          <h2 id="shelf-shape" className="text-12 uppercase tracking-[0.14em] text-ink-faint">the shape over time</h2>
+          <div className="mt-3">
+            <ShelfTrend weeks={weeks} />
+          </div>
+          <ShelfTrendKey />
+        </section>
+      ) : null}
 
       {weeks.length === 0 ? (
         <p className="mt-8 rounded-card border border-line bg-card px-4 py-5 text-14 text-ink-soft">
