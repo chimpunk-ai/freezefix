@@ -5,6 +5,7 @@ import Link from "next/link";
 
 const LINKS = [
   { href: "/plans", label: "what it costs" },
+  { href: "/myths", label: "myths & reality" },
   { href: "/privacy", label: "privacy" },
   { href: "/terms", label: "terms" },
   { href: "/refunds", label: "refunds" },
