@@ -90,6 +90,23 @@ export type EnableResult =
   | { ok: true; state: RemindersState }
   | { ok: false; reason: "unsupported" | "needs-home-screen" | "not-configured" | "denied" | "failed" | "server"; state: RemindersState };
 
+// Everything that touches the Push API goes through an `unknown` cast so the
+// top-level file has no structural references to PushManager / PushSubscription.
+// Cloudflare Workers' deploy analyser trips on those even in client-only code.
+type AnyPM = {
+  getSubscription(): Promise<AnySub | null>;
+  subscribe(opts: { userVisibleOnly: boolean; applicationServerKey: Uint8Array }): Promise<AnySub>;
+};
+type AnySub = {
+  endpoint: string;
+  toJSON(): unknown;
+  unsubscribe(): Promise<boolean>;
+};
+
+function getPM(reg: ServiceWorkerRegistration): AnyPM {
+  return (reg as unknown as { pushManager: AnyPM }).pushManager;
+}
+
 export async function enable(_kind: ReminderKind, _hour: number): Promise<EnableResult> {
   if (!isSupported()) return { ok: false, reason: "unsupported", state: getState() };
   const perm = await Notification.requestPermission();
@@ -97,7 +114,7 @@ export async function enable(_kind: ReminderKind, _hour: number): Promise<Enable
   const reg = await readyRegistration();
   if (!reg) return { ok: false, reason: "failed", state: getState() };
   try {
-    const sub = await reg.pushManager.getSubscription();
+    const sub = await getPM(reg).getSubscription();
     void sub;
   } catch {
     return { ok: false, reason: "failed", state: getState() };
