@@ -1,3 +1,4 @@
+import ReminderRunner from "@/components/ReminderRunner";
 import type { Metadata, Viewport } from "next";
 import "./globals.css";
 
@@ -197,7 +198,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           }}
         />
       </head>
-      <body className="font-sans">{children}</body>
+      <body className="font-sans"><ReminderRunner />{children}</body>
     </html>
   );
 }
