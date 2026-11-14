@@ -1,5 +1,8 @@
 import type { Metadata } from "next";
-import Landing from "@/components/Landing";
+// The English front door is the mirror-first landing that is live on
+// getfreezefix.com today (ported 14 Nov 2026, components/LandingMirror.tsx).
+// Localized routes /de /fr /nl /es /it keep using components/Landing.tsx.
+import LandingMirror from "@/components/LandingMirror";
 
 const SITE_URL = "https://getfreezefix.com";
 
@@ -24,5 +27,5 @@ export const metadata: Metadata = {
 
 // The public front door. The app itself lives at /app.
 export default function Page() {
-  return <Landing />;
+  return <LandingMirror />;
 }
