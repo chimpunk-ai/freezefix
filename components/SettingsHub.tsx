@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import AppShell from "@/components/AppShell";
 import ThemeToggle from "@/components/ThemeToggle";
+import ReminderSetup from "@/components/ReminderSetup";
 import { clearAll as clearJournal, count as journalCount } from "@/lib/journal";
 import { clearAll as clearPlans, count as planCount } from "@/lib/tomorrow-plans";
 import { unhideAll as unhideInsights } from "@/lib/insights";
@@ -154,6 +155,11 @@ export default function SettingsHub() {
         <div className="mt-3">
           <ThemeToggle />
         </div>
+      </section>
+
+      {/* The one notification this app is allowed to send */}
+      <section className="mt-5">
+        <ReminderSetup />
       </section>
 
       {/* Data */}
