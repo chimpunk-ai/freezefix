@@ -91,10 +91,17 @@ export type EnableResult =
   | { ok: false; reason: "unsupported" | "needs-home-screen" | "not-configured" | "denied" | "failed" | "server"; state: RemindersState };
 
 export async function enable(_kind: ReminderKind, _hour: number): Promise<EnableResult> {
-  // Minimal: just Notification.requestPermission to isolate what trips Workers.
   if (!isSupported()) return { ok: false, reason: "unsupported", state: getState() };
   const perm = await Notification.requestPermission();
   if (perm !== "granted") return { ok: false, reason: "denied", state: getState() };
+  const reg = await readyRegistration();
+  if (!reg) return { ok: false, reason: "failed", state: getState() };
+  try {
+    const sub = await reg.pushManager.getSubscription();
+    void sub;
+  } catch {
+    return { ok: false, reason: "failed", state: getState() };
+  }
   return { ok: false, reason: "failed", state: getState() };
 }
 
