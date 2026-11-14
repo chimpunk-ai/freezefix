@@ -90,38 +90,10 @@ export type EnableResult =
   | { ok: true; state: RemindersState }
   | { ok: false; reason: "unsupported" | "needs-home-screen" | "not-configured" | "denied" | "failed" | "server"; state: RemindersState };
 
-// All Push-API calls go through string-indexed access so the compiled JS never
-// contains literal `.pushManager.getSubscription` / `.pushManager.subscribe`
-// substrings. Cloudflare Workers' deploy analyser flags those specific tokens
-// as unsupported runtime APIs, even inside client-only code it never actually
-// runs. This works around the false positive.
-const PM_KEY = ["push", "Manager"].join("");
-const GET_SUB = ["get", "Subscription"].join("");
-const SUBSCRIBE = ["sub", "scribe"].join("");
-const UNSUBSCRIBE = ["un", "subscribe"].join("");
-
-type AnyObj = Record<string, unknown>;
-
-function pm(reg: ServiceWorkerRegistration): AnyObj | null {
-  const v = (reg as unknown as AnyObj)[PM_KEY];
-  return v && typeof v === "object" ? (v as AnyObj) : null;
-}
-
-async function pmCall<T>(obj: AnyObj, name: string, arg?: unknown): Promise<T | null> {
-  const fn = obj[name];
-  if (typeof fn !== "function") return null;
-  return (await (fn as (...a: unknown[]) => Promise<T>).call(obj, arg)) ?? null;
-}
-
 export async function enable(_kind: ReminderKind, _hour: number): Promise<EnableResult> {
   if (!isSupported()) return { ok: false, reason: "unsupported", state: getState() };
   const perm = await Notification.requestPermission();
   if (perm !== "granted") return { ok: false, reason: "denied", state: getState() };
-  const reg = await readyRegistration();
-  if (!reg) return { ok: false, reason: "failed", state: getState() };
-  // Just use reg's existence — no pushManager access at all.
-  void reg;
-  void pm; void pmCall; void GET_SUB; void SUBSCRIBE; void UNSUBSCRIBE;
   return { ok: false, reason: "failed", state: getState() };
 }
 
