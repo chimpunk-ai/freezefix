@@ -1,4 +1,8 @@
-// Reminders (half 1 of 2): types, storage, capability checks, getState.
+// Reminders: types, storage, capability checks, and thin wrappers that lazily
+// load the browser push-API code from ./reminders-browser. The split is
+// deliberate: Cloudflare Workers' deploy analyser flags top-level references
+// to `PushSubscription` / `pushManager` even in files no server route imports,
+// so the real push work lives in a side module pulled in at call time.
 
 export type ReminderKind = "sunday" | "nightly";
 
@@ -38,6 +42,15 @@ function readStored(): Stored {
   }
 }
 
+function writeStored(next: Stored): void {
+  if (typeof window === "undefined") return;
+  try {
+    window.localStorage.setItem(KEY, JSON.stringify(next));
+  } catch {
+    /* storage can be blocked */
+  }
+}
+
 export function clearReminderPref(): void {
   if (typeof window === "undefined") return;
   try {
@@ -73,56 +86,6 @@ export function getState(): RemindersState {
   return { permission, subscribed: stored.subscribed, sunday: stored.sunday, nightly: stored.nightly, hour: stored.hour, configured };
 }
 
-const READY_TIMEOUT_MS = 4000;
-
-async function readyRegistration(): Promise<ServiceWorkerRegistration | null> {
-  if (typeof navigator === "undefined" || !("serviceWorker" in navigator)) return null;
-  try {
-    return await Promise.race<ServiceWorkerRegistration | null>([
-      navigator.serviceWorker.ready,
-      new Promise((resolve) => setTimeout(() => resolve(null), READY_TIMEOUT_MS)),
-    ]);
-  } catch {
-    return null;
-  }
-}
-
-async function postSubscription(
-  sub: PushSubscription,
-  kinds: { sunday: boolean; nightly: boolean },
-  hour: number,
-): Promise<boolean> {
-  const json = sub.toJSON();
-  try {
-    const res = await fetch("/api/push/subscribe", {
-      method: "POST",
-      headers: { "content-type": "application/json" },
-      body: JSON.stringify({ sub: json, kinds, hour }),
-    });
-    return res.ok;
-  } catch {
-    return false;
-  }
-}
-
-function urlBase64ToUint8Array(base64: string): Uint8Array {
-  const padding = "=".repeat((4 - (base64.length % 4)) % 4);
-  const b64 = (base64 + padding).replace(/-/g, "+").replace(/_/g, "/");
-  const raw = atob(b64);
-  const out = new Uint8Array(raw.length);
-  for (let i = 0; i < raw.length; i++) out[i] = raw.charCodeAt(i);
-  return out;
-}
-
-function writeStored(next: Stored): void {
-  if (typeof window === "undefined") return;
-  try {
-    window.localStorage.setItem(KEY, JSON.stringify(next));
-  } catch {
-    /* storage can be blocked */
-  }
-}
-
 export type EnableResult =
   | { ok: true; state: RemindersState }
   | { ok: false; reason: "unsupported" | "needs-home-screen" | "not-configured" | "denied" | "failed" | "server"; state: RemindersState };
@@ -133,25 +96,6 @@ export async function enable(kind: ReminderKind, hour: number): Promise<EnableRe
   const key = publicKey();
   if (!key) return { ok: false, reason: "not-configured", state: getState() };
 
-  const perm = await Notification.requestPermission();
-  if (perm !== "granted") return { ok: false, reason: "denied", state: getState() };
-
-  const reg = await readyRegistration();
-  if (!reg) return { ok: false, reason: "failed", state: getState() };
-
-  let sub: PushSubscription | null = null;
-  try {
-    sub = await reg.pushManager.getSubscription();
-    if (!sub) {
-      sub = await reg.pushManager.subscribe({
-        userVisibleOnly: true,
-        applicationServerKey: urlBase64ToUint8Array(key),
-      });
-    }
-  } catch {
-    return { ok: false, reason: "failed", state: getState() };
-  }
-
   const prev = readStored();
   const h = Number.isInteger(hour) ? Math.min(23, Math.max(0, hour)) : prev.hour;
   const next: Stored = {
@@ -160,8 +104,10 @@ export async function enable(kind: ReminderKind, hour: number): Promise<EnableRe
     hour: h,
     subscribed: true,
   };
-  const ok = await postSubscription(sub, { sunday: next.sunday, nightly: next.nightly }, next.hour);
-  if (!ok) return { ok: false, reason: "server", state: getState() };
+
+  const mod = await import("./reminders-browser");
+  const result = await mod.doSubscribe(key, { sunday: next.sunday, nightly: next.nightly }, next.hour);
+  if (!result.ok) return { ok: false, reason: result.reason, state: getState() };
   writeStored(next);
   return { ok: true, state: getState() };
 }
@@ -174,30 +120,12 @@ export async function disable(kind: ReminderKind): Promise<RemindersState> {
     hour: prev.hour,
     subscribed: prev.subscribed,
   };
-  const reg = await readyRegistration();
-  if (reg) {
-    try {
-      const sub = await reg.pushManager.getSubscription();
-      if (sub) {
-        if (!next.sunday && !next.nightly) {
-          try {
-            await fetch("/api/push/unsubscribe", {
-              method: "POST",
-              headers: { "content-type": "application/json" },
-              body: JSON.stringify({ endpoint: sub.endpoint }),
-            });
-          } catch {
-            /* keep going */
-          }
-          try { await sub.unsubscribe(); } catch { /* ignore */ }
-          next.subscribed = false;
-        } else {
-          await postSubscription(sub, { sunday: next.sunday, nightly: next.nightly }, next.hour);
-        }
-      }
-    } catch {
-      /* ignore */
-    }
+  const mod = await import("./reminders-browser");
+  if (!next.sunday && !next.nightly) {
+    await mod.doUnsubscribe();
+    next.subscribed = false;
+  } else {
+    await mod.doUpdate({ sunday: next.sunday, nightly: next.nightly }, next.hour);
   }
   writeStored(next);
   return getState();
@@ -208,12 +136,6 @@ export async function onBedtimeChange(hour: number): Promise<void> {
   const h = Number.isInteger(hour) ? Math.min(23, Math.max(0, hour)) : prev.hour;
   writeStored({ ...prev, hour: h });
   if (!prev.subscribed) return;
-  const reg = await readyRegistration();
-  if (!reg) return;
-  try {
-    const sub = await reg.pushManager.getSubscription();
-    if (sub) await postSubscription(sub, { sunday: prev.sunday, nightly: prev.nightly }, h);
-  } catch {
-    /* ignore */
-  }
+  const mod = await import("./reminders-browser");
+  await mod.doUpdate({ sunday: prev.sunday, nightly: prev.nightly }, h);
 }
