@@ -9,6 +9,7 @@ import { MOMENTS, type MomentId } from "@/lib/prompt";
 import { NdjsonReader } from "@/lib/ndjson";
 import { errorText } from "@/lib/chat-errors";
 import { SCENARIOS } from "@/lib/scenarios";
+import { weekBrief } from "@/lib/mirror";
 
 // The buddy chat. Replies stream in, but the server holds every character back until the
 // safety verdict has landed, so nothing unsafe can reach the screen.
@@ -249,6 +250,10 @@ export default function Chat({
           image: img || undefined,
           history,
           memory: loadMemory() ?? undefined,
+          // The week as the mirror card sees it, so Fix can quote the user's own numbers
+          // instead of talking in generalities. Null on a thin week — Fix then says it
+          // can only see what is in the log rather than inventing a pattern.
+          weekBrief: weekBrief() ?? undefined,
           groundingOnly,
           country: region,
           acknowledged,
