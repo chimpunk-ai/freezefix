@@ -57,7 +57,7 @@ const REDUCED_CAPTION = "saved. see you sunday. (motion is reduced on this devic
 // Same pill as the landing page's primary action, so the demo's one control
 // reads as part of the page rather than a player chrome.
 const PLAY_BTN =
-  "ff-chip inline-flex min-h-12 items-center rounded-pill bg-signpost px-6 text-16 font-medium text-signpost-ink shadow-[0_8px_24px_-12px_rgba(240,168,104,0.6)] transition-transform hover:-translate-y-[1px] aria-disabled:cursor-default aria-disabled:opacity-70 aria-disabled:hover:translate-y-0";
+  "ff-chip inline-flex min-h-12 items-center rounded-pill bg-signpost px-6 text-16 font-medium text-signpost-ink ff-cta-shadow transition-transform hover:-translate-y-[1px] aria-disabled:cursor-default aria-disabled:opacity-70 aria-disabled:hover:translate-y-0";
 
 const noop = () => {};
 

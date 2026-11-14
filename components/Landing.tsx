@@ -7,6 +7,7 @@ import RitualDemo from "@/components/RitualDemo";
 import AppScreens from "@/components/AppScreens";
 import TryFix from "@/components/TryFix";
 import Faq, { faqItems } from "@/components/Faq";
+import MythsSection from "@/components/MythsSection";
 import { Container, Kicker, Main, SiteHeader } from "@/components/Shell";
 import SiteFooter from "@/components/SiteFooter";
 import { TrustBadge } from "@/components/TrustBadge";
@@ -31,7 +32,7 @@ const sample = weekStats(sampleEntries(), SAMPLE_GOAL, SAMPLE_END);
 const prices = plansFor("US");
 
 const cta =
-  "ff-chip inline-flex min-h-12 items-center rounded-pill bg-signpost px-6 text-16 font-medium text-signpost-ink no-underline shadow-[0_8px_24px_-12px_rgba(240,168,104,0.6)] transition-transform hover:-translate-y-[1px]";
+  "ff-chip inline-flex min-h-12 items-center rounded-pill bg-signpost px-6 text-16 font-medium text-signpost-ink no-underline ff-cta-shadow transition-transform hover:-translate-y-[1px]";
 const quiet =
   "inline-flex min-h-12 items-center rounded-pill border border-line px-5 text-14 text-ink-soft no-underline hover:border-ink-faint hover:text-ink";
 
@@ -89,7 +90,7 @@ export default function Landing({ paymentsOn }: { paymentsOn: boolean }) {
 
             <figure className="ff-stack relative mt-4 lg:mt-0 lg:w-full lg:max-w-[480px] lg:justify-self-end">
               <Kicker>what sunday looks like</Kicker>
-              <div className="ff-hero-card mt-3 rounded-sheet shadow-[0_32px_80px_-40px_rgba(156,175,136,0.35)]">
+              <div className="ff-hero-card mt-3 rounded-sheet ff-card-shadow">
                 <PatternCard name="nico" stats={sample} dimmed />
               </div>
               <figcaption className="mt-3 text-12 text-ink-faint">
@@ -123,7 +124,7 @@ export default function Landing({ paymentsOn }: { paymentsOn: boolean }) {
                   n="1"
                   verb="reflect"
                   title="the log"
-                  body="yes or no. one face. up to three chips. nine seconds, at bedtime, in the dark. a few words if you want them — typed, or spoken once voice notes are switched on."
+                  body="yes or no. one face. up to three chips. nine seconds, at bedtime, in the dark. a few words if you want them — typed, or spoken and turned into text right there on your phone."
                 >
                   <LogPreview />
                 </Step>
@@ -250,7 +251,7 @@ export default function Landing({ paymentsOn }: { paymentsOn: boolean }) {
                   "read by our AI provider (Anthropic) to write the reply, not to train on, and deleted on their side within 30 days",
                   "we keep no copy of the question or the answer — only a daily count, hashed",
                 ]}
-                foot="voice notes are switched off today. payments aren't switched on. when either changes, it says so here first."
+                foot="voice notes are turned into text on your phone and the audio is thrown away. payments aren't switched on; when that changes, it says so here first."
               />
             </div>
           </Container>
@@ -258,6 +259,10 @@ export default function Landing({ paymentsOn }: { paymentsOn: boolean }) {
 
         {/* The questions people ask before they type a name. */}
         <Faq paymentsOn={paymentsOn} />
+
+        {/* The beliefs that keep people from looking. One block with the FAQ,
+            not a separate detour. The /myths page remains for direct links. */}
+        <MythsSection />
         <script
           type="application/ld+json"
           // FAQPage structured data: the same questions and answers the section renders.

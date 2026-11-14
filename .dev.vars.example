@@ -9,11 +9,7 @@ AI_MODEL=claude-haiku-5-5
 SUPABASE_URL=
 SUPABASE_ANON_KEY=
 
-# Voice notes (Budget & Ops picks the provider, HQ T33). Any OpenAI-style transcription API.
-# Leave empty and the voice button stays hidden.
-TRANSCRIBE_API_KEY=
-TRANSCRIBE_URL=https://api.openai.com/v1/audio/transcriptions
-TRANSCRIBE_MODEL=gpt-4o-mini-transcribe
+# Voice notes need no key: they are transcribed on the device (lib/transcribe.ts).
 
 # Random secret used to hash device IDs and IPs for the daily limits. Any long random text.
 QUOTA_SALT=
@@ -21,9 +17,8 @@ QUOTA_SALT=
 SCREENSHOT_DAILY_LIMIT=10
 SCREENSHOT_DAILY_LIMIT_PAID=20
 
-# Switches for optional inputs. Keep "false" until HQ T31, T32 and T33 are Done.
+# Switch for the optional screenshot input (no UI today). Keep "false".
 ENABLE_SCREENSHOTS=false
-ENABLE_VOICE=false
 
 # Payments: Paddle Billing (merchant of record). Budget & Ops sets up the account.
 # Both prices need a 4-day free trial set in Paddle. Client token is public; the rest are secret.
@@ -35,3 +30,14 @@ PADDLE_WEBHOOK_SECRET=
 PADDLE_API_KEY=
 # Used ONLY by the payment webhook to save subscriptions.
 SUPABASE_SERVICE_ROLE_KEY=
+
+# Reminders (Web Push). Off until all three are set. Generate with
+# `npx tsx scripts/gen-vapid.ts` — never commit the output.
+# VAPID_PUBLIC_KEY: 65-byte uncompressed P-256 point, base64url (web-push format).
+# VAPID_PRIVATE_KEY: raw 32-byte scalar, base64url. Secret.
+# NEXT_PUBLIC_VAPID_PUBLIC_KEY: same value as VAPID_PUBLIC_KEY; the browser needs it to subscribe.
+# PUSH_TICK_SECRET: shared with the GitHub Actions cron (.github/workflows/push-tick.yml).
+VAPID_PUBLIC_KEY=
+VAPID_PRIVATE_KEY=
+NEXT_PUBLIC_VAPID_PUBLIC_KEY=
+PUSH_TICK_SECRET=

@@ -50,20 +50,20 @@ export default function PhoneFrame({
         height: outerH + bezel * 2,
         padding: bezel,
         borderRadius: radius + bezel,
+        // The bezel stays a dark object in both themes — a phone on paper is
+        // still a dark phone — while the ring, inset and drop shadows follow
+        // the theme (see --ff-phone-* in globals.css).
         background: "linear-gradient(180deg, #221d18 0%, #16130f 100%)",
-        boxShadow:
-          "0 0 0 1px rgba(51, 44, 37, 0.9), inset 0 0 0 1px rgba(242, 237, 230, 0.04), 0 40px 80px -40px rgba(0, 0, 0, 0.7), 0 24px 60px -36px rgba(156, 175, 136, 0.25)",
+        boxShadow: "0 0 0 1px var(--ff-phone-ring), inset 0 0 0 1px var(--ff-phone-inset), var(--ff-phone-drop)",
       }}
     >
       {/* The screen: scaled viewport of the real app. */}
       <div
-        className="relative overflow-hidden bg-bg"
+        className="ff-atmosphere relative overflow-hidden bg-bg"
         style={{
           width: outerW,
           height: outerH,
           borderRadius: radius,
-          backgroundImage:
-            "radial-gradient(52% 34% at 18% 6%, rgba(156, 175, 136, 0.07), transparent 70%), radial-gradient(46% 32% at 92% 22%, rgba(216, 146, 122, 0.04), transparent 72%), radial-gradient(70% 40% at 50% 104%, rgba(156, 175, 136, 0.05), transparent 72%)",
         }}
       >
         <div

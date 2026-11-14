@@ -20,9 +20,11 @@
 //   - components/FixSheet.tsx + lib/pattern.ts + app/api/fix/route.ts: exactly
 //     what one Fix question sends (the last seven nights, the question, up to
 //     the last eight turns of that conversation, a two-letter region code).
-//   - app/api/transcribe/route.ts + lib/features.ts: voice is OFF unless
-//     ENABLE_VOICE=true and a provider key is set; when on, audio is sent to a
-//     remote transcription service and is not kept by us.
+//   - lib/transcribe.ts + components/LogScreen.tsx: voice notes are recorded
+//     and transcribed on the device by a speech model that runs in the
+//     browser; the audio is dropped, the text is stored with the night. The
+//     model files are fetched once from jsDelivr / the Hugging Face hub. There
+//     is no server route for audio.
 //   - lib/quota.ts + supabase/schema.sql: the HttpOnly device cookie, the
 //     salted daily IP hash, the trial record, and what a Paddle webhook stores.
 //   - app/api/webhooks/paddle/route.ts + lib/plans.ts: payments stay off until
@@ -32,10 +34,10 @@
 // sent by the product (there is no email to send to). Screenshots have no UI.
 //
 // STATUS: code-accurate draft. Still subject to Setup & Legal review before it
-// is treated as final. Retention windows for Anthropic and the transcription
-// provider are those providers' published API terms at the time of writing and
-// need re-checking on each provider change.
-export const LAST_UPDATED = "11 November 2026";
+// is treated as final. The retention window for Anthropic is that provider's
+// published API terms at the time of writing and needs re-checking on each
+// provider change.
+export const LAST_UPDATED = "14 November 2026";
 
 export const PRIVACY = `
 # Fix Privacy Policy
@@ -94,9 +96,9 @@ The reply is written by an AI. It only has your log to go on, it can be wrong, a
 
 ## 4. Voice notes
 
-The microphone button is **switched off** in the product at the time of writing. The button is still visible; pressing it tells you so.
+Voice notes stay on your phone. Holding the button records up to ten seconds of audio **on your device**, and a small speech-recognition model that runs **inside your browser** turns it into text there. The audio is discarded as soon as the text exists; it is never uploaded, never sent to us, and never sent to any provider. The text is shown to you first, to check or change or discard, and only if you keep it is it stored in that night's log, like a typed note. From there it is treated like any other note: it is on your phone, and it goes to Anthropic only if you choose to ask Fix about that week (section 3), trimmed to 160 characters.
 
-When we switch it on: holding the button records up to ten seconds of audio, which is sent once to our transcription provider and turned into text. The audio is not kept by us. The provider keeps it only as long as its API terms allow for abuse monitoring (currently up to 30 days), then deletes it. The text comes back to your phone and is stored in that night's log, where you can read it, change it or delete it. Transcription happens on the provider's servers, not inside your browser. We will update this section with the provider's name before the feature is switched on.
+The first time you say yes to voice, your browser downloads the speech model once (about 40 MB) from the jsDelivr CDN and the Hugging Face hub, the same way it downloads any script or font. Those services see your IP address and browser type as any web server does; they receive no audio, no text and nothing about you. After that one download the model is held in your browser's cache and voice works offline. Your browser asks for microphone permission only when you hold the button, and only after the app has explained this; if you decline, nothing is recorded and you can type instead.
 
 ## 5. The free week and payments
 
@@ -114,7 +116,7 @@ We never sell your data or share it for advertising. We only use service provide
 | Anthropic | Writes the Fix reply from the week you send (section 3) | USA |
 | Supabase | A database holding the daily-limit counts, the free-week start record and, if payments go live, subscription status — all keyed by one-way hashes | EU (Frankfurt, Germany) |
 | Google Fonts | Serves the two typefaces every page uses. Your browser fetches them from Google, which sees your IP address and browser type as any web server does; it is not told who you are or what you logged | Global |
-| Transcription provider (not yet switched on) | Turns a voice note into text (section 4) | To be named before voice is switched on |
+| jsDelivr and the Hugging Face hub | Serve the speech-recognition model files your browser downloads once for voice notes (section 4). They see your IP address as any file download does; they receive no audio or text | Global |
 | Paddle (not yet switched on) | Would take payments and handle VAT and receipts as merchant of record | — |
 | Zoho Mail | Our support inbox, if you write to us | India |
 
@@ -138,7 +140,7 @@ We are based in India and our providers operate in several countries, including 
 | --- | --- |
 | Your log, name and settings | On your phone, for as long as you keep them. We hold no copy. |
 | A Fix question and its reply | Not stored by us. Our AI provider deletes it within 30 days (section 3). |
-| Voice audio (when switched on) | Not stored by us. Our transcription provider deletes it within its abuse-monitoring window (section 4). |
+| Voice audio | Never leaves your phone. Discarded on the device as soon as the text exists (section 4). |
 | Daily-limit counts | Rows older than two days are deleted automatically. |
 | Free-week start record | A hash and a date, kept while the service runs. |
 | Subscription record (if payments go live) | Kept while the subscription exists and as long as tax law then requires. |

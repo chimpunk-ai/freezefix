@@ -2,7 +2,7 @@
 //
 // Every row here is read from the code, not from the brief. If a data flow
 // changes in lib/entry.ts, lib/pattern.ts, app/api/fix/route.ts,
-// app/api/transcribe/route.ts or lib/quota.ts, this card changes with it.
+// lib/transcribe.ts or lib/quota.ts, this card changes with it.
 // scripts/test-legal.ts checks that it never names a feature that no longer
 // ships. The full policy underneath wins on anything that disagrees.
 export default function PrivacySummary() {
@@ -42,8 +42,8 @@ export default function PrivacySummary() {
         />
         <Row
           what="Voice notes"
-          where="Switched off today. When on: a remote transcription provider, once."
-          detail="Up to ten seconds of audio, turned into text and sent back. Audio is not kept by us. Transcription happens on the provider's servers, not in your browser."
+          where="Your phone only. Recorded and turned into text in your browser."
+          detail="Up to ten seconds of audio, transcribed on the device by a small speech model and then discarded. You check the words before they're kept. The model is downloaded once (about 40 MB) from a CDN, which sees your IP like any download and gets no audio or text."
         />
         <Row
           what="Daily limits and the free week"
