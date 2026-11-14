@@ -44,7 +44,7 @@
 //   CACHE_NAME includes a date-tagged version. Bump it to force an
 //   immediate refresh of pre-cached pages on next activate.
 
-const VERSION = "v3-2026-11-14";
+const VERSION = "v4-2026-11-14";
 const CACHE_NAME = `freezefix-${VERSION}`;
 
 // Pre-cached shells — pages a user is most likely to open first, and the
@@ -172,6 +172,89 @@ self.addEventListener("push", (event) => {
       badge: "/icon-192.png",
       data: { url: "/app" },
     })
+  );
+});
+
+// Main-thread → SW bridge. Everything to do with pushManager lives here so
+// nothing in the Next.js bundle ever has to mention it (Cloudflare Workers'
+// deploy analyser has a false-positive on those API names, even in client-only
+// files). The main thread posts `{ type, id, ... }` and gets `{ id, ok, ... }`
+// back on the same MessageChannel port.
+async function doSubscribe(key, kinds, hour) {
+  try {
+    let sub = await self.registration.pushManager.getSubscription();
+    if (!sub) {
+      sub = await self.registration.pushManager.subscribe({
+        userVisibleOnly: true,
+        applicationServerKey: urlBase64ToUint8Array(key),
+      });
+    }
+    const body = JSON.stringify({ sub: sub.toJSON(), kinds, hour });
+    const res = await fetch("/api/push/subscribe", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body,
+    });
+    return { ok: !!res.ok, reason: res.ok ? null : "server" };
+  } catch (err) {
+    return { ok: false, reason: "failed", message: String(err && err.message || err) };
+  }
+}
+
+async function doUpdate(kinds, hour) {
+  try {
+    const sub = await self.registration.pushManager.getSubscription();
+    if (!sub) return { ok: true };
+    const body = JSON.stringify({ sub: sub.toJSON(), kinds, hour });
+    const res = await fetch("/api/push/subscribe", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body,
+    });
+    return { ok: !!res.ok };
+  } catch {
+    return { ok: false };
+  }
+}
+
+async function doUnsubscribe() {
+  try {
+    const sub = await self.registration.pushManager.getSubscription();
+    if (!sub) return { ok: true };
+    try {
+      await fetch("/api/push/unsubscribe", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ endpoint: sub.endpoint }),
+      });
+    } catch { /* keep going */ }
+    try { await sub.unsubscribe(); } catch { /* ignore */ }
+    return { ok: true };
+  } catch {
+    return { ok: false };
+  }
+}
+
+function urlBase64ToUint8Array(base64) {
+  const padding = "=".repeat((4 - (base64.length % 4)) % 4);
+  const b64 = (base64 + padding).replace(/-/g, "+").replace(/_/g, "/");
+  const raw = atob(b64);
+  const out = new Uint8Array(raw.length);
+  for (let i = 0; i < raw.length; i++) out[i] = raw.charCodeAt(i);
+  return out;
+}
+
+self.addEventListener("message", (event) => {
+  const msg = event.data || {};
+  const port = event.ports && event.ports[0];
+  if (!port) return;
+  let p;
+  if (msg.type === "subscribe") p = doSubscribe(msg.key, msg.kinds, msg.hour);
+  else if (msg.type === "update") p = doUpdate(msg.kinds, msg.hour);
+  else if (msg.type === "unsubscribe") p = doUnsubscribe();
+  else { port.postMessage({ ok: false, reason: "unknown" }); return; }
+  p.then((r) => port.postMessage(r)).catch((err) =>
+    port.postMessage({ ok: false, reason: "failed", message: String(err && err.message || err) })
   );
 });
 

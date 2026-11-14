@@ -1,8 +1,8 @@
-// Reminders: types, storage, capability checks, and thin wrappers that lazily
-// load the browser push-API code from ./reminders-browser. The split is
-// deliberate: Cloudflare Workers' deploy analyser flags top-level references
-// to `PushSubscription` / `pushManager` even in files no server route imports,
-// so the real push work lives in a side module pulled in at call time.
+// Reminders: types, storage, capability checks, and a thin postMessage bridge
+// to the service worker. All the push-subscribe work (pushManager.subscribe,
+// PushSubscription.toJSON, etc.) happens inside public/sw.js, which Next and
+// OpenNext don't bundle. This keeps the deploy analyser happy — see the note
+// at the top of public/sw.js around the message handler.
 
 export type ReminderKind = "sunday" | "nightly";
 
@@ -86,22 +86,96 @@ export function getState(): RemindersState {
   return { permission, subscribed: stored.subscribed, sunday: stored.sunday, nightly: stored.nightly, hour: stored.hour, configured };
 }
 
+const READY_TIMEOUT_MS = 4000;
+
+async function readyRegistration(): Promise<ServiceWorkerRegistration | null> {
+  if (typeof navigator === "undefined" || !("serviceWorker" in navigator)) return null;
+  try {
+    return await Promise.race<ServiceWorkerRegistration | null>([
+      navigator.serviceWorker.ready,
+      new Promise((resolve) => setTimeout(() => resolve(null), READY_TIMEOUT_MS)),
+    ]);
+  } catch {
+    return null;
+  }
+}
+
+type SwReply = { ok: boolean; reason?: string; message?: string };
+
+async function askSW(message: Record<string, unknown>): Promise<SwReply> {
+  const reg = await readyRegistration();
+  const target: ServiceWorker | null = reg?.active ?? (typeof navigator !== "undefined" ? navigator.serviceWorker?.controller ?? null : null);
+  if (!target) return { ok: false, reason: "failed" };
+  return new Promise<SwReply>((resolve) => {
+    const channel = new MessageChannel();
+    const timer = setTimeout(() => resolve({ ok: false, reason: "failed" }), 10000);
+    channel.port1.onmessage = (ev) => {
+      clearTimeout(timer);
+      const r = (ev.data ?? {}) as SwReply;
+      resolve({ ok: Boolean(r.ok), reason: r.reason, message: r.message });
+    };
+    try {
+      target.postMessage(message, [channel.port2]);
+    } catch {
+      clearTimeout(timer);
+      resolve({ ok: false, reason: "failed" });
+    }
+  });
+}
+
 export type EnableResult =
   | { ok: true; state: RemindersState }
   | { ok: false; reason: "unsupported" | "needs-home-screen" | "not-configured" | "denied" | "failed" | "server"; state: RemindersState };
 
-export async function enable(_kind: ReminderKind, _hour: number): Promise<EnableResult> {
+export async function enable(kind: ReminderKind, hour: number): Promise<EnableResult> {
   if (!isSupported()) return { ok: false, reason: "unsupported", state: getState() };
+  if (needsHomeScreen()) return { ok: false, reason: "needs-home-screen", state: getState() };
+  const key = publicKey();
+  if (!key) return { ok: false, reason: "not-configured", state: getState() };
+
   const perm = await Notification.requestPermission();
   if (perm !== "granted") return { ok: false, reason: "denied", state: getState() };
-  return { ok: false, reason: "failed", state: getState() };
+
+  const prev = readStored();
+  const h = Number.isInteger(hour) ? Math.min(23, Math.max(0, hour)) : prev.hour;
+  const next: Stored = {
+    sunday: kind === "sunday" ? true : prev.sunday,
+    nightly: kind === "nightly" ? true : prev.nightly,
+    hour: h,
+    subscribed: true,
+  };
+
+  const reply = await askSW({ type: "subscribe", key, kinds: { sunday: next.sunday, nightly: next.nightly }, hour: next.hour });
+  if (!reply.ok) {
+    const reason = reply.reason === "server" ? "server" : "failed";
+    return { ok: false, reason, state: getState() };
+  }
+  writeStored(next);
+  return { ok: true, state: getState() };
 }
 
-export async function disable(_kind: ReminderKind): Promise<RemindersState> {
-  void writeStored;
+export async function disable(kind: ReminderKind): Promise<RemindersState> {
+  const prev = readStored();
+  const next: Stored = {
+    sunday: kind === "sunday" ? false : prev.sunday,
+    nightly: kind === "nightly" ? false : prev.nightly,
+    hour: prev.hour,
+    subscribed: prev.subscribed,
+  };
+  if (!next.sunday && !next.nightly) {
+    await askSW({ type: "unsubscribe" });
+    next.subscribed = false;
+  } else {
+    await askSW({ type: "update", kinds: { sunday: next.sunday, nightly: next.nightly }, hour: next.hour });
+  }
+  writeStored(next);
   return getState();
 }
 
-export async function onBedtimeChange(_hour: number): Promise<void> {
-  /* noop */
+export async function onBedtimeChange(hour: number): Promise<void> {
+  const prev = readStored();
+  const h = Number.isInteger(hour) ? Math.min(23, Math.max(0, hour)) : prev.hour;
+  writeStored({ ...prev, hour: h });
+  if (!prev.subscribed) return;
+  await askSW({ type: "update", kinds: { sunday: prev.sunday, nightly: prev.nightly }, hour: h });
 }
