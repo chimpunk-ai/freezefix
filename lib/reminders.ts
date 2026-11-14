@@ -73,19 +73,29 @@ export function getState(): RemindersState {
   return { permission, subscribed: stored.subscribed, sunday: stored.sunday, nightly: stored.nightly, hour: stored.hour, configured };
 }
 
-// Below-this-line left out for the bisect: readyRegistration, postSubscription,
-// enable, disable, onBedtimeChange. Shims so later imports don't break.
+const READY_TIMEOUT_MS = 4000;
 
-export type EnableResult = { ok: false; reason: "off"; state: RemindersState };
-
-export async function enable(_kind: ReminderKind, _hour: number): Promise<EnableResult> {
-  return { ok: false, reason: "off", state: getState() };
+async function readyRegistration(): Promise<ServiceWorkerRegistration | null> {
+  if (typeof navigator === "undefined" || !("serviceWorker" in navigator)) return null;
+  try {
+    return await Promise.race<ServiceWorkerRegistration | null>([
+      navigator.serviceWorker.ready,
+      new Promise((resolve) => setTimeout(() => resolve(null), READY_TIMEOUT_MS)),
+    ]);
+  } catch {
+    return null;
+  }
 }
 
+// Still stubbed, with readyRegistration referenced so the bundler can't DCE it.
+export type EnableResult = { ok: false; reason: "off"; state: RemindersState };
+export async function enable(_kind: ReminderKind, _hour: number): Promise<EnableResult> {
+  await readyRegistration();
+  return { ok: false, reason: "off", state: getState() };
+}
 export async function disable(_kind: ReminderKind): Promise<RemindersState> {
   return getState();
 }
-
 export async function onBedtimeChange(_hour: number): Promise<void> {
   /* noop */
 }
