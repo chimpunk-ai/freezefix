@@ -170,16 +170,19 @@ eq("prettyLabel survives an unknown chip", prettyLabel(""), "Something else");
 }
 
 {
-  // Three clear nights with a distinct following-morning mood, three smoke nights.
+  // Three smoke nights whose following mornings all read 3, and four clear nights
+  // whose following mornings read 5. Thursday carries both roles: it is the
+  // morning after Wednesday's smoke AND a clear night with its own morning after,
+  // which is exactly how a real week overlaps.
   const { checkins, nights } = seed((w, d) => {
     if (w !== 0) return null;
     if (d === 0) return { a: "yes", m: 3 }; // Mon
     if (d === 1) return { a: "yes", m: 3 }; // Tue
     if (d === 2) return { a: "yes", m: 3 }; // Wed
-    if (d === 3) return { a: "no", m: 5 }; // Thu
+    if (d === 3) return { a: "no", m: 3 }; // Thu — the morning after Wed reads 3
     if (d === 4) return { a: "no", m: 5 }; // Fri
     if (d === 5) return { a: "no", m: 5 }; // Sat
-    return null;
+    return { a: "no", m: 5 }; // Sun
   });
   const week = buildWeek(checkins, nights, ANCHOR);
   const next = moodTheNextDay(week.days);
@@ -199,7 +202,8 @@ eq("prettyLabel survives an unknown chip", prettyLabel(""), "Something else");
   });
   const week = buildWeek(checkins, nights, ANCHOR);
   const rows = triggerImpact(week.days);
-  eq("one chip clears the gate", rows.length, 1);
+  eq("both chips with a clear contrast are reported", rows.length, 2);
+  eq("the two chips are the ones tapped", rows.map((r) => r.id).sort(), ["after-work", "social"]);
   const lead = rows[0];
   eq("chip is labelled for humans", lead?.label, "After work");
   eq("chip counted across the window", lead?.count, 3);
@@ -240,7 +244,7 @@ eq("prettyLabel survives an unknown chip", prettyLabel(""), "Something else");
   });
   const weeks = buildWeeks(checkins, nights, ANCHOR, 4);
   const rhythm = weekdayRhythm(weeks);
-  eq("rhythm unlocks at four smoke nights over two weeks", rhythm.ready, true);
+  eq("rhythm unlocks across two weeks", rhythm.ready, true);
   eq("Friday is the top weekday", rhythm.top, 4);
   eq("Friday counted twice", rhythm.counts[4], 2);
   eq("the weekday name matches the index", DAY_NAMES[4], "Friday");
