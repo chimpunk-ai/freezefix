@@ -1,4 +1,5 @@
 import { VOICE, MISSION, EXAMPLES, MEMORY_RULES, memoryBlock, type Memory } from "./persona";
+import { FIX_CONTRACT } from "./fix-voice";
 
 // The AI system prompt. The "Never" and "Always" rules below are copied WORD FOR WORD
 // from FreezeFix Safety Pack v1.0, section 4. Do not edit them here without a new
@@ -124,7 +125,9 @@ export const SCREENSHOT_READER_PROMPT = `You read images for FreezeFix so a safe
 // The safety rules win over the voice every time.
 
 export function buildChatPrompt(opts: { groundingOnly: boolean; memory: Memory | null; context?: string }) {
-  return `${VOICE}
+  return `${FIX_CONTRACT}
+
+${VOICE}
 
 THE MISSION
 ${MISSION}
