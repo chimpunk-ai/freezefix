@@ -17,13 +17,13 @@ import "./globals.css";
 
 const SITE_URL = "https://getfreezefix.com";
 const DESCRIPTION =
-  "FreezeFix is the mate for when a smoke leaves you frozen — too self-conscious to be in the room, stuck on a task, can't reply, can't start. One safe next step in under 60 seconds. No lectures, no judgment. Adults 18+. Crisis help is always free.";
+  "Fix is a private pattern mirror for people who smoke weed and wonder about it. A three-tap nightly log, and one card on Sunday that shows your week back to you. No streaks, no scores, no lectures. Adults 18+. Crisis help is always free.";
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
   title: {
-    default: "FreezeFix — the mate for when a smoke leaves you frozen",
-    template: "%s · FreezeFix",
+    default: "Fix — a mirror, not a quit app",
+    template: "%s · Fix",
   },
   description: DESCRIPTION,
   applicationName: "FreezeFix",
@@ -31,15 +31,14 @@ export const metadata: Metadata = {
   // A short keyword list helps older crawlers and some chat-link previews pick a sensible category.
   // Deliberately avoids anything that could be read as encouraging use.
   keywords: [
-    "anxiety support",
-    "overthinking help",
-    "task avoidance",
-    "paranoia support",
-    "self-care for adults",
-    "mental health support app",
-    "harm-reduction support",
-    "stuck replying",
-    "AI mate",
+    "cannabis journal",
+    "weed log",
+    "harm reduction",
+    "pattern tracking",
+    "weekly reflection",
+    "private journal",
+    "no streaks",
+    "smoking diary",
     "18+ wellbeing",
   ],
   category: "health",
@@ -61,7 +60,7 @@ export const metadata: Metadata = {
   openGraph: {
     type: "website",
     siteName: "FreezeFix",
-    title: "FreezeFix — the mate for when a smoke leaves you frozen",
+    title: "Fix — a mirror, not a quit app",
     description: DESCRIPTION,
     url: SITE_URL,
     locale: "en_GB",
@@ -70,14 +69,14 @@ export const metadata: Metadata = {
         url: "/og-image.png",
         width: 1200,
         height: 630,
-        alt: "FreezeFix — the mate for when a smoke leaves you frozen. One safe next step in under 60 seconds.",
+        alt: "Fix — a private pattern mirror. A three-tap nightly log and one Sunday card.",
         type: "image/png",
       },
     ],
   },
   twitter: {
     card: "summary_large_image",
-    title: "FreezeFix — the mate for when a smoke leaves you frozen",
+    title: "Fix — a mirror, not a quit app",
     description: DESCRIPTION,
     site: "@getfreezefix",
     creator: "@getfreezefix",
@@ -85,8 +84,16 @@ export const metadata: Metadata = {
   },
   // Add-to-home-screen, so it sits on the phone like an app and opens straight into /app.
   manifest: "/manifest.webmanifest",
-  icons: { icon: "/icon.svg", apple: "/icon.svg" },
-  appleWebApp: { capable: true, statusBarStyle: "black-translucent", title: "FreezeFix" },
+  icons: {
+    icon: [
+      { url: "/icon-192.png", sizes: "192x192", type: "image/png" },
+      { url: "/icon-512.png", sizes: "512x512", type: "image/png" },
+      { url: "/icon.svg", type: "image/svg+xml" },
+    ],
+    // iOS ignores SVG for the home-screen icon completely, so this one has to be a PNG.
+    apple: [{ url: "/apple-touch-icon.png", sizes: "180x180", type: "image/png" }],
+  },
+  appleWebApp: { capable: true, statusBarStyle: "black-translucent", title: "Fix" },
   // Help search engines verify the publisher without needing a second site. 'Organization'
   // (not a MedicalBusiness or HealthClinic) because FreezeFix is a software product, not a
   // clinical service — same wording as the Terms "FreezeFix is not therapy, medical advice

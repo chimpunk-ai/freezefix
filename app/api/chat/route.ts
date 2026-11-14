@@ -16,7 +16,7 @@ import { SCENARIOS } from "@/lib/scenarios";
 // (which only ever contains Anthropic's reason, never anything about this user
 // or anyone else).
 function logUpstreamFailure(ctx: {
-  stage: "non_ok" | "stream_error" | "verdict_missing" | "network" | "outer_catch";
+  stage: "non_ok" | "stream_error" | "verdict_missing" | "network" | "outer_catch" | "model_missing";
   attempt: number;
   status?: number;
   model?: string;
@@ -449,7 +449,7 @@ export async function POST(req: Request) {
         logUpstreamFailure({
           stage: "outer_catch",
           attempt: -1,
-          model,
+          model: aiModel(),
           detail: msg,
         });
         try {

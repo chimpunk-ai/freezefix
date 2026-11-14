@@ -1,15 +1,37 @@
 {
+  "id": "/",
   "name": "FreezeFix",
-  "short_name": "FreezeFix",
-  "description": "The mate for when a smoke leaves you frozen. One safe next step in under 60 seconds. Adults 18+.",
+  "short_name": "Fix",
+  "description": "A private pattern mirror. A three-tap nightly log, and one card on Sunday that shows your week back to you. No streaks, no scores, no judgement. Adults 18+.",
   "start_url": "/app",
   "scope": "/",
   "display": "standalone",
+  "display_override": ["standalone", "minimal-ui"],
+  "orientation": "portrait",
   "background_color": "#12100E",
   "theme_color": "#12100E",
-  "orientation": "portrait",
+  "lang": "en",
+  "dir": "ltr",
+  "categories": ["health", "lifestyle"],
   "icons": [
-    { "src": "/icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" },
-    { "src": "/icon-maskable.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "maskable" }
+    { "src": "/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "/icon-maskable-192.png", "sizes": "192x192", "type": "image/png", "purpose": "maskable" },
+    { "src": "/icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" },
+    { "src": "/icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" }
+  ],
+  "shortcuts": [
+    {
+      "name": "Log tonight",
+      "short_name": "Log",
+      "description": "Three taps: did you smoke, how it sat, what was around it.",
+      "url": "/app"
+    },
+    {
+      "name": "Your week",
+      "short_name": "Week",
+      "description": "This week's mirror card.",
+      "url": "/home"
+    }
   ]
 }
