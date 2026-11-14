@@ -522,6 +522,5 @@ export function buildPatterns(weeks: Week[]): Pattern[] {
 
 /** Safety net for the copy: the test asserts this stays empty for every pattern. */
 export function bannedWordsIn(text: string): string[] {
-  const lower = ` ${text.toLowerCase()} `;
-  return BANNED_IN_COPY.filter((w) => lower.includes(` ${w}`) || lower.includes(`${w} `));
+  return BANNED_IN_COPY.filter((w) => new RegExp(`\\b${w}\\b`, "i").test(text));
 }
