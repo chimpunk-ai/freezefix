@@ -119,14 +119,9 @@ export async function enable(_kind: ReminderKind, _hour: number): Promise<Enable
   if (perm !== "granted") return { ok: false, reason: "denied", state: getState() };
   const reg = await readyRegistration();
   if (!reg) return { ok: false, reason: "failed", state: getState() };
-  const mgr = pm(reg);
-  if (!mgr) return { ok: false, reason: "failed", state: getState() };
-  try {
-    await pmCall<unknown>(mgr, GET_SUB);
-  } catch {
-    return { ok: false, reason: "failed", state: getState() };
-  }
-  void SUBSCRIBE; void UNSUBSCRIBE;
+  // Just use reg's existence — no pushManager access at all.
+  void reg;
+  void pm; void pmCall; void GET_SUB; void SUBSCRIBE; void UNSUBSCRIBE;
   return { ok: false, reason: "failed", state: getState() };
 }
 
