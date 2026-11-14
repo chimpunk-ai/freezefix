@@ -184,25 +184,25 @@ export const LANDING_COPY: Record<Locale, LandingCopy> = {
       { index: "4", label: "You choose — try it, another idea, or leave", body: null },
     ],
     tutorial: {
-      kicker: "The long-term loop",
-      heading: "How it adds up over weeks",
+      kicker: "The loop",
+      heading: "Three taps, then Sunday",
       patternsExampleCaption: "Example — your weeks, not someone else's.",
       steps: [
         {
-          title: "Open Fix in a tough moment",
-          body: "One safe next step in under sixty seconds. No sign-up, no account, no name required.",
+          title: "Log in about nine seconds",
+          body: "Yes or no, one mood face, up to three triggers. A voice note if you feel like it. No account, no name required.",
         },
         {
-          title: "Jot a line in Journal",
-          body: "Your own words, on your device only. The feeling, the trigger, what you tried — enough that your week has a shape later.",
+          title: "Nothing gets graded",
+          body: "Miss a day and nothing is said. Miss a week and it says welcome back, then starts a new week. No streak to break.",
         },
         {
-          title: "Watch Patterns build",
-          body: "Honest weekly shapes — what days you tend to use, what time, what moods come first. No streaks, no scoreboards.",
+          title: "Sunday, one card",
+          body: "Your nights as a seven-box grid, one plain sentence about the shape of the week, and one thing you might not have put together.",
         },
         {
-          title: "Build a Reduction Plan",
-          body: "A 2, 4 or 6-week plan you set yourself — pause, cut back, or shift the time. Pause and resume whenever.",
+          title: "Ask Fix one question",
+          body: "Five a day on free. It answers from your own numbers, in a couple of sentences, then stops. It never messages you first.",
         },
       ],
     },
