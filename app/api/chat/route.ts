@@ -5,7 +5,7 @@ import { logEvent } from "@/lib/log";
 import { consumeQuota, refundQuota, readDeviceId, newDeviceId, deviceCookie, getEntitlement, claimFreeSession } from "@/lib/quota";
 import { screenshotsOn } from "@/lib/features";
 import { paymentsOn } from "@/lib/plans";
-import { aiKey } from "@/lib/ai";
+import { aiKey, aiModel, aiModelCount } from "@/lib/ai";
 import { SCENARIOS } from "@/lib/scenarios";
 // Diagnostic logger: writes a one-line record of each upstream failure to the
 // Cloudflare Worker log so we can tell WHY the AI call failed (401 bad key, 404
@@ -183,9 +183,10 @@ export async function POST(req: Request) {
       let streamError: string | null = null;
       const seen: string[] = [];
       let stopReason: string | null = null;
-      // Set if the provider rejects the thinking field, so the retry goes without it rather
-      // than failing twice for a reason we can already see.
-      let noThinking = false;
+      // Which model id to try. A retired id comes back as a 404 not_found_error on every
+      // request, and the client renders that as "Fix couldn't connect" with no clue why, so
+      // the id walks down the candidate list in lib/ai.ts instead of being trusted.
+      let modelIndex = 0;
       try {
         // Five attempts at most, with exponential backoff (1s, 2s, 4s, 8s between
         // tries — total up to ~15 s of trying before giving up). A retry only happens
@@ -196,16 +197,16 @@ export async function POST(req: Request) {
         // couple of seconds off the worst case.
         for (let attempt = 0; attempt < 5; attempt++) {
         streamError = null;
+        const model = aiModel(modelIndex);
         const upstream = await fetch("https://api.anthropic.com/v1/messages", {
           method: "POST",
           headers: { "x-api-key": apiKey, "anthropic-version": "2023-06-01", "content-type": "application/json" },
           body: JSON.stringify({
-            model: aiModel(),
-            // Fix answers in one line; it has nothing to reason about at length. Left on,
-            // the model spends the whole budget thinking on some turns and stops at
-            // max_tokens having written nothing, which looks from outside like an outage.
-            // Dropped automatically below if a model doesn't accept the field.
-            ...(noThinking ? {} : { thinking: { type: "disabled" } }),
+            model,
+            // No thinking field at all. It used to send { type: "disabled" }, which is not a
+            // valid value, so every first attempt came back 400 and burned a round trip
+            // before the retry. Omitting the field is the supported way to keep a model from
+            // spending the whole budget on reasoning.
             // Not a brevity control. Length is enforced by the prompt, because the model's
             // own reasoning is spent from this same budget: at 300 some turns used the lot
             // thinking and stopped at max_tokens before writing a single word, which looked
@@ -221,8 +222,20 @@ export async function POST(req: Request) {
           // Surface the provider's own reason: it is the difference between a bad key,
           // a wrong model name and a malformed request, and guessing wastes hours.
           const detail = await upstream.text().catch(() => "");
-          if (upstream.status === 400 && /thinking/i.test(detail) && !noThinking && attempt === 0) {
-            noThinking = true;
+          // A model id the provider doesn't recognise is a permanent 404, not a blip, so
+          // step to the next candidate instead of spending all five attempts on the same
+          // wrong string.
+          const modelMissing =
+            (upstream.status === 404 || upstream.status === 400) && /model/i.test(detail);
+          if (modelMissing && modelIndex < aiModelCount() - 1) {
+            logUpstreamFailure({
+              stage: "model_missing",
+              attempt,
+              status: upstream.status,
+              model: aiModel(modelIndex),
+              detail,
+            });
+            modelIndex++;
             continue;
           }
           // Retry up to four times on transient upstream errors (429, 502–504, 529).
