@@ -152,7 +152,7 @@ export default function Onboarding({ onDone }: { onDone: (p: Profile) => void })
   }
 
   const primaryBtn =
-    "ff-chip w-full rounded-pill bg-signpost px-6 py-3 text-16 font-medium text-signpost-ink shadow-[0_8px_24px_-12px_rgba(240,168,104,0.6)] transition-transform hover:-translate-y-[1px] disabled:opacity-50 disabled:hover:translate-y-0";
+    "ff-chip w-full rounded-pill bg-signpost px-6 py-3 text-16 font-medium text-signpost-ink ff-cta-shadow transition-transform hover:-translate-y-[1px] disabled:opacity-50 disabled:hover:translate-y-0";
   const chipActive = "border-signpost/60 bg-signpost/15 text-signpost";
   const chipInactive = "border-line bg-card text-ink-soft";
 
@@ -187,7 +187,7 @@ export default function Onboarding({ onDone }: { onDone: (p: Profile) => void })
             <button
               type="button"
               onClick={() => setStep(1)}
-              className="ff-chip flex-1 rounded-pill bg-signpost px-5 py-3 text-16 font-medium text-signpost-ink shadow-[0_8px_24px_-12px_rgba(240,168,104,0.6)]"
+              className="ff-chip flex-1 rounded-pill bg-signpost px-5 py-3 text-16 font-medium text-signpost-ink ff-cta-shadow"
             >
               yes
             </button>

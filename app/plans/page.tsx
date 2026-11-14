@@ -205,7 +205,7 @@ export default function PlansPage() {
               <div className="mt-6">
                 <Link
                   href="/app"
-                  className="ff-chip inline-flex min-h-12 w-full items-center justify-center rounded-pill bg-signpost px-6 text-16 font-medium text-signpost-ink no-underline shadow-[0_8px_24px_-12px_rgba(240,168,104,0.6)] transition-transform hover:-translate-y-[1px] md:w-auto"
+                  className="ff-chip inline-flex min-h-12 w-full items-center justify-center rounded-pill bg-signpost px-6 text-16 font-medium text-signpost-ink no-underline ff-cta-shadow transition-transform hover:-translate-y-[1px] md:w-auto"
                 >
                   open the app, free
                 </Link>
@@ -220,7 +220,7 @@ export default function PlansPage() {
                   type="button"
                   onClick={start}
                   disabled={state === "loading" || state === "opening" || state === "confirming"}
-                  className="ff-chip inline-flex min-h-12 w-full items-center justify-center rounded-pill bg-signpost px-6 text-16 font-medium text-signpost-ink shadow-[0_8px_24px_-12px_rgba(240,168,104,0.6)] transition-transform hover:-translate-y-[1px] disabled:opacity-60 disabled:hover:translate-y-0 md:w-auto"
+                  className="ff-chip inline-flex min-h-12 w-full items-center justify-center rounded-pill bg-signpost px-6 text-16 font-medium text-signpost-ink ff-cta-shadow transition-transform hover:-translate-y-[1px] disabled:opacity-60 disabled:hover:translate-y-0 md:w-auto"
                 >
                   {state === "confirming"
                     ? "waiting for the receipt…"

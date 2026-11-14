@@ -24,18 +24,27 @@
 //   3. On activate: deletes old caches so a redeploy doesn't leave stale
 //      bundles behind forever.
 //
+//   4. On push (added 14 November 2026): shows one of the two reminders a
+//      person switched on in settings — the Sunday "your week is ready" or
+//      the nightly "tonight's three taps". The push arrives EMPTY: the
+//      server sends no payload, so nothing about the person transits the
+//      push service. The wording is decided here from the device clock.
+//      Lock-screen text never mentions weed. Tags replace rather than
+//      stack, and the nightly one is silent.
+//
 // What this service worker DOES NOT do
-//   - No background sync. The project's "no reminders you didn't ask for"
-//     rule applies here too: a reduction plan should not nag.
-//   - No push notifications. Same reason.
+//   - No background sync.
+//   - No push the person did not opt into: both reminders are off by
+//     default and switched on only in settings, after the exact text
+//     has been shown.
 //   - No analytics beacon, no telemetry, no logging.
-//   - No cache of /api/chat or /api/waitlist or anything user-identifying.
+//   - No cache of /api/* or anything user-identifying.
 //
 // Versioning
 //   CACHE_NAME includes a date-tagged version. Bump it to force an
 //   immediate refresh of pre-cached pages on next activate.
 
-const VERSION = "v2-2026-11-07";
+const VERSION = "v3-2026-11-14";
 const CACHE_NAME = `freezefix-${VERSION}`;
 
 // Pre-cached shells — pages a user is most likely to open first, and the
@@ -55,6 +64,7 @@ const PRECACHE = [
   "/manifest.webmanifest",
   "/icon.svg",
   "/icon-maskable.svg",
+  "/icon-192.png",
 ];
 
 self.addEventListener("install", (event) => {
@@ -137,3 +147,46 @@ async function staleWhileRevalidate(req) {
     .catch(() => cached);
   return cached || network;
 }
+
+// --- Reminders ---------------------------------------------------------------
+// The push carries no payload on purpose. Sunday 8pm–9pm local means the
+// weekly card; anything else is the nightly nudge. Neither sentence names
+// what the app is about: a lock screen is not private.
+
+function reminderFor(now) {
+  const sunday = now.getDay() === 0 && now.getHours() === 20;
+  return sunday
+    ? { title: "fix", body: "your week is ready.", tag: "fix-sunday", silent: false }
+    : { title: "fix", body: "tonight's three taps, if you want them.", tag: "fix-nightly", silent: true };
+}
+
+self.addEventListener("push", (event) => {
+  const r = reminderFor(new Date());
+  event.waitUntil(
+    self.registration.showNotification(r.title, {
+      body: r.body,
+      tag: r.tag,
+      renotify: false,
+      silent: r.silent,
+      icon: "/icon-192.png",
+      badge: "/icon-192.png",
+      data: { url: "/app" },
+    })
+  );
+});
+
+self.addEventListener("notificationclick", (event) => {
+  event.notification.close();
+  const url = (event.notification.data && event.notification.data.url) || "/app";
+  event.waitUntil(
+    self.clients.matchAll({ type: "window", includeUncontrolled: true }).then((list) => {
+      for (const c of list) {
+        if ("focus" in c && new URL(c.url).origin === self.location.origin) {
+          c.navigate(url);
+          return c.focus();
+        }
+      }
+      return self.clients.openWindow(url);
+    })
+  );
+});

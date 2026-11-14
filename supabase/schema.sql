@@ -398,3 +398,105 @@ revoke all on function public.start_trial(text) from public;
 revoke all on function public.trial_active(text) from public;
 grant execute on function public.start_trial(text) to anon, authenticated;
 grant execute on function public.trial_active(text) to anon, authenticated;
+
+-- ---------------------------------------------------------------------------
+-- Reminders (Web Push). Added 14 November 2026.
+-- One row per browser subscription. No name, no log, no device cookie: just
+-- the push address, which of the two reminders they switched on, a local
+-- hour, a timezone, and the last local date each kind was sent so a slow
+-- cron can't double-send. Reachable only through the functions below.
+-- ---------------------------------------------------------------------------
+
+create table if not exists public.push_subscriptions (
+  id uuid primary key default gen_random_uuid(),
+  endpoint text not null unique,
+  p256dh text not null,
+  auth text not null,
+  sunday boolean not null default false,
+  nightly boolean not null default false,
+  hour int not null default 23 check (hour between 0 and 23),
+  tz text not null,
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now(),
+  last_sent_sunday date,
+  last_sent_nightly date
+);
+
+alter table public.push_subscriptions enable row level security;
+-- No policies: only the security-definer functions below touch this table.
+
+-- Browser → server: create or update. Both kinds false = they switched
+-- everything off; the row is removed rather than kept dormant.
+create or replace function public.push_upsert(
+  p_endpoint text, p_p256dh text, p_auth text,
+  p_sunday boolean, p_nightly boolean, p_hour int, p_tz text
+)
+returns void
+language plpgsql
+security definer
+set search_path = public
+as $$
+begin
+  if p_endpoint is null or char_length(p_endpoint) < 10 or p_endpoint not like 'https://%' then
+    return;
+  end if;
+  if not coalesce(p_sunday, false) and not coalesce(p_nightly, false) then
+    delete from public.push_subscriptions where endpoint = p_endpoint;
+    return;
+  end if;
+  insert into public.push_subscriptions (endpoint, p256dh, auth, sunday, nightly, hour, tz)
+    values (p_endpoint, p_p256dh, p_auth, coalesce(p_sunday, false), coalesce(p_nightly, false),
+            least(greatest(coalesce(p_hour, 23), 0), 23), left(p_tz, 64))
+    on conflict (endpoint) do update set
+      p256dh = excluded.p256dh,
+      auth = excluded.auth,
+      sunday = excluded.sunday,
+      nightly = excluded.nightly,
+      hour = excluded.hour,
+      tz = excluded.tz,
+      updated_at = now();
+end;
+$$;
+
+create or replace function public.push_remove(p_endpoint text)
+returns void
+language sql
+security definer
+set search_path = public
+as $$
+  delete from public.push_subscriptions where endpoint = p_endpoint;
+$$;
+
+-- Server (service role) → list everything that has at least one kind on.
+create or replace function public.push_active()
+returns setof public.push_subscriptions
+language sql
+security definer
+set search_path = public
+as $$
+  select * from public.push_subscriptions where sunday or nightly;
+$$;
+
+create or replace function public.push_mark_sent(p_endpoint text, p_kind text, p_date date)
+returns void
+language plpgsql
+security definer
+set search_path = public
+as $$
+begin
+  if p_kind = 'sunday' then
+    update public.push_subscriptions set last_sent_sunday = p_date where endpoint = p_endpoint;
+  elsif p_kind = 'nightly' then
+    update public.push_subscriptions set last_sent_nightly = p_date where endpoint = p_endpoint;
+  end if;
+end;
+$$;
+
+revoke all on function public.push_upsert(text, text, text, boolean, boolean, int, text) from public;
+revoke all on function public.push_remove(text) from public;
+revoke all on function public.push_active() from public;
+revoke all on function public.push_mark_sent(text, text, date) from public;
+grant execute on function public.push_upsert(text, text, text, boolean, boolean, int, text) to anon, authenticated;
+grant execute on function public.push_remove(text) to anon, authenticated;
+grant execute on function public.push_active() to service_role;
+grant execute on function public.push_mark_sent(text, text, date) to service_role;

@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { SkipLink } from "@/components/Shell";
+import { THEME_BOOTSTRAP } from "@/lib/theme";
 import "./globals.css";
 
 // Fonts are loaded from Google's CDN with <link> tags rather than next/font/google:
@@ -77,13 +78,23 @@ export const metadata: Metadata = {
 export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
-  themeColor: "#12100E",
+  // Browser chrome follows the theme. The bootstrap script below handles an
+  // explicit choice; these cover the system default.
+  themeColor: [
+    { media: "(prefers-color-scheme: dark)", color: "#12100E" },
+    { media: "(prefers-color-scheme: light)", color: "#F6F1EA" },
+  ],
+  colorScheme: "dark light",
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" data-theme="dark">
+    // No data-theme on the server: absent means "follow the system", and the
+    // inline script sets it from localStorage before the stylesheet paints so
+    // an explicit choice never flashes the other theme on reload.
+    <html lang="en" suppressHydrationWarning>
       <head>
+        <script dangerouslySetInnerHTML={{ __html: THEME_BOOTSTRAP }} />
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
         {/* eslint-disable-next-line @next/next/no-page-custom-font -- next/font/google rejects

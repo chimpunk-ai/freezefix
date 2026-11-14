@@ -2,6 +2,7 @@
 // Two columns from md: the promise on the left, the links on the right.
 
 import Link from "next/link";
+import ThemeToggle from "@/components/ThemeToggle";
 
 const LINKS = [
   { href: "/plans", label: "what it costs" },
@@ -25,6 +26,7 @@ export default function SiteFooter() {
             your phone. no account, no email, nothing on our side to look up.
           </p>
           <p className="mt-4">fix · 18+ · made for adults who smoke and wonder</p>
+          <ThemeToggle compact className="mt-5" />
         </div>
         <nav aria-label="footer" className="flex flex-wrap items-center gap-x-5 gap-y-3 md:flex-col md:items-end md:gap-y-2">
           <Link

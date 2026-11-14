@@ -17,12 +17,18 @@ import {
   type TriggerId,
 } from "@/lib/entry";
 import type { Profile } from "@/lib/profile";
+import { MODEL_SIZE_LABEL, VoiceError, cancel as cancelModel, isSupported as voiceSupported, languageName, preload, transcribe } from "@/lib/transcribe";
 
 // The log. The whole app for the two minutes it is used.
 //
 // Three taps: yes or no, one face, up to three chips. A voice note if they feel
 // like it, a tick for their own goal if they feel like that. Save, and the app
 // says one line and gets out of the way. No streak, no count, no praise.
+//
+// Voice notes never leave the phone: recorded here, turned into text here by a
+// small speech model (lib/transcribe.ts), audio dropped. The flow asks before
+// it touches the microphone, shows the one-time model download with a cancel,
+// and always shows the words for review before they go anywhere near the log.
 
 // A scripted state for the landing-page demo. When `demo` is set the screen
 // mirrors it instead of storage: nothing is saved, no microphone is opened.
@@ -78,10 +84,19 @@ export default function LogScreen({
     setSaved(demo.saved);
   }, [demo]);
 
-  const [recording, setRecording] = useState(false);
+  // Voice. One state machine, so every branch has a line of copy and a way out.
+  //   idle → explain (first tap: what happens, ok / not now)
+  //   ready → recording → transcribing → review (use it / discard)
+  //   any → trouble (a calm message and "type instead")
+  type VoicePhase = "idle" | "explain" | "ready" | "recording" | "transcribing" | "review" | "trouble";
+  const [phase, setPhase] = useState<VoicePhase>("idle");
   const [seconds, setSeconds] = useState(0);
+  const [download, setDownload] = useState<number | null>(null); // percent while the model loads
   const [voiceMsg, setVoiceMsg] = useState<string | null>(null);
+  const [draft, setDraft] = useState("");
+  const [heard, setHeard] = useState<string | undefined>(undefined);
   const [typing, setTyping] = useState(false);
+  const recording = phase === "recording";
 
   const recRef = useRef<MediaRecorder | null>(null);
   const chunksRef = useRef<Blob[]>([]);
@@ -113,36 +128,92 @@ export default function LogScreen({
     };
   }, []);
 
-  async function upload(blob: Blob, secs: number) {
+  function trouble(msg: string) {
+    setVoiceMsg(msg);
+    setPhase("trouble");
+    setTyping(true);
+  }
+
+  function explainVoiceError(err: unknown): string {
+    const kind = err instanceof VoiceError ? err.kind : "decode-failed";
+    switch (kind) {
+      case "unsupported":
+        return "this browser can't do voice on the phone itself, and fix won't send audio anywhere. type instead.";
+      case "permission-denied":
+        return "the microphone is blocked for this site. that's fine — type instead. (you can allow it in your browser settings if you change your mind.)";
+      case "model-download-failed":
+        return "couldn't fetch the speech model — maybe no connection right now. try later, or type.";
+      case "too-short":
+        return "that was too quick to catch. hold a little longer, or type.";
+      case "cancelled":
+        return "ok, no download. you can type instead.";
+      default:
+        return "didn't catch that — try again or type.";
+    }
+  }
+
+  // Start the one-time model download in the background after "ok".
+  function agreeToVoice() {
+    setVoiceMsg(null);
+    setPhase("ready");
+    setDownload(0);
+    preload((p) => setDownload(p.percent))
+      .then(() => setDownload(null))
+      .catch((err) => {
+        setDownload(null);
+        if (err instanceof VoiceError && err.kind === "cancelled") {
+          setPhase("idle");
+          return;
+        }
+        trouble(explainVoiceError(err));
+      });
+  }
+
+  function cancelDownload() {
+    cancelModel();
+    setDownload(null);
+    setPhase("idle");
+  }
+
+  async function finish(blob: Blob) {
+    setPhase("transcribing");
     try {
-      const fd = new FormData();
-      fd.append("audio", blob, "voice.webm");
-      fd.append("seconds", String(secs));
-      const res = await fetch("/api/transcribe", { method: "POST", body: fd });
-      const data = (await res.json().catch(() => ({}))) as { text?: string; error?: string };
-      if (res.ok && data.text) {
-        setNote(data.text);
-        setVoiceMsg(null);
+      const out = await transcribe(blob, (p) => setDownload(p.percent < 100 ? p.percent : null));
+      setDownload(null);
+      if (!out.text) {
+        setVoiceMsg("didn't catch that — try again or type.");
+        setPhase("ready");
         return;
       }
-      if (data.error === "voice_off") setVoiceMsg("voice notes aren't switched on yet. type instead.");
-      else if (data.error === "voice_limit") setVoiceMsg("that's today's voice notes. type instead.");
-      else setVoiceMsg("that didn't come through. type instead.");
-      setTyping(true);
-    } catch {
-      setVoiceMsg("that didn't come through. type instead.");
-      setTyping(true);
+      setDraft(out.text.slice(0, 500));
+      setHeard(out.language && out.language !== "en" ? languageName(out.language) : undefined);
+      setVoiceMsg(null);
+      setPhase("review");
+    } catch (err) {
+      setDownload(null);
+      if (err instanceof VoiceError && err.kind === "too-short") {
+        setVoiceMsg(explainVoiceError(err));
+        setPhase("ready");
+        return;
+      }
+      trouble(explainVoiceError(err));
     }
   }
 
   async function startRec() {
-    if (recording || demo) return;
-    setVoiceMsg(null);
-    if (typeof navigator === "undefined" || !navigator.mediaDevices?.getUserMedia) {
-      setVoiceMsg("this phone won't record here. type instead.");
-      setTyping(true);
+    if (demo || phase === "recording" || phase === "transcribing") return;
+    if (phase === "idle" || phase === "trouble") {
+      // First touch: say what will happen before asking for anything.
+      if (!voiceSupported()) {
+        trouble(explainVoiceError(new VoiceError("unsupported")));
+        return;
+      }
+      setVoiceMsg(null);
+      setPhase("explain");
       return;
     }
+    if (phase !== "ready") return;
+    setVoiceMsg(null);
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
       streamRef.current = stream;
@@ -153,26 +224,40 @@ export default function LogScreen({
         if (e.data.size) chunksRef.current.push(e.data);
       };
       rec.onstop = () => {
-        const secs = Math.max(1, Math.min(10, Math.round((Date.now() - startedRef.current) / 1000)));
         const blob = new Blob(chunksRef.current, { type: rec.mimeType || "audio/webm" });
+        chunksRef.current = [];
         stopStream();
-        setRecording(false);
         setSeconds(0);
-        if (blob.size > 0) void upload(blob, secs);
+        if (blob.size > 0) void finish(blob);
+        else setPhase("ready");
       };
       startedRef.current = Date.now();
       rec.start();
-      setRecording(true);
+      setPhase("recording");
       setSeconds(0);
       tickRef.current = window.setInterval(() => {
         const s = Math.round((Date.now() - startedRef.current) / 1000);
         setSeconds(s);
         if (s >= 10) stopRec();
       }, 200);
-    } catch {
-      setVoiceMsg("no microphone. you can type instead.");
-      setTyping(true);
+    } catch (err) {
+      stopStream();
+      const denied = err instanceof DOMException && (err.name === "NotAllowedError" || err.name === "SecurityError");
+      trouble(explainVoiceError(new VoiceError(denied ? "permission-denied" : "unsupported")));
     }
+  }
+
+  function useDraft() {
+    setNote(draft.trim().slice(0, 500));
+    setDraft("");
+    setHeard(undefined);
+    setPhase("ready");
+  }
+
+  function discardDraft() {
+    setDraft("");
+    setHeard(undefined);
+    setPhase("ready");
   }
 
   function toggleTrigger(t: TriggerId) {
@@ -360,7 +445,7 @@ export default function LogScreen({
             </section>
           ) : null}
 
-          <section className="mt-8">
+          <section className="mt-8" aria-label="a few words, if you want">
             <div className="flex items-center gap-4">
               <button
                 type="button"
@@ -368,12 +453,23 @@ export default function LogScreen({
                 onPointerUp={stopRec}
                 onPointerLeave={stopRec}
                 onPointerCancel={stopRec}
-                aria-label="hold to talk, up to ten seconds"
+                onKeyDown={(e) => {
+                  if (e.key === " " || e.key === "Enter") {
+                    e.preventDefault();
+                    if (phase === "recording") stopRec();
+                    else void startRec();
+                  }
+                }}
+                aria-label={phase === "recording" ? "listening — release to stop" : "say a few words, up to ten seconds, kept on this phone"}
+                aria-pressed={phase === "recording"}
+                disabled={phase === "transcribing"}
                 className={[
                   "ff-chip flex h-14 w-14 shrink-0 items-center justify-center rounded-full border",
-                  recording
+                  phase === "recording"
                     ? "breathe border-accent bg-accent/20 text-accent"
-                    : "border-line bg-card text-ink-soft hover:border-accent/40",
+                    : phase === "transcribing"
+                      ? "border-line bg-card text-ink-faint"
+                      : "border-line bg-card text-ink-soft hover:border-accent/40",
                 ].join(" ")}
               >
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden>
@@ -381,36 +477,136 @@ export default function LogScreen({
                   <path d="M5.5 11.5a6.5 6.5 0 0 0 13 0M12 18v3" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
                 </svg>
               </button>
-              <div className="min-w-0 flex-1">
+              <div className="min-w-0 flex-1" aria-live="polite">
                 <p className="text-14 text-ink-soft">
-                  {recording ? `listening · 0:${String(seconds).padStart(2, "0")}` : "hold to say something"}
+                  {phase === "recording"
+                    ? `listening · 0:${String(seconds).padStart(2, "0")}`
+                    : phase === "transcribing"
+                      ? download !== null
+                        ? `getting the speech model · ${download}%`
+                        : "turning it into words, here on your phone…"
+                      : phase === "ready"
+                        ? "hold to say something"
+                        : "tap to say something"}
                 </p>
                 <p className="mt-0.5 text-12 text-ink-faint">
-                  {note ? "words kept, audio thrown away" : "ten seconds, if you want. it isn't required."}
+                  {phase === "ready" && download !== null
+                    ? `getting the speech model once · ${download}%`
+                    : note
+                      ? "words kept on this phone. audio already gone."
+                      : "ten seconds, if you want. it isn't required, and it never leaves this phone."}
                 </p>
               </div>
+              {phase === "ready" && download !== null ? (
+                <button
+                  type="button"
+                  onClick={cancelDownload}
+                  className="ff-chip min-h-11 shrink-0 rounded-pill border border-line px-3 text-12 text-ink-soft hover:border-accent/40"
+                >
+                  cancel
+                </button>
+              ) : null}
             </div>
 
-            {note ? (
-              <p className="mt-3 rounded-card border border-line bg-card px-4 py-3 text-14 text-ink-soft">
-                {note}
-              </p>
+            {phase === "ready" && download !== null ? (
+              <div className="mt-3 h-1 w-full overflow-hidden rounded-full bg-chip" role="progressbar" aria-valuemin={0} aria-valuemax={100} aria-valuenow={download} aria-label="speech model download">
+                <div className="h-full rounded-full bg-accent/70 transition-[width] duration-300 motion-reduce:transition-none" style={{ width: `${download}%` }} />
+              </div>
             ) : null}
 
-            {voiceMsg ? <p className="mt-3 text-12 text-frost">{voiceMsg}</p> : null}
+            {phase === "explain" ? (
+              <div className="ff-rise mt-3 rounded-card border border-line bg-card p-4" role="group" aria-label="before the microphone">
+                <p className="text-14 text-ink">
+                  fix will listen for up to ten seconds, turn it into text on this phone, and throw the audio
+                  away. nothing is sent anywhere.
+                </p>
+                <p className="mt-2 text-12 text-ink-faint">
+                  the first time, it downloads a small speech model once ({MODEL_SIZE_LABEL}). after that it works
+                  offline. your browser will ask about the microphone when you hold the button.
+                </p>
+                <div className="mt-3 flex flex-wrap gap-2">
+                  <button
+                    type="button"
+                    onClick={agreeToVoice}
+                    className="ff-chip min-h-11 rounded-pill bg-accent px-5 text-14 font-medium text-bg hover:opacity-90"
+                  >
+                    ok
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setPhase("idle");
+                      setTyping(true);
+                    }}
+                    className="ff-chip min-h-11 rounded-pill border border-line px-4 text-14 text-ink-soft hover:border-accent/40"
+                  >
+                    not now, i&rsquo;ll type
+                  </button>
+                </div>
+              </div>
+            ) : null}
+
+            {phase === "review" ? (
+              <div className="ff-rise mt-3 rounded-card border border-accent/30 bg-card p-4" role="group" aria-label="check the words">
+                <p className="text-12 text-ink-faint">
+                  here&rsquo;s what it heard{heard ? ` — in ${heard}, so check it` : ". change anything, or drop it"}.
+                </p>
+                <textarea
+                  value={draft}
+                  onChange={(e) => setDraft(e.target.value.slice(0, 500))}
+                  rows={3}
+                  aria-label="the words it heard"
+                  className="mt-2 w-full resize-y rounded-card border border-line bg-bg px-4 py-3 text-14 text-ink focus:border-accent/50 focus:outline-none"
+                />
+                <div className="mt-3 flex flex-wrap gap-2">
+                  <button
+                    type="button"
+                    onClick={useDraft}
+                    disabled={!draft.trim()}
+                    className="ff-chip min-h-11 rounded-pill bg-accent px-5 text-14 font-medium text-bg hover:opacity-90 disabled:opacity-50"
+                  >
+                    use it
+                  </button>
+                  <button
+                    type="button"
+                    onClick={discardDraft}
+                    className="ff-chip min-h-11 rounded-pill border border-line px-4 text-14 text-ink-soft hover:border-accent/40"
+                  >
+                    discard
+                  </button>
+                </div>
+              </div>
+            ) : null}
+
+            {note && phase !== "review" ? (
+              <div className="mt-3 flex items-start gap-3 rounded-card border border-line bg-card px-4 py-3">
+                <p className="min-w-0 flex-1 text-14 text-ink-soft">{note}</p>
+                <button
+                  type="button"
+                  onClick={() => setNote("")}
+                  aria-label="remove these words"
+                  className="ff-chip -mr-1 min-h-11 shrink-0 px-2 text-12 text-ink-faint hover:text-ink-soft"
+                >
+                  remove
+                </button>
+              </div>
+            ) : null}
+
+            {voiceMsg ? <p className="mt-3 text-12 text-frost" role="status">{voiceMsg}</p> : null}
 
             {typing ? (
               <input
                 value={note}
                 onChange={(e) => setNote(e.target.value.slice(0, 500))}
                 placeholder="a few words"
+                aria-label="a few words, typed"
                 className="mt-3 w-full rounded-card border border-line bg-card px-4 py-3 text-14 text-ink placeholder:text-ink-faint focus:border-accent/50 focus:outline-none"
               />
             ) : (
               <button
                 type="button"
                 onClick={() => setTyping(true)}
-                className="mt-3 text-12 text-ink-faint underline decoration-line underline-offset-4 hover:text-ink-soft"
+                className="mt-3 min-h-11 text-12 text-ink-faint underline decoration-line underline-offset-4 hover:text-ink-soft"
               >
                 type instead
               </button>

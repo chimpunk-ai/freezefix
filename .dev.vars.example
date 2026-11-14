@@ -35,3 +35,14 @@ PADDLE_WEBHOOK_SECRET=
 PADDLE_API_KEY=
 # Used ONLY by the payment webhook to save subscriptions.
 SUPABASE_SERVICE_ROLE_KEY=
+
+# Reminders (Web Push). Off until all three are set. Generate with
+# `npx tsx scripts/gen-vapid.ts` — never commit the output.
+# VAPID_PUBLIC_KEY: 65-byte uncompressed P-256 point, base64url (web-push format).
+# VAPID_PRIVATE_KEY: raw 32-byte scalar, base64url. Secret.
+# NEXT_PUBLIC_VAPID_PUBLIC_KEY: same value as VAPID_PUBLIC_KEY; the browser needs it to subscribe.
+# PUSH_TICK_SECRET: shared with the GitHub Actions cron (.github/workflows/push-tick.yml).
+VAPID_PUBLIC_KEY=
+VAPID_PRIVATE_KEY=
+NEXT_PUBLIC_VAPID_PUBLIC_KEY=
+PUSH_TICK_SECRET=

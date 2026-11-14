@@ -5,7 +5,9 @@
    One second accent (terracotta) for safety and nothing else.
    Type: Inter for everything, Newsreader for the few display lines.
    Scale is exactly 12 / 14 / 16 / 20 / 28 / 40; the landing hero alone
-   uses 44 on lg (see docs/design-system.md for why 56 did not fit). Grid is 8pt. See docs/design-system.md for the layout rules. */
+   uses 44 on lg (see docs/design-system.md for why 56 did not fit). Grid is 8pt. See docs/design-system.md for the layout rules.
+   Two themes: dark (default, the @theme values) and a warm-paper light,
+   both defined below as overrides of the same variables. */
 
 @theme {
   --color-bg: #12100e;
@@ -66,6 +68,98 @@
 
 :root {
   color-scheme: dark;
+
+  /* Atmosphere and glow, as variables so the light theme can soften them.
+     Dark values here; light values below. */
+  --ff-atmo-1: rgba(156, 175, 136, 0.07);
+  --ff-atmo-2: rgba(216, 146, 122, 0.04);
+  --ff-atmo-3: rgba(156, 175, 136, 0.05);
+  --ff-glow-soft: rgba(156, 175, 136, 0.13);
+  --ff-glow-pulse: rgba(156, 175, 136, 0.18);
+  --ff-selection: rgba(156, 175, 136, 0.28);
+  --ff-cta-shadow: 0 8px 24px -12px rgba(240, 168, 104, 0.6);
+  --ff-card-shadow: 0 32px 80px -40px rgba(156, 175, 136, 0.35);
+  --ff-phone-ring: rgba(51, 44, 37, 0.9);
+  --ff-phone-inset: rgba(242, 237, 230, 0.04);
+  --ff-phone-drop: 0 40px 80px -40px rgba(0, 0, 0, 0.7), 0 24px 60px -36px rgba(156, 175, 136, 0.25);
+}
+
+/* ── Light: warm paper ──────────────────────────────────────────────────────
+   Same family, inverted. Dark is the default (the tokens above); light
+   applies when the reader's system asks for it and they haven't chosen
+   dark, or when they've chosen light. Every value is checked against
+   WCAG AA on the paper ground — the ratios are in docs/design-system.md. */
+@media (prefers-color-scheme: light) {
+  :root:not([data-theme="dark"]) {
+    color-scheme: light;
+    --color-bg: #f6f1ea;
+    --color-card: #fffdf9;
+    --color-chip: #efe8df;
+    --color-line: #d3c8b9;
+    --color-ink: #1b1815;
+    --color-ink-soft: #4a433b;
+    --color-ink-faint: #6f655b;
+    --color-accent: #4f6a41;
+    --color-accent-ink: #ffffff;
+    --color-glow: #6e8a5c;
+    --color-signpost: #945310;
+    --color-signpost-ink: #ffffff;
+    --color-frost: #a44f35;
+    --color-teal: #4f6a41;
+    --ff-atmo-1: rgba(79, 106, 65, 0.07);
+    --ff-atmo-2: rgba(164, 79, 53, 0.04);
+    --ff-atmo-3: rgba(79, 106, 65, 0.05);
+    --ff-glow-soft: rgba(79, 106, 65, 0.1);
+    --ff-glow-pulse: rgba(79, 106, 65, 0.16);
+    --ff-selection: rgba(79, 106, 65, 0.22);
+    --ff-cta-shadow: 0 8px 24px -12px rgba(148, 83, 16, 0.45);
+    --ff-card-shadow: 0 32px 80px -44px rgba(27, 24, 21, 0.35);
+    --ff-phone-ring: rgba(27, 24, 21, 0.14);
+    --ff-phone-inset: rgba(255, 255, 255, 0.6);
+    --ff-phone-drop: 0 40px 80px -44px rgba(27, 24, 21, 0.35), 0 24px 60px -36px rgba(79, 106, 65, 0.18);
+  }
+}
+:root[data-theme="light"] {
+  color-scheme: light;
+  --color-bg: #f6f1ea;
+  --color-card: #fffdf9;
+  --color-chip: #efe8df;
+  --color-line: #d3c8b9;
+  --color-ink: #1b1815;
+  --color-ink-soft: #4a433b;
+  --color-ink-faint: #6f655b;
+  --color-accent: #4f6a41;
+  --color-accent-ink: #ffffff;
+  --color-glow: #6e8a5c;
+  --color-signpost: #945310;
+  --color-signpost-ink: #ffffff;
+  --color-frost: #a44f35;
+  --color-teal: #4f6a41;
+  --ff-atmo-1: rgba(79, 106, 65, 0.07);
+  --ff-atmo-2: rgba(164, 79, 53, 0.04);
+  --ff-atmo-3: rgba(79, 106, 65, 0.05);
+  --ff-glow-soft: rgba(79, 106, 65, 0.1);
+  --ff-glow-pulse: rgba(79, 106, 65, 0.16);
+  --ff-selection: rgba(79, 106, 65, 0.22);
+  --ff-cta-shadow: 0 8px 24px -12px rgba(148, 83, 16, 0.45);
+  --ff-card-shadow: 0 32px 80px -44px rgba(27, 24, 21, 0.35);
+  --ff-phone-ring: rgba(27, 24, 21, 0.14);
+  --ff-phone-inset: rgba(255, 255, 255, 0.6);
+  --ff-phone-drop: 0 40px 80px -44px rgba(27, 24, 21, 0.35), 0 24px 60px -36px rgba(79, 106, 65, 0.18);
+}
+
+/* Utilities for the few shadows that used to be inline arbitrary values. */
+.ff-cta-shadow {
+  box-shadow: var(--ff-cta-shadow);
+}
+.ff-card-shadow {
+  box-shadow: var(--ff-card-shadow);
+}
+.ff-atmosphere {
+  background-image:
+    radial-gradient(52% 34% at 18% 6%, var(--ff-atmo-1), transparent 70%),
+    radial-gradient(46% 32% at 92% 22%, var(--ff-atmo-2), transparent 72%),
+    radial-gradient(70% 40% at 50% 104%, var(--ff-atmo-3), transparent 72%);
 }
 
 html,
@@ -85,9 +179,9 @@ body {
   -webkit-font-smoothing: antialiased;
   -webkit-tap-highlight-color: transparent;
   background-image:
-    radial-gradient(52% 34% at 18% 6%, rgba(156, 175, 136, 0.07), transparent 70%),
-    radial-gradient(46% 32% at 92% 22%, rgba(216, 146, 122, 0.04), transparent 72%),
-    radial-gradient(70% 40% at 50% 104%, rgba(156, 175, 136, 0.05), transparent 72%);
+    radial-gradient(52% 34% at 18% 6%, var(--ff-atmo-1), transparent 70%),
+    radial-gradient(46% 32% at 92% 22%, var(--ff-atmo-2), transparent 72%),
+    radial-gradient(70% 40% at 50% 104%, var(--ff-atmo-3), transparent 72%);
   background-attachment: fixed;
 }
 
@@ -110,7 +204,7 @@ a {
 }
 
 ::selection {
-  background: rgba(156, 175, 136, 0.28);
+  background: var(--ff-selection);
 }
 
 /* Focus is a sage ring outside the element. Hover only ever changes a border
@@ -212,9 +306,9 @@ a {
   animation: ff-pulse 600ms cubic-bezier(0.2, 0.8, 0.3, 1) 1;
 }
 @keyframes ff-pulse {
-  0% { box-shadow: 0 0 0 0 rgba(156, 175, 136, 0); }
-  35% { box-shadow: 0 0 0 6px rgba(156, 175, 136, 0.18); }
-  100% { box-shadow: 0 0 0 0 rgba(156, 175, 136, 0); }
+  0% { box-shadow: 0 0 0 0 transparent; }
+  35% { box-shadow: 0 0 0 6px var(--ff-glow-pulse); }
+  100% { box-shadow: 0 0 0 0 transparent; }
 }
 
 /* 4 seconds in, 6 seconds out. The only thing in the product that loops. */
@@ -283,7 +377,7 @@ html[data-reveal-ready] [data-reveal]:not([data-shown]) {
   position: absolute;
   inset: -2.5rem -2.5rem -2rem -2.5rem;
   border-radius: 2.5rem;
-  background: radial-gradient(60% 55% at 50% 45%, rgba(156, 175, 136, 0.13), transparent 72%);
+  background: radial-gradient(60% 55% at 50% 45%, var(--ff-glow-soft), transparent 72%);
   z-index: -2;
   pointer-events: none;
 }
