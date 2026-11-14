@@ -420,3 +420,43 @@ export function archivedWeeks(): Mirror[] {
 export function latestArchived(): Mirror | null {
   return archivedWeeks()[0] ?? null;
 }
+
+/* ── the week, as text, for Fix ────────────────────────────────────────── */
+
+/**
+ * A compact plain-text summary of this week for the Fix chat.
+ *
+ * Fix is only allowed to quote the user's own numbers, so it needs the numbers. This
+ * builds them from the same engine that draws the mirror card, which means the chat and
+ * the card can never disagree about what happened.
+ *
+ * Returns null when the week is too thin to say anything true — the same rule the card
+ * follows. Fix then answers without pretending to see a pattern.
+ */
+export function weekBrief(now = new Date()): string | null {
+  try {
+    const m = buildMirror(now);
+    if (!m.hasEnough) return null;
+
+    const bits: string[] = [];
+    bits.push(`week ${m.weekStart} to ${m.weekEnd}`);
+    bits.push(`smoked ${m.smoked} of ${m.recorded} logged nights`);
+    if (m.remaining > 0) bits.push(`${m.remaining} nights left this week`);
+    if (m.topTrigger && m.topTriggerCount >= 2) {
+      bits.push(`trigger "${m.topTrigger}" ${m.topTriggerCount} times`);
+    }
+    if (m.wins > 0) bits.push(`${m.wins} saved helps`);
+    if (m.thingLine) bits.push(m.thingLine);
+    else if (m.goal) bits.push(`goal: ${m.goal}`);
+    if (m.direction) bits.push(`direction: ${m.direction}`);
+    bits.push(`card sentence: ${m.sentence}`);
+    if (m.observation) bits.push(`card observation: ${m.observation}`);
+
+    const text = bits.join("; ").replace(/\s+/g, " ").trim();
+    return text.length > 640 ? text.slice(0, 640) : text;
+  } catch {
+    // Storage can be blocked (private mode, denied cookies). A chat without the week
+    // still works; a chat that crashes because the week is missing does not.
+    return null;
+  }
+}
