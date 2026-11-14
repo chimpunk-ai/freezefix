@@ -41,8 +41,8 @@ export type Week = {
 
 /** Nights needed on each side before the mirror will compare two averages. */
 export const MIN_SIDE = 3;
-/** Nights needed before the engine will describe a weekday shape. */
-export const MIN_RHYTHM = 4;
+/** Smoke nights needed before the engine will describe a weekday shape. */
+export const MIN_RHYTHM = 2;
 /** Mood difference under this reads as "no clear line", not as an effect. */
 export const NEUTRAL_DIFF = 0.4;
 
@@ -430,7 +430,7 @@ export function buildPatterns(weeks: Week[]): Pattern[] {
         : mood.diff > 0
           ? `On the nights you didn't smoke your mood face averaged ${one(mood.bAvg)} of 5. On the nights you did, ${one(mood.aAvg)}.`
           : `On the nights you smoked your mood face averaged ${one(mood.aAvg)} of 5, against ${one(mood.bAvg)} on the nights you didn't.`,
-      detail: `${mood.aN} smoke nights and ${mood.bN} others where you picked a face. Averages of your own taps — a shape, not a cause.`,
+      detail: `${mood.aN} smoke nights and ${mood.bN} others where you picked a face. Averages of your own taps, and nothing more than that.`,
       compare: {
         aLabel: "smoked",
         aValue: mood.aAvg,
@@ -475,7 +475,7 @@ export function buildPatterns(weeks: Week[]): Pattern[] {
         lead.diff < 0
           ? `"${lead.label}" came up on ${lead.count} nights. Your mood on those nights averaged ${one(lead.withAvg)}, against ${one(lead.withoutAvg)} when it didn't.`
           : `"${lead.label}" came up on ${lead.count} nights, and your mood on those nights averaged ${one(lead.withAvg)} — higher than the ${one(lead.withoutAvg)} on the nights it didn't.`,
-      detail: `Your own chips, counted. The chip and the mood arrived together; nothing here says one caused the other.`,
+      detail: `Your own chips, counted. The chip and the mood showed up on the same nights; the number stops there.`,
       trigger: {
         label: lead.label,
         count: lead.count,
