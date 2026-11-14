@@ -11,7 +11,7 @@ Next.js on Cloudflare Workers (via OpenNext). The product is "Fix"; the legal en
 | `app/page.tsx` → `components/Landing.tsx` | The public front door. Vision in prose + a real sample Sunday card. |
 | `app/app/page.tsx` → `components/AppClient.tsx` | The app shell. Hosts the log, the Sunday mirror, the shelf, Fix, and settings — one view at a time. |
 | `components/Onboarding.tsx` | 9-screen first-run flow: 18+ gate → pet name → what weed is in the way of → when they smoke → trigger chips → bedtime → their one thing → explainer → preview card. |
-| `components/LogScreen.tsx` | The nightly log. Yes/no, one mood face, up to three trigger chips, an optional 10-second voice note, an optional goal tick. Local storage only. |
+| `components/LogScreen.tsx` | The nightly log. Yes/no, one mood face, up to three trigger chips, an optional 10-second voice note (transcribed on the device, see `lib/transcribe.ts`), an optional goal tick. Local storage only. |
 | `components/PatternCard.tsx` | The weekly mirror card. Plain-English pattern, a seven-cell grid, the goal line, the optional chime. |
 | `components/FixSheet.tsx` | Fix (the AI): one question about your own week, answered from your own log. Server-side turn cap (5/day free, 20/day paid). |
 | `components/HelpScreen.tsx` · `components/HelpPage.tsx` | Crisis / urgent help. Always free. Never behind the gate or the paywall. |
@@ -30,7 +30,7 @@ Next.js on Cloudflare Workers (via OpenNext). The product is "Fix"; the legal en
 | `lib/legal.ts`, `app/privacy`, `app/terms`, `app/refunds` | Legal pages. Wording owned by Setup & Legal. |
 | `app/api/fix/route.ts` | Fix's API: keyword check → quota → Anthropic (Claude) → post-process. |
 | `app/api/trial/start/route.ts` | Records the start of the seven free days on the server. |
-| `app/api/transcribe/route.ts` | Voice note transcription. Off until `ENABLE_VOICE=true`. |
+| `lib/transcribe.ts` | On-device voice notes: Whisper tiny via `@huggingface/transformers` loaded at runtime from jsDelivr, WASM backend. Audio never leaves the browser. |
 | `app/api/paywall/route.ts` · `app/api/portal/route.ts` · `app/api/webhooks/paddle/route.ts` | Paddle wiring. `/api/paywall` returns `active: true` for everyone while payments are off. |
 | `app/help/page.tsx` → `components/HelpPage.tsx` | Public /help route. Always free, no gate. |
 | `supabase/schema.sql` | Anonymous counts, hashed-key quotas, entitlements, trial record, waitlist, suggestions. Paste into Supabase SQL Editor. |
@@ -46,8 +46,6 @@ Added in **Cloudflare dashboard → Workers → freezefix → Settings → Varia
 - `AI_MODEL`: optional, defaults to `claude-haiku-5-5`
 - `SUPABASE_URL` and `SUPABASE_ANON_KEY`: anonymous counts + daily limits (Supabase project is in **EU (Frankfurt)**, as the privacy policy says)
 - `QUOTA_SALT`: any long random text; used to hash the device cookie and IP
-- `TRANSCRIBE_API_KEY` (+ optional `TRANSCRIBE_URL`, `TRANSCRIBE_MODEL`): voice provider chosen by Budget & Ops
-- `ENABLE_VOICE`: keep `false` until the voice flow is approved end-to-end
 - Payments (Paddle): `PADDLE_ENV`, `PADDLE_CLIENT_TOKEN`, `PADDLE_PRICE_YEARLY`, `PADDLE_PRICE_MONTHLY`, `PADDLE_WEBHOOK_SECRET`, `PADDLE_API_KEY`, `SUPABASE_SERVICE_ROLE_KEY`. Webhook URL: `https://getfreezefix.com/api/webhooks/paddle` (subscription events).
 
 ## Commands

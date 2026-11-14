@@ -1,4 +1,5 @@
 import type { Metadata, Viewport } from "next";
+import PwaRegister from "@/components/PwaRegister";
 import { SkipLink } from "@/components/Shell";
 import { THEME_BOOTSTRAP } from "@/lib/theme";
 import "./globals.css";
@@ -108,6 +109,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <body>
         <SkipLink />
         {children}
+        {/* Registers public/sw.js so the offline shell, the install prompt and
+            the Web Push reminders all have a service worker to attach to. */}
+        <PwaRegister />
       </body>
     </html>
   );

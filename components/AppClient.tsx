@@ -16,6 +16,10 @@ import { clearSeen, dueMirror, latestMirror, markSeen } from "@/lib/mirror";
 import { recentWeeks, weekStats, type WeekStats } from "@/lib/pattern";
 import { BEDTIMES, GOAL_EXAMPLES, bedtimeLabel, clearProfile, patchProfile, readProfile, type Profile } from "@/lib/profile";
 import { clearChimePref, readChimePref, writeChimePref, type ChimePref } from "@/lib/chime-pref";
+import { clearReminderPref } from "@/lib/reminders";
+import { THEME_KEY } from "@/lib/theme";
+import RemindersControl from "@/components/RemindersControl";
+import ThemeToggle from "@/components/ThemeToggle";
 import { trialState } from "@/lib/trial";
 
 // The app shell. No navigation tree, no home screen, no feed: the log is the
@@ -392,8 +396,10 @@ function SettingsView({
     clearProfile(); // ff_profile
     clearSeen(); // ff_mirror_seen
     clearChimePref(); // ff_chime, ff_chime_asked
+    clearReminderPref(); // ff_reminders (push subscription stays on the push service until the SW tears it down on next load)
     try {
       window.localStorage.removeItem("ff_region"); // help-page country pick
+      window.localStorage.removeItem(THEME_KEY); // ff_theme (appearance)
     } catch {
       /* storage can be blocked */
     }
@@ -478,6 +484,16 @@ function SettingsView({
             ))}
             <span className="self-center text-12 text-ink-faint">times a week</span>
           </div>
+        </div>
+
+        <RemindersControl bedtime={bedtime} />
+
+        <div>
+          <p className="text-14 text-ink-soft">appearance</p>
+          <p className="mt-1 text-12 text-ink-faint">
+            dark follows the ritual. light is warm paper. &ldquo;system&rdquo; follows your device.
+          </p>
+          <ThemeToggle className="mt-3" />
         </div>
 
         <div>

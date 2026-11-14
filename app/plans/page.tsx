@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
+import InstallPrompt from "@/components/InstallPrompt";
 import { Container, Main, SiteHeader } from "@/components/Shell";
 import SiteFooter from "@/components/SiteFooter";
 import { TrustBadge } from "@/components/TrustBadge";
@@ -252,6 +253,10 @@ export default function PlansPage() {
 
           <aside aria-label="what's included" className="mt-10 lg:mt-2">
             <TrustBadge />
+            {/* "Install to home screen" where it belongs — the person who clicks
+                "plans" is already considering keeping it around. Renders nothing
+                on browsers that can't install or when fix is already installed. */}
+            <InstallPrompt className="mt-6" compact />
             <div className="mt-6 space-y-4 text-14 text-ink-soft">
               <p>
                 <span className="text-ink">what you get:</span> the nightly log, the Sunday mirror, the shelf

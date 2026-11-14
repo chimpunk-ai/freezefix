@@ -11,7 +11,7 @@
 // scripts/test-pwa.ts — so it runs with no Next.js runtime and fails loudly in
 // CI when someone edits the product and forgets the policy, or vice versa.
 
-import { readFileSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import { PRIVACY, TERMS, REFUNDS, LAST_UPDATED } from "../lib/legal";
 
@@ -70,8 +70,9 @@ const REAL: Array<[string, RegExp]> = [
   ["ask-fix-button", /ask Fix about this week/i],
   ["seven-nights-sent", /last seven nights/i],
   ["anthropic-named", /Anthropic/],
-  ["voice-off-today", /switched off/i],
-  ["voice-remote-not-browser", /not (inside|in) your browser/i],
+  ["voice-on-device", /inside your browser/i],
+  ["voice-audio-discarded", /discarded as soon as the text exists/i],
+  ["voice-model-download", /about 40 MB/],
   ["device-cookie-named", /ff_did/],
   ["forget-everything", /forget everything/i],
   ["no-account", /no account/i],
@@ -85,7 +86,7 @@ check("REAL-TERMS-no-card", /does not ask for a card/i.test(TERMS));
 check("REAL-TERMS-help-free", /\/help/.test(TERMS));
 check("REAL-REFUNDS-nothing-today", /nothing to refund today/i.test(REFUNDS));
 check("REAL-SUMMARY-nightly-log", /nightly log/i.test(summary));
-check("REAL-SUMMARY-voice-off", /Switched off today/i.test(summary));
+check("REAL-SUMMARY-voice-on-device", /in your browser/i.test(summary));
 check("REAL-SUMMARY-payments-off", /Not switched on/i.test(summary));
 
 // ───────────── Brand: the product is Fix; the legal entity is FreezeFix ─────────────
@@ -105,10 +106,12 @@ check(
 );
 // Plans page: 5 free / 20 paid, matching lib/quota.ts LIMITS.fix.
 check("CODE-plans-fix-limits", /five questions a day on the free week, twenty a day on the paid/.test(plans));
-// Landing must not claim in-browser transcription (the route uploads audio).
-check("CODE-landing-no-browser-transcription", !/in the browser/i.test(landing) && !/throw the audio away/i.test(landing));
-// Privacy §4 says voice is off; lib/features.ts must still default it off.
-check("CODE-voice-default-off", /ENABLE_VOICE === "true"/.test(read("lib/features.ts")));
+// Privacy §4 says audio never leaves the phone. That is only true while there is
+// no server route for audio and the log uses the on-device transcriber.
+check("CODE-no-transcribe-route", !existsSync(join(ROOT, "app/api/transcribe/route.ts")), "a server audio route would make Privacy §4 false");
+check("CODE-log-uses-on-device-transcribe", /from "@\/lib\/transcribe"/.test(read("components/LogScreen.tsx")) && !/\/api\/transcribe/.test(read("components/LogScreen.tsx")));
+check("CODE-transcribe-never-posts", !/fetch\(/.test(read("lib/transcribe.ts")), "lib/transcribe.ts must not make network requests");
+check("CODE-privacy-no-transcription-provider", !/transcription provider/i.test(PRIVACY));
 // Terms §2 says "18 or over (or the age of adulthood where you live, if higher)";
 // the gate must ask the same thing, not just "18 or over".
 check("CODE-age-gate-matches-terms", /adult where you live|age of adulthood/i.test(onboarding), "age gate copy should match Terms §2");

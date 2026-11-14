@@ -123,7 +123,7 @@ export default function Landing({ paymentsOn }: { paymentsOn: boolean }) {
                   n="1"
                   verb="reflect"
                   title="the log"
-                  body="yes or no. one face. up to three chips. nine seconds, at bedtime, in the dark. a few words if you want them — typed, or spoken once voice notes are switched on."
+                  body="yes or no. one face. up to three chips. nine seconds, at bedtime, in the dark. a few words if you want them — typed, or spoken and turned into text right there on your phone."
                 >
                   <LogPreview />
                 </Step>
@@ -250,7 +250,7 @@ export default function Landing({ paymentsOn }: { paymentsOn: boolean }) {
                   "read by our AI provider (Anthropic) to write the reply, not to train on, and deleted on their side within 30 days",
                   "we keep no copy of the question or the answer — only a daily count, hashed",
                 ]}
-                foot="voice notes are switched off today. payments aren't switched on. when either changes, it says so here first."
+                foot="voice notes are turned into text on your phone and the audio is thrown away. payments aren't switched on; when that changes, it says so here first."
               />
             </div>
           </Container>
