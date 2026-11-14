@@ -90,52 +90,19 @@ export type EnableResult =
   | { ok: true; state: RemindersState }
   | { ok: false; reason: "unsupported" | "needs-home-screen" | "not-configured" | "denied" | "failed" | "server"; state: RemindersState };
 
-export async function enable(kind: ReminderKind, hour: number): Promise<EnableResult> {
+export async function enable(_kind: ReminderKind, _hour: number): Promise<EnableResult> {
+  // Minimal: just Notification.requestPermission to isolate what trips Workers.
   if (!isSupported()) return { ok: false, reason: "unsupported", state: getState() };
-  if (needsHomeScreen()) return { ok: false, reason: "needs-home-screen", state: getState() };
-  const key = publicKey();
-  if (!key) return { ok: false, reason: "not-configured", state: getState() };
-
-  const prev = readStored();
-  const h = Number.isInteger(hour) ? Math.min(23, Math.max(0, hour)) : prev.hour;
-  const next: Stored = {
-    sunday: kind === "sunday" ? true : prev.sunday,
-    nightly: kind === "nightly" ? true : prev.nightly,
-    hour: h,
-    subscribed: true,
-  };
-
-  const mod = await import("./reminders-browser");
-  const result = await mod.doSubscribe(key, { sunday: next.sunday, nightly: next.nightly }, next.hour);
-  if (!result.ok) return { ok: false, reason: result.reason, state: getState() };
-  writeStored(next);
-  return { ok: true, state: getState() };
+  const perm = await Notification.requestPermission();
+  if (perm !== "granted") return { ok: false, reason: "denied", state: getState() };
+  return { ok: false, reason: "failed", state: getState() };
 }
 
-export async function disable(kind: ReminderKind): Promise<RemindersState> {
-  const prev = readStored();
-  const next: Stored = {
-    sunday: kind === "sunday" ? false : prev.sunday,
-    nightly: kind === "nightly" ? false : prev.nightly,
-    hour: prev.hour,
-    subscribed: prev.subscribed,
-  };
-  const mod = await import("./reminders-browser");
-  if (!next.sunday && !next.nightly) {
-    await mod.doUnsubscribe();
-    next.subscribed = false;
-  } else {
-    await mod.doUpdate({ sunday: next.sunday, nightly: next.nightly }, next.hour);
-  }
-  writeStored(next);
+export async function disable(_kind: ReminderKind): Promise<RemindersState> {
+  void writeStored;
   return getState();
 }
 
-export async function onBedtimeChange(hour: number): Promise<void> {
-  const prev = readStored();
-  const h = Number.isInteger(hour) ? Math.min(23, Math.max(0, hour)) : prev.hour;
-  writeStored({ ...prev, hour: h });
-  if (!prev.subscribed) return;
-  const mod = await import("./reminders-browser");
-  await mod.doUpdate({ sunday: prev.sunday, nightly: prev.nightly }, h);
+export async function onBedtimeChange(_hour: number): Promise<void> {
+  /* noop */
 }
