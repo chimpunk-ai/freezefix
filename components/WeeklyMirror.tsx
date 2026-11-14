@@ -23,6 +23,9 @@ import {
   type Mirror,
   type Thing,
 } from "@/lib/mirror";
+import { buildPatterns, series, type Pattern, type Week } from "@/lib/patterns";
+import { readWeeks } from "@/lib/pattern-data";
+import MirrorGraphs from "@/components/MirrorGraphs";
 import {
   enableNudges,
   mirrorSeenThisWeek,
@@ -51,6 +54,8 @@ function nightLabel(n: Mirror["nights"][number]): string {
 
 export default function WeeklyMirror() {
   const [mirror, setMirror] = useState<Mirror | null>(null);
+  const [weeks, setWeeks] = useState<Week[]>([]);
+  const [patterns, setPatterns] = useState<Pattern[]>([]);
   const [open, setOpen] = useState(false);
   const [thing, setThing] = useState<Thing | null>(null);
   const [done, setDone] = useState(0);
@@ -62,6 +67,9 @@ export default function WeeklyMirror() {
   const refresh = useCallback(() => {
     const { current } = runWeeklyAutomation();
     setMirror(current);
+    const recent = readWeeks(5);
+    setWeeks(recent);
+    setPatterns(buildPatterns(recent));
     setThing(readThing());
     setDone(thingDoneThisWeek());
     setPrefs(readNudgePrefs());
@@ -128,6 +136,11 @@ export default function WeeklyMirror() {
     [thing, done],
   );
 
+  // The shelf: the weeks before this one, read straight from the same taps. No
+  // snapshot to drift out of date, no feed, no sharing — just the last few weeks
+  // there to look at when you want to see whether anything is actually changing.
+  const shelf = useMemo(() => series(weeks).slice(0, -1).reverse(), [weeks]);
+
   if (!mirror) {
     return (
       <section className="mt-5 rounded-[1.5rem] border border-line bg-card p-5" aria-busy="true">
@@ -190,24 +203,31 @@ export default function WeeklyMirror() {
               {mirror.hasEnough ? "here's the shape of it." : "not enough taps yet."}
             </h2>
 
-            <div className="mt-5 grid grid-cols-7 gap-2">
-              {mirror.nights.map((n, i) => (
-                <div key={n.day} className="flex flex-col items-center gap-1.5">
-                  <span
-                    className={nightClass(n)}
-                    style={{ animationDelay: `${120 + i * 70}ms` }}
-                    aria-hidden="true"
-                  />
-                  <span className="text-[0.65rem] uppercase tracking-wide text-ink-faint" aria-hidden="true">
-                    {n.initial}
-                  </span>
-                  <span className="sr-only">{nightLabel(n)}</span>
-                </div>
-              ))}
-            </div>
-
             <p className="mt-5 text-[0.95rem] leading-relaxed text-ink">{mirror.sentence}</p>
-            <p className="mt-3 text-sm leading-relaxed text-ink-soft">{mirror.observation}</p>
+
+            {weeks.length > 0 ? (
+              <MirrorGraphs weeks={weeks} patterns={patterns} />
+            ) : (
+              <div className="mt-5 grid grid-cols-7 gap-2">
+                {mirror.nights.map((n, i) => (
+                  <div key={n.day} className="flex flex-col items-center gap-1.5">
+                    <span
+                      className={nightClass(n)}
+                      style={{ animationDelay: `${120 + i * 70}ms` }}
+                      aria-hidden="true"
+                    />
+                    <span className="text-[0.65rem] uppercase tracking-wide text-ink-faint" aria-hidden="true">
+                      {n.initial}
+                    </span>
+                    <span className="sr-only">{nightLabel(n)}</span>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {patterns.length === 0 && (
+              <p className="mt-3 text-sm leading-relaxed text-ink-soft">{mirror.observation}</p>
+            )}
 
             {mirror.direction && (
               <p className="mt-3 text-xs uppercase tracking-[0.18em] text-ink-faint">{mirror.direction}</p>
@@ -304,6 +324,22 @@ export default function WeeklyMirror() {
                 </div>
               )}
             </div>
+
+            {shelf.length > 0 && (
+              <section className="mt-5" aria-label="Sundays past">
+                <p className="font-mono text-xs uppercase tracking-[0.18em] text-ink-faint">sundays past</p>
+                <ul className="mt-2 flex flex-col gap-1.5">
+                  {shelf.map((w) => (
+                    <li key={w.key} className="flex items-baseline justify-between gap-3 text-sm">
+                      <span className="text-ink-soft">{w.label}</span>
+                      <span className="text-ink-faint">
+                        {w.recorded > 0 ? `${w.smoked} of ${w.recorded} nights` : "no taps"}
+                      </span>
+                    </li>
+                  ))}
+                </ul>
+              </section>
+            )}
 
             <div className="mt-5 flex flex-wrap items-center gap-3">
               <Link
