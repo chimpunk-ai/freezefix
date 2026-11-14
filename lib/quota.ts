@@ -11,7 +11,10 @@ export const LIMITS = {
   screenshot: { free: Number(process.env.SCREENSHOT_DAILY_LIMIT || 10), paid: Number(process.env.SCREENSHOT_DAILY_LIMIT_PAID || 20) },
   // Safety checks the AI runs for people who hit the paywall (so crisis help is never missed
   // just because someone hasn't paid). Cost guard only; Budget & Ops tunes it.
-  check: { free: 20, paid: 50 },
+  // Fix is capped at five questions a day on free and twenty on paid. This is a
+  // product decision, not a cost guard: a chat that answers forever becomes a
+  // companion people lean on, and this is a mirror with a knife, not a friend.
+  check: { free: 5, paid: 20 },
 } as const;
 
 // Per-IP backstop per day (stops someone clearing cookies over and over).
