@@ -252,7 +252,7 @@ export async function POST(req: Request) {
               stage: "non_ok",
               attempt,
               status: upstream.status,
-              model: aiModel(),
+              model,
               detail,
             });
             await new Promise((r) => setTimeout(r, wait));
@@ -267,7 +267,7 @@ export async function POST(req: Request) {
             stage: "non_ok",
             attempt,
             status: upstream.status,
-            model: aiModel(),
+            model,
             detail,
           });
           const errorCode = upstream.status === 429 ? "too_many_requests"
@@ -396,7 +396,7 @@ export async function POST(req: Request) {
             logUpstreamFailure({
               stage: "stream_error",
               attempt,
-              model: aiModel(),
+              model,
               detail: streamError ?? buf.slice(0, 300),
             });
             // Short pause before retrying — a provider dropping a stream mid-flight is
@@ -410,7 +410,7 @@ export async function POST(req: Request) {
           logUpstreamFailure({
             stage: !verdict ? "verdict_missing" : "stream_error",
             attempt,
-            model: aiModel(),
+            model,
             detail: streamError ?? buf.slice(0, 300),
           });
           // Pick the error code the client should show. `ai_dropped` names what
@@ -449,7 +449,7 @@ export async function POST(req: Request) {
         logUpstreamFailure({
           stage: "outer_catch",
           attempt: -1,
-          model: aiModel(),
+          model,
           detail: msg,
         });
         try {
