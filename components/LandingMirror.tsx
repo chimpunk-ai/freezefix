@@ -85,20 +85,17 @@ function WeekCard({
   goal,
   nights,
   showGoalDots = false,
-  heading = "h3",
 }: {
   label: string;
   lines: string[];
   goal: string;
   nights: Night[];
   showGoalDots?: boolean;
-  heading?: "h2" | "h3";
 }) {
-  const H = heading;
   return (
     <article className="rounded-[1.25rem] border border-line bg-card p-5 sm:p-6">
       <p className="text-[0.65rem] uppercase tracking-[0.18em] text-ink-faint">{label}</p>
-      <H className="mt-2 font-display text-xl text-ink">nico, here&rsquo;s your week</H>
+      <h3 className="mt-2 font-display text-xl text-ink">nico, here&rsquo;s your week</h3>
       <div className="mt-3 space-y-1.5">
         {lines.map((l) => (
           <p key={l} className="text-sm leading-relaxed text-ink-soft">
