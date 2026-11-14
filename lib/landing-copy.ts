@@ -238,18 +238,18 @@ export const LANDING_COPY: Record<Locale, LandingCopy> = {
 
   de: {
     htmlLang: "de",
-    metaTitle: "FreezeFix — wenn du nach dem Rauchen hängenbleibst",
+    metaTitle: "Fix — ein Spiegel, keine App zum Aufhören",
     metaDescription:
-      "Ein stiller Begleiter für Erwachsene, die ihren Cannabis-Konsum verstehen und einen nächsten Schritt finden wollen, der sich für sie richtig anfühlt.",
+      "Ein privater Spiegel für Menschen, die rauchen und sich fragen. Ein Protokoll mit drei Taps am Abend und eine Karte am Sonntag, die dir deine Woche zurückzeigt. Keine Streaks, keine Noten, keine Belehrungen.",
     getHelpNow: "Hilfe jetzt",
     openReturning: "Öffnen",
     switchTo: { href: "/", label: "English" },
     languageLinks: [{ href: "/", label: "English", lang: "en" }],
     kicker: "GetFreezeFix · ab 18 Jahren",
-    heroHeadlineLine1: "Mehr Kontrolle,",
-    heroHeadlineLine2: "Moment für Moment.",
+    heroHeadlineLine1: "Du musst nicht aufhören.",
+    heroHeadlineLine2: "Du musst nur hinschauen.",
     heroBody:
-      "Ein stiller Begleiter für Erwachsene, die ihren Cannabis-Konsum verstehen und einen nächsten Schritt finden wollen, der sich für sie richtig anfühlt.",
+      "Drei Mal tippen am Abend. Eine Karte am Sonntag. Sie zeigt dir deine eigene Woche — die Abende, die Auslöser, die Morgen — und überlässt dir, was das bedeutet. Keine Streaks, keine Noten, keine Belehrungen.",
     ctaOpen: "Fix öffnen",
     ctaPrivacy: "Wie Datenschutz funktioniert",
     // The chat itself is still English today. Say it plainly, don't bait and
@@ -257,51 +257,49 @@ export const LANDING_COPY: Record<Locale, LandingCopy> = {
     chatIsEnglishNote:
       "Fix selbst läuft momentan auf Englisch. Deutsch kommt als Nächstes — wenn du das lieber abwarten willst, lass unten eine E-Mail da.",
     features: [
-      { title: "Kein Urteil", body: "Nachdenken, weniger rauchen, pausieren — oder einfach durch heute Abend kommen." },
-      { title: "Du wählst dein Ziel", body: "Keine Streaks. Alles lässt sich überspringen." },
+      { title: "Keine Streaks", body: "Rauchen ist hier kein Rückfall. Nichts springt auf null." },
+      { title: "Dein Ziel, deine Worte", body: "Eine kleine Sache, die du öfter tun willst. Sie wird bemerkt, nicht erzwungen." },
       { title: "Fix ist ein KI-Tool und kann sich irren.", body: "" },
     ],
     exampleHeading: "Beispiel",
     exampleKicker: "Beispiel",
     exampleSubtitle: "Kein echtes Gespräch",
-    // These sample conversation strings are deliberately shown in German even
-    // though the real chat is English, because the whole point of the example
-    // card is to let Marcus imagine himself inside the conversation. The
-    // chatIsEnglishNote above sets expectations before he taps the CTA.
+    // The example now shows the log, not a craving conversation — the card is
+    // the product, so the sample should be the card.
     exampleSteps: [
-      { index: "1", label: "Wähl eine Situation", body: "Ich hab gerade einen Craving" },
+      { index: "1", label: "Logge den Abend", body: "Hast du heute geraucht?" },
       {
         index: "2",
-        label: "Ein paar Worte",
-        body: "Ich wollte heute Abend eigentlich nicht rauchen, aber ich hab richtig Bock drauf.",
+        label: "Stimmung und Auslöser",
+        body: "Ein Gesicht, bis zu drei Chips — nach der Arbeit, konnte nicht schlafen, Langeweile.",
       },
       {
         index: "3",
-        label: "Ein kleiner Vorschlag",
-        body: "„Ein Craving kann sich dringend anfühlen. Du musst gerade nicht deine ganze Zukunft entscheiden. Magst du zehn Minuten Pause einlegen, die Umgebung wechseln oder aufschreiben, was dich hinzieht?“",
+        label: "Deine Woche, am Sonntag",
+        body: "„Du hast an vier von sieben Abenden geraucht. Dreimal hast du nach der Arbeit getippt.“",
       },
-      { index: "4", label: "Du wählst — ausprobieren, eine andere Idee oder gehen", body: null },
+      { index: "4", label: "Du entscheidest, was es bedeutet", body: null },
     ],
     tutorial: {
-      kicker: "Die Langzeit-Schleife",
-      heading: "Wie sich das über Wochen summiert",
+      kicker: "Die Schleife",
+      heading: "Drei Taps, dann Sonntag",
       patternsExampleCaption: "Beispiel — deine Wochen, nicht die von jemand anderem.",
       steps: [
         {
-          title: "Fix öffnen in einem schweren Moment",
-          body: "Ein sicherer nächster Schritt in unter sechzig Sekunden. Keine Anmeldung, kein Konto, kein Name.",
+          title: "In etwa neun Sekunden loggen",
+          body: "Ja oder nein, ein Gesicht, bis zu drei Auslöser. Eine Sprachnotiz, wenn du magst. Kein Konto, kein Name.",
         },
         {
-          title: "Eine Zeile ins Journal schreiben",
-          body: "Deine eigenen Worte, nur auf deinem Gerät. Das Gefühl, der Auslöser, was du versucht hast — genug, dass deine Woche später eine Form hat.",
+          title: "Nichts wird benotet",
+          body: "Fehlt ein Tag, wird nichts gesagt. Fehlt eine Woche, sagt es willkommen zurück und beginnt eine neue Woche. Kein Streak, der bricht.",
         },
         {
-          title: "Muster sichtbar machen",
-          body: "Ehrliche Wochen-Shapes — an welchen Tagen du eher rauchst, zu welcher Zeit, welche Stimmungen vorher kommen. Keine Streaks, keine Punktzähler.",
+          title: "Sonntag, eine Karte",
+          body: "Deine Abende als Sieben-Kästchen-Raster, ein schlichter Satz zur Form der Woche, und eine Sache, die du vielleicht nicht zusammengebracht hattest.",
         },
         {
-          title: "Einen Reduktions-Plan bauen",
-          body: "Ein Plan über 2, 4 oder 6 Wochen, den du selbst setzt — pausieren, weniger rauchen, oder die Zeit verschieben. Jederzeit pausieren und weitermachen.",
+          title: "Frag Fix eine Frage",
+          body: "Fünf am Tag im kostenlosen Plan. Es antwortet mit deinen eigenen Zahlen, in ein paar Sätzen, und hört auf. Es schreibt dir nie zuerst.",
         },
       ],
     },
@@ -345,64 +343,64 @@ export const LANDING_COPY: Record<Locale, LandingCopy> = {
   // so the honest line directs Sophie at the waitlist.
   fr: {
     htmlLang: "fr",
-    metaTitle: "FreezeFix — un allié pour quand un joint te laisse bloqué",
+    metaTitle: "Fix — un miroir, pas une app pour arrêter",
     metaDescription:
-      "Un accompagnement privé pour les adultes qui veulent comprendre leurs habitudes avec le cannabis et trouver un prochain pas qui leur parle. Ados exclus. Confidentiel.",
+      "Un miroir privé pour ceux qui fument et se posent la question. Un relevé en trois touches chaque soir et une carte le dimanche qui te rend ta semaine. Pas de streaks, pas de notes, pas de leçons.",
     getHelpNow: "Aide maintenant",
     openReturning: "Ouvrir",
     switchTo: { href: "/", label: "English" },
     languageLinks: [{ href: "/", label: "English", lang: "en" }],
     kicker: "GetFreezeFix · pour adultes 18+",
-    heroHeadlineLine1: "Plus de contrôle,",
-    heroHeadlineLine2: "un moment à la fois.",
+    heroHeadlineLine1: "Tu n'as pas à arrêter.",
+    heroHeadlineLine2: "Juste à regarder.",
     heroBody:
-      "Un accompagnement privé pour les adultes qui veulent comprendre leurs habitudes avec le cannabis et trouver un prochain pas qui leur parle vraiment.",
+      "Trois touches le soir. Une carte le dimanche. Elle te montre ta propre semaine — les soirs, les déclencheurs, les matins — et te laisse décider ce que ça veut dire. Pas de streaks, pas de notes, pas de leçons.",
     ctaOpen: "Ouvrir Fix",
     ctaPrivacy: "Comment la vie privée fonctionne",
     chatIsEnglishNote:
       "Fix lui-même est pour l'instant en anglais. Le français est en cours — si tu préfères attendre, laisse ton email plus bas et on te préviendra.",
     features: [
-      { title: "Pas de jugement", body: "Réfléchir, réduire, faire une pause — ou juste passer ce soir." },
-      { title: "Tu choisis ton objectif", body: "Pas de streaks. Tout peut être passé." },
+      { title: "Pas de streaks", body: "Fumer n'est pas une rechute ici. Rien ne repart à zéro." },
+      { title: "Ton objectif, tes mots", body: "Une petite chose que tu voudrais faire plus souvent. Remarquée, jamais imposée." },
       { title: "Fix est un outil IA et peut se tromper.", body: "" },
     ],
     exampleHeading: "Exemple",
     exampleKicker: "Exemple",
     exampleSubtitle: "Pas une vraie conversation",
     exampleSteps: [
-      { index: "1", label: "Choisis une situation", body: "J'ai un craving" },
+      { index: "1", label: "Note le soir", body: "Tu as fumé aujourd'hui ?" },
       {
         index: "2",
-        label: "Quelques mots",
-        body: "Je comptais ne pas fumer ce soir mais j'en ai vraiment envie.",
+        label: "Humeur et déclencheurs",
+        body: "Un visage, jusqu'à trois étiquettes — après le boulot, je n'arrivais pas à dormir, l'ennui.",
       },
       {
         index: "3",
-        label: "Une petite suggestion",
-        body: "« Un craving peut sembler urgent. Tu n'as pas à décider de toute ta vie là, maintenant. Tu veux créer dix minutes de pause, changer d'ambiance, ou écrire ce qui te tire vers ça ? »",
+        label: "Ta semaine, le dimanche",
+        body: "« Tu as fumé quatre soirs sur sept. Trois fois tu as touché après le boulot. »",
       },
-      { index: "4", label: "Tu choisis — essayer, une autre idée, ou partir", body: null },
+      { index: "4", label: "Tu décides ce que ça veut dire", body: null },
     ],
     tutorial: {
-      kicker: "La boucle sur la durée",
-      heading: "Comment ça prend forme sur les semaines",
+      kicker: "La boucle",
+      heading: "Trois touches, puis le dimanche",
       patternsExampleCaption: "Exemple — tes semaines, pas celles de quelqu'un d'autre.",
       steps: [
         {
-          title: "Ouvrir Fix dans un moment difficile",
-          body: "Un prochain pas sûr en moins de soixante secondes. Sans inscription, sans compte, sans nom.",
+          title: "Noter en neuf secondes",
+          body: "Oui ou non, un visage, jusqu'à trois déclencheurs. Une note vocale si tu veux. Sans compte, sans nom.",
         },
         {
-          title: "Noter une ligne dans Journal",
-          body: "Tes propres mots, uniquement sur ton appareil. Le ressenti, le déclencheur, ce que tu as essayé — assez pour que ta semaine ait une forme plus tard.",
+          title: "Rien n'est noté",
+          body: "Un jour manqué, rien n'est dit. Une semaine manquée, ça dit bon retour et ça repart sur une nouvelle semaine. Pas de streak à casser.",
         },
         {
-          title: "Voir tes Motifs se dessiner",
-          body: "Des formes hebdomadaires honnêtes — quels jours tu fumes plutôt, à quelle heure, quelles humeurs arrivent avant. Pas de streaks, pas de tableaux de score.",
+          title: "Le dimanche, une carte",
+          body: "Tes soirs en une grille de sept cases, une phrase simple sur la forme de la semaine, et une chose que tu n'avais peut-être pas reliée.",
         },
         {
-          title: "Construire un Plan de Réduction",
-          body: "Un plan de 2, 4 ou 6 semaines que tu règles toi-même — pause, réduire, ou décaler l'heure. Mettre en pause et reprendre quand tu veux.",
+          title: "Pose une question à Fix",
+          body: "Cinq par jour en gratuit. Il répond avec tes propres chiffres, en deux ou trois phrases, puis il s'arrête. Il ne t'écrit jamais en premier.",
         },
       ],
     },
@@ -445,64 +443,64 @@ export const LANDING_COPY: Record<Locale, LandingCopy> = {
   // than "no judgment" in a culture that already does not judge much.
   nl: {
     htmlLang: "nl",
-    metaTitle: "FreezeFix — voor als een joint je laat vastlopen",
+    metaTitle: "Fix — een spiegel, geen app om te stoppen",
     metaDescription:
-      "Rustige ondersteuning voor volwassenen die hun cannabisgebruik willen begrijpen en een volgende stap willen vinden die bij hen past. Vanaf 18. Privé.",
+      "Een privéspiegel voor mensen die blowen en zich dat afvragen. Een log van drie tikken elke avond en één kaart op zondag die je week aan je teruggeeft. Geen streaks, geen cijfers, geen preken.",
     getHelpNow: "Hulp nu",
     openReturning: "Openen",
     switchTo: { href: "/", label: "English" },
     languageLinks: [{ href: "/", label: "English", lang: "en" }],
     kicker: "GetFreezeFix · voor volwassenen 18+",
-    heroHeadlineLine1: "Meer grip,",
-    heroHeadlineLine2: "moment voor moment.",
+    heroHeadlineLine1: "Je hoeft niet te stoppen.",
+    heroHeadlineLine2: "Je hoeft alleen te kijken.",
     heroBody:
-      "Rustige ondersteuning voor volwassenen die hun cannabisgebruik willen begrijpen en een volgende stap willen vinden die goed voelt.",
+      "Drie tikken 's avonds. Eén kaart op zondag. Die laat je je eigen week zien — de avonden, de triggers, de ochtenden — en laat jou bepalen wat het betekent. Geen streaks, geen cijfers, geen preken.",
     ctaOpen: "Fix openen",
     ctaPrivacy: "Hoe privacy werkt",
     chatIsEnglishNote:
       "Fix zelf is nu in het Engels. Nederlands komt eraan — als je dat liever afwacht, laat hieronder een e-mail achter en we laten het weten.",
     features: [
-      { title: "Geen oordeel", body: "Nadenken, minderen, pauzeren — of gewoon vanavond doorkomen." },
-      { title: "Jij kiest je doel", body: "Geen streaks. Alles mag overgeslagen worden." },
+      { title: "Geen streaks", body: "Blowen is hier geen terugval. Niets gaat terug naar nul." },
+      { title: "Jouw doel, jouw woorden", body: "Iets kleins dat je vaker wilt doen. Het wordt opgemerkt, niet opgelegd." },
       { title: "Fix is een AI-tool en kan het mis hebben.", body: "" },
     ],
     exampleHeading: "Voorbeeld",
     exampleKicker: "Voorbeeld",
     exampleSubtitle: "Geen echt gesprek",
     exampleSteps: [
-      { index: "1", label: "Kies een situatie", body: "Ik heb trek" },
+      { index: "1", label: "Log de avond", body: "Heb je vandaag geblowd?" },
       {
         index: "2",
-        label: "Een paar woorden",
-        body: "Ik had afgesproken vanavond niet te blowen maar ik heb er echt zin in.",
+        label: "Stemming en triggers",
+        body: "Eén gezicht, tot drie labels — na het werk, kon niet slapen, verveling.",
       },
       {
         index: "3",
-        label: "Eén klein voorstel",
-        body: "“Trek kan dringend aanvoelen. Je hoeft nu niet je hele toekomst te beslissen. Wil je tien minuten pauze nemen, van omgeving veranderen, of opschrijven wat je ernaartoe trekt?”",
+        label: "Jouw week, op zondag",
+        body: "“Je blowde vier van de zeven avonden. Drie keer tikte je na het werk.”",
       },
-      { index: "4", label: "Jij kiest — proberen, een ander idee, of weggaan", body: null },
+      { index: "4", label: "Jij bepaalt wat het betekent", body: null },
     ],
     tutorial: {
-      kicker: "De lange-termijn-lus",
-      heading: "Hoe het over weken opbouwt",
+      kicker: "De lus",
+      heading: "Drie tikken, dan zondag",
       patternsExampleCaption: "Voorbeeld — jouw weken, niet die van iemand anders.",
       steps: [
         {
-          title: "Open Fix in een zwaar moment",
-          body: "Eén veilige volgende stap binnen zestig seconden. Geen aanmelding, geen account, geen naam nodig.",
+          title: "Loggen in negen seconden",
+          body: "Ja of nee, één gezicht, tot drie triggers. Een spraaknotitie als je wilt. Geen account, geen naam.",
         },
         {
-          title: "Schrijf een regel in Journal",
-          body: "Je eigen woorden, alleen op je apparaat. Het gevoel, de trigger, wat je probeerde — genoeg zodat je week later een vorm heeft.",
+          title: "Niets wordt beoordeeld",
+          body: "Mis je een dag, dan wordt er niets gezegd. Mis je een week, dan zegt het welkom terug en begint een nieuwe week. Geen streak om te breken.",
         },
         {
-          title: "Zie Patronen opbouwen",
-          body: "Eerlijke weekvormen — welke dagen je blowt, welk tijdstip, welke stemmingen eerst komen. Geen streaks, geen scorebord.",
+          title: "Zondag, één kaart",
+          body: "Je avonden als een raster van zeven vakjes, één gewone zin over de vorm van de week, en één ding dat je misschien niet had samengebracht.",
         },
         {
-          title: "Bouw een Reductieplan",
-          body: "Een plan van 2, 4 of 6 weken dat je zelf instelt — pauzeren, minderen, of het tijdstip verschuiven. Pauzeer en hervat wanneer je wilt.",
+          title: "Vraag Fix één ding",
+          body: "Vijf per dag gratis. Het antwoordt met je eigen cijfers, in een paar zinnen, en stopt. Het stuurt je nooit als eerste een bericht.",
         },
       ],
     },
