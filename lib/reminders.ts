@@ -87,10 +87,28 @@ async function readyRegistration(): Promise<ServiceWorkerRegistration | null> {
   }
 }
 
-// Still stubbed, with readyRegistration referenced so the bundler can't DCE it.
+async function postSubscription(
+  sub: PushSubscription,
+  kinds: { sunday: boolean; nightly: boolean },
+  hour: number,
+): Promise<boolean> {
+  const json = sub.toJSON();
+  try {
+    const res = await fetch("/api/push/subscribe", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ sub: json, kinds, hour }),
+    });
+    return res.ok;
+  } catch {
+    return false;
+  }
+}
+
 export type EnableResult = { ok: false; reason: "off"; state: RemindersState };
 export async function enable(_kind: ReminderKind, _hour: number): Promise<EnableResult> {
   await readyRegistration();
+  void postSubscription;
   return { ok: false, reason: "off", state: getState() };
 }
 export async function disable(_kind: ReminderKind): Promise<RemindersState> {
