@@ -8,6 +8,7 @@ import type { HelpScreen as HelpScreenId, RiskLevel } from "@/lib/risk";
 import { MOMENTS, type MomentId } from "@/lib/prompt";
 import { NdjsonReader } from "@/lib/ndjson";
 import { errorText } from "@/lib/chat-errors";
+import { localFixLine } from "@/lib/fix-local";
 import { SCENARIOS } from "@/lib/scenarios";
 import { weekBrief } from "@/lib/mirror";
 
@@ -262,6 +263,13 @@ export default function Chat({
 
       if (!res.ok || !res.body) {
         const data = (await res.json().catch(() => ({}))) as { error?: string; detail?: string };
+        // No model key on the server is not a dead end any more. Fix reads the week
+        // straight off this device and answers from the log instead of going silent.
+        if (data.error === "ai_off") {
+          setTurns((t) => [...t, { role: "assistant", text: localFixLine() }]);
+          setBusy(false);
+          return;
+        }
         setNote(errorText(data.error, data.detail));
         setBusy(false);
         return;
@@ -286,6 +294,12 @@ export default function Chat({
           return true;
         }
         if (evt.error) {
+          // Same floor as above, for the streamed path: a rejected or missing key
+          // falls back to the log rather than to an error note.
+          if (String(evt.error) === "ai_off") {
+            setTurns((t) => [...t, { role: "assistant", text: localFixLine() }]);
+            return true;
+          }
           // Preserve the user's message so "Tap to resend" appears instead of a dead end.
           setPending({ text: raw, image: img ?? null });
           setNote(errorText(String(evt.error)));
