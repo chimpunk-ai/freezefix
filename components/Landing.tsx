@@ -7,6 +7,7 @@ import RitualDemo from "@/components/RitualDemo";
 import AppScreens from "@/components/AppScreens";
 import TryFix from "@/components/TryFix";
 import Faq, { faqItems } from "@/components/Faq";
+import MythsSection from "@/components/MythsSection";
 import { Container, Kicker, Main, SiteHeader } from "@/components/Shell";
 import SiteFooter from "@/components/SiteFooter";
 import { TrustBadge } from "@/components/TrustBadge";
@@ -258,6 +259,10 @@ export default function Landing({ paymentsOn }: { paymentsOn: boolean }) {
 
         {/* The questions people ask before they type a name. */}
         <Faq paymentsOn={paymentsOn} />
+
+        {/* The beliefs that keep people from looking. One block with the FAQ,
+            not a separate detour. The /myths page remains for direct links. */}
+        <MythsSection />
         <script
           type="application/ld+json"
           // FAQPage structured data: the same questions and answers the section renders.

@@ -4,6 +4,7 @@ import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { HelpChip, Wordmark } from "@/components/Brand";
+import DailyReframe, { clearReframePref } from "@/components/DailyReframe";
 import FixSheet from "@/components/FixSheet";
 import LogScreen from "@/components/LogScreen";
 import Onboarding from "@/components/Onboarding";
@@ -179,6 +180,7 @@ export default function AppClient({ view = "log" }: { view?: View }) {
       ) : (
         <Container className="grid items-start gap-10 lg:grid-cols-[minmax(0,560px)_minmax(280px,400px)] lg:justify-center lg:gap-16">
           <div className="min-w-0">
+            <DailyReframe />
             <LogScreen
               profile={profile}
               entries={entries}
@@ -392,6 +394,7 @@ function SettingsView({
     clearProfile(); // ff_profile
     clearSeen(); // ff_mirror_seen
     clearChimePref(); // ff_chime, ff_chime_asked
+    clearReframePref(); // ff_reframe
     try {
       window.localStorage.removeItem("ff_region"); // help-page country pick
     } catch {

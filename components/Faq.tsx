@@ -66,8 +66,8 @@ export default function Faq({ paymentsOn }: { paymentsOn: boolean }) {
             short answers. the long ones are on the{" "}
             <a href="/privacy" className="underline decoration-line underline-offset-4 hover:text-ink">privacy page</a> and
             the <a href="/terms" className="underline decoration-line underline-offset-4 hover:text-ink">terms</a>, and
-            they say the same thing. the things people <em>believe</em> that aren&rsquo;t true are on{" "}
-            <a href="/myths" className="underline decoration-line underline-offset-4 hover:text-ink">myths &amp; reality</a>.
+            they say the same thing. the things people <em>believe</em> that aren&rsquo;t true are{" "}
+            <a href="#myths" className="underline decoration-line underline-offset-4 hover:text-ink">right below</a>.
           </p>
         </div>
         <div data-reveal className="mt-8 divide-y divide-line border-y border-line lg:mt-0">
