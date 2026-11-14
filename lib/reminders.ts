@@ -105,15 +105,115 @@ async function postSubscription(
   }
 }
 
-export type EnableResult = { ok: false; reason: "off"; state: RemindersState };
-export async function enable(_kind: ReminderKind, _hour: number): Promise<EnableResult> {
-  await readyRegistration();
-  void postSubscription;
-  return { ok: false, reason: "off", state: getState() };
+function urlBase64ToUint8Array(base64: string): Uint8Array {
+  const padding = "=".repeat((4 - (base64.length % 4)) % 4);
+  const b64 = (base64 + padding).replace(/-/g, "+").replace(/_/g, "/");
+  const raw = atob(b64);
+  const out = new Uint8Array(raw.length);
+  for (let i = 0; i < raw.length; i++) out[i] = raw.charCodeAt(i);
+  return out;
 }
-export async function disable(_kind: ReminderKind): Promise<RemindersState> {
+
+function writeStored(next: Stored): void {
+  if (typeof window === "undefined") return;
+  try {
+    window.localStorage.setItem(KEY, JSON.stringify(next));
+  } catch {
+    /* storage can be blocked */
+  }
+}
+
+export type EnableResult =
+  | { ok: true; state: RemindersState }
+  | { ok: false; reason: "unsupported" | "needs-home-screen" | "not-configured" | "denied" | "failed" | "server"; state: RemindersState };
+
+export async function enable(kind: ReminderKind, hour: number): Promise<EnableResult> {
+  if (!isSupported()) return { ok: false, reason: "unsupported", state: getState() };
+  if (needsHomeScreen()) return { ok: false, reason: "needs-home-screen", state: getState() };
+  const key = publicKey();
+  if (!key) return { ok: false, reason: "not-configured", state: getState() };
+
+  const perm = await Notification.requestPermission();
+  if (perm !== "granted") return { ok: false, reason: "denied", state: getState() };
+
+  const reg = await readyRegistration();
+  if (!reg) return { ok: false, reason: "failed", state: getState() };
+
+  let sub: PushSubscription | null = null;
+  try {
+    sub = await reg.pushManager.getSubscription();
+    if (!sub) {
+      sub = await reg.pushManager.subscribe({
+        userVisibleOnly: true,
+        applicationServerKey: urlBase64ToUint8Array(key),
+      });
+    }
+  } catch {
+    return { ok: false, reason: "failed", state: getState() };
+  }
+
+  const prev = readStored();
+  const h = Number.isInteger(hour) ? Math.min(23, Math.max(0, hour)) : prev.hour;
+  const next: Stored = {
+    sunday: kind === "sunday" ? true : prev.sunday,
+    nightly: kind === "nightly" ? true : prev.nightly,
+    hour: h,
+    subscribed: true,
+  };
+  const ok = await postSubscription(sub, { sunday: next.sunday, nightly: next.nightly }, next.hour);
+  if (!ok) return { ok: false, reason: "server", state: getState() };
+  writeStored(next);
+  return { ok: true, state: getState() };
+}
+
+export async function disable(kind: ReminderKind): Promise<RemindersState> {
+  const prev = readStored();
+  const next: Stored = {
+    sunday: kind === "sunday" ? false : prev.sunday,
+    nightly: kind === "nightly" ? false : prev.nightly,
+    hour: prev.hour,
+    subscribed: prev.subscribed,
+  };
+  const reg = await readyRegistration();
+  if (reg) {
+    try {
+      const sub = await reg.pushManager.getSubscription();
+      if (sub) {
+        if (!next.sunday && !next.nightly) {
+          try {
+            await fetch("/api/push/unsubscribe", {
+              method: "POST",
+              headers: { "content-type": "application/json" },
+              body: JSON.stringify({ endpoint: sub.endpoint }),
+            });
+          } catch {
+            /* keep going */
+          }
+          try { await sub.unsubscribe(); } catch { /* ignore */ }
+          next.subscribed = false;
+        } else {
+          await postSubscription(sub, { sunday: next.sunday, nightly: next.nightly }, next.hour);
+        }
+      }
+    } catch {
+      /* ignore */
+    }
+  }
+  writeStored(next);
   return getState();
 }
-export async function onBedtimeChange(_hour: number): Promise<void> {
-  /* noop */
+
+export async function onBedtimeChange(hour: number): Promise<void> {
+  const prev = readStored();
+  const h = Number.isInteger(hour) ? Math.min(23, Math.max(0, hour)) : prev.hour;
+  writeStored({ ...prev, hour: h });
+  if (!prev.subscribed) return;
+  const reg = await readyRegistration();
+  if (!reg) return;
+  try {
+    const sub = await reg.pushManager.getSubscription();
+    if (sub) await postSubscription(sub, { sunday: prev.sunday, nightly: prev.nightly }, h);
+  } catch {
+    /* ignore */
+  }
 }
