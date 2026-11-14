@@ -11,11 +11,8 @@
 //
 // Why a runtime import and not a package: the model has to be loaded lazily
 // anyway (nobody should pay 40 MB to open the log), and keeping it out of the
-// bundle keeps the app shell small. The import uses a plain dynamic import()
-// with /* webpackIgnore: true */ so Next/Turbopack leaves the URL alone —
-// `new Function("return import(u)")` is unsafe-eval and Cloudflare Workers
-// refuses to deploy a worker containing it, even in client code the bundler
-// might pull into analysis.
+// bundle keeps the app shell small. The import goes through `new Function` so
+// neither Turbopack nor any other bundler tries to resolve the URL at build.
 //
 // Why tiny, why WASM: tiny-q8 transcribes ten seconds of speech in a few
 // seconds on a mid-range phone and is good enough for "a few words at
@@ -53,10 +50,7 @@ type AsrOutput = { text?: string; language?: string; chunks?: Array<{ text?: str
 type AsrPipeline = (audio: Float32Array, opts: Record<string, unknown>) => Promise<AsrOutput>;
 
 // Bundler-proof dynamic import of a URL.
-// webpackIgnore + turbopackIgnore keep the bundler from trying to resolve the
-// URL at build time; the browser handles the plain dynamic import at runtime.
-const importUrl = (u: string): Promise<Record<string, unknown>> =>
-  import(/* webpackIgnore: true */ /* @vite-ignore */ /* turbopackIgnore: true */ u) as Promise<Record<string, unknown>>;
+const importUrl = new Function("u", "return import(u)") as (u: string) => Promise<Record<string, unknown>>;
 
 let pipePromise: Promise<AsrPipeline> | null = null;
 let cancelled = false;
