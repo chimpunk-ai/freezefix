@@ -200,7 +200,7 @@ export async function POST(req: Request) {
           method: "POST",
           headers: { "x-api-key": apiKey, "anthropic-version": "2023-06-01", "content-type": "application/json" },
           body: JSON.stringify({
-            model: process.env.AI_MODEL || "claude-haiku-5-5",
+            model: aiModel(),
             // Fix answers in one line; it has nothing to reason about at length. Left on,
             // the model spends the whole budget thinking on some turns and stops at
             // max_tokens having written nothing, which looks from outside like an outage.
@@ -239,7 +239,7 @@ export async function POST(req: Request) {
               stage: "non_ok",
               attempt,
               status: upstream.status,
-              model: process.env.AI_MODEL || "claude-haiku-5-5",
+              model: aiModel(),
               detail,
             });
             await new Promise((r) => setTimeout(r, wait));
@@ -254,7 +254,7 @@ export async function POST(req: Request) {
             stage: "non_ok",
             attempt,
             status: upstream.status,
-            model: process.env.AI_MODEL || "claude-haiku-5-5",
+            model: aiModel(),
             detail,
           });
           const errorCode = upstream.status === 429 ? "too_many_requests"
@@ -383,7 +383,7 @@ export async function POST(req: Request) {
             logUpstreamFailure({
               stage: "stream_error",
               attempt,
-              model: process.env.AI_MODEL || "claude-haiku-5-5",
+              model: aiModel(),
               detail: streamError ?? buf.slice(0, 300),
             });
             // Short pause before retrying — a provider dropping a stream mid-flight is
@@ -397,7 +397,7 @@ export async function POST(req: Request) {
           logUpstreamFailure({
             stage: !verdict ? "verdict_missing" : "stream_error",
             attempt,
-            model: process.env.AI_MODEL || "claude-haiku-5-5",
+            model: aiModel(),
             detail: streamError ?? buf.slice(0, 300),
           });
           // Pick the error code the client should show. `ai_dropped` names what
@@ -436,7 +436,7 @@ export async function POST(req: Request) {
         logUpstreamFailure({
           stage: "outer_catch",
           attempt: -1,
-          model: process.env.AI_MODEL || "claude-haiku-5-5",
+          model: aiModel(),
           detail: msg,
         });
         try {
@@ -550,7 +550,7 @@ async function complete(
     method: "POST",
     headers: { "x-api-key": apiKey, "anthropic-version": "2023-06-01", "content-type": "application/json" },
     body: JSON.stringify({
-      model: process.env.AI_MODEL || "claude-haiku-5-5",
+      model: aiModel(),
       max_tokens: maxTokens,
       system,
       messages,
