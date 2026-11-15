@@ -1,4 +1,5 @@
 import type { Metadata, Viewport } from "next";
+import PwaRegister from "@/components/PwaRegister";
 import { SkipLink } from "@/components/Shell";
 import { THEME_BOOTSTRAP } from "@/lib/theme";
 import "./globals.css";
@@ -107,6 +108,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       </head>
       <body>
         <SkipLink />
+        <PwaRegister />
         {children}
       </body>
     </html>
