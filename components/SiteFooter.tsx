@@ -7,6 +7,7 @@ const LINKS = [
   { href: "/plans", label: "what it costs" },
   { href: "/install", label: "install" },
   { href: "/myths", label: "myths & reality" },
+  { href: "/help?screen=worried", label: "worried about someone?" },
   { href: "/privacy", label: "privacy" },
   { href: "/terms", label: "terms" },
   { href: "/refunds", label: "refunds" },

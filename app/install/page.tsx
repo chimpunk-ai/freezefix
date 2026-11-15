@@ -27,12 +27,12 @@ export default function InstallPage() {
           <section aria-labelledby="install-h" className="pt-6 lg:pt-10">
             <Kicker>install</Kicker>
             <h1 id="install-h" className="mt-2 font-display text-40 leading-tight text-ink lg:text-56">
-              a phone shortcut, not an app.
+              get fix on your phone.
             </h1>
             <p className="mt-4 max-w-[58ch] text-16 text-ink-soft lg:text-20 lg:leading-[1.4]">
-              fix doesn&rsquo;t live in the app store. you open it in your browser once, add it to your
-              home screen, and after that it opens the way a native app would &mdash; its own icon, full
-              screen, no browser bar. nothing to download, no account to make.
+              one tap, full-screen, its own icon on the home screen. no app store, no download,
+              no account to make. fix adds a shortcut that opens in its own window instead of a
+              browser tab &mdash; fewer steps than installing a native app, same feel.
             </p>
             <div className="mt-6 flex flex-wrap items-center gap-4">
               <HeaderInstallButton />
@@ -54,6 +54,9 @@ export default function InstallPage() {
               <p className="mt-3 max-w-[40ch] text-14 text-ink-soft lg:text-16">
                 this is the only route that works on iOS. the chrome app on iPhone still uses safari
                 underneath, and third-party browsers can&rsquo;t add to the home screen.
+              </p>
+              <p className="mt-3 inline-block max-w-[40ch] rounded-card border border-signpost/40 bg-signpost/[0.08] px-3 py-2 text-13 text-ink lg:text-14">
+                <span className="text-ink">using chrome on iPhone?</span> open this page in safari first &mdash; chrome on iOS can&rsquo;t install home-screen apps, that&rsquo;s an apple rule.
               </p>
             </div>
             <ol className="space-y-6 text-14 text-ink lg:text-16">
@@ -86,6 +89,10 @@ export default function InstallPage() {
               <p className="mt-3 max-w-[40ch] text-14 text-ink-soft lg:text-16">
                 chrome usually offers to install fix on its own after a visit or two. if you&rsquo;d
                 rather not wait, the menu has the same option.
+              </p>
+              <p className="mt-3 max-w-[40ch] text-13 text-ink-faint lg:text-14">
+                on <span className="text-ink-soft">Samsung Internet</span>: menu &rarr; add page to &rarr; home screen.
+                on <span className="text-ink-soft">Firefox</span>: menu &rarr; install.
               </p>
             </div>
             <ol className="space-y-6 text-14 text-ink lg:text-16">

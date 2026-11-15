@@ -54,7 +54,7 @@ export function mythItems(): MythItem[] {
     {
       myth: "it's either quit, or carry on exactly as i am.",
       reality:
-        "there's a lot in between. fewer weeknights. not before the gym. not when bored. and “exactly as i am” is a real answer the card won't argue with.",
+        "there's a lot in between — or no change at all is a real answer the card won't argue with. if the week was what you wanted it to be, “steady” is the whole answer.",
     },
     {
       myth: "the ai is going to lecture me or play therapist.",

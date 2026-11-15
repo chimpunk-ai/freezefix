@@ -59,6 +59,14 @@ Fix is run by Abhay Rawat, a sole trader based in India, trading as FreezeFix ("
 
 Contact for anything about your data: **privacy@getfreezefix.com**.
 
+**Lawful basis (UK & EU GDPR).** For the small amount of data Fix processes server-side (the Fix AI message you send, the hashed daily quota counter and the push-reminder subscription), the lawful basis is Article 6(1)(b) — **performance of a contract you asked for** — plus, for the Fix AI message specifically, Article 9(2)(a) **explicit consent** given by tapping send on that one message. No data is processed on a "legitimate interest" basis.
+
+**EU representative.** Under UK & EU GDPR Article 27 we are required to name a representative in each jurisdiction once regular monitoring of EU/UK residents begins. Fix has fewer than 250 active users at this point and does no regular profiling, so a full Article 27 appointment is not yet triggered; when it is, this section will be updated with the firm&rsquo;s name and address before any paid plans launch.
+
+**Transfers to India.** Backups, legal records and billing records are stored in India, where the controller is based. For UK residents, India has no UK adequacy decision; we rely on the UK IDTA with each processor. For EU residents, we rely on the EU Standard Contractual Clauses. For Indian residents, the DPDP Act 2023 applies as primary law.
+
+**Business continuity.** Fix is a sole trader operation. If something happens to the controller: a seven-day holding partner (currently the company&rsquo;s UK accountant, named on request) is authorised to keep the service running while the service is wound down or transferred, and all personal data is deleted within thirty days unless you have asked for it to continue. We will not transfer personal data to a new controller without notifying you first and giving you the chance to delete first.
+
 ## 2. What stays on your phone
 
 Everything you tell the app is written to your browser's local storage on your device. We never see it:
@@ -209,7 +217,11 @@ We never encourage drug use.
 
 ## 2. You must be an adult
 
-Fix is only for adults aged 18 or over (or the age of adulthood where you live, if higher). By using it you confirm you meet this age. Fix has no accounts, so there is nothing to close; if we learn that someone under 18 has used it, we will delete anything we hold. **If you are a parent, carer or guardian** and believe a minor has used Fix, write to **hello@getfreezefix.com** with "under-18" in the subject &mdash; we respond within three working days and delete anything attributable to that device.
+Fix is only for adults aged 18 or over (or the age of adulthood where you live, if higher). By using it you confirm you meet this age. Fix has no accounts, so there is nothing to close; if we learn that someone under 18 has used it, we will delete anything we hold.
+
+**If you are a parent, carer or guardian** and believe a minor has used Fix, write to **hello@getfreezefix.com** with "under-18" in the subject — we respond within three working days and delete anything attributable to that device.
+
+**Fix is a reflection tool, not a reason to start.** This site and app are for people who already smoke and want to see their own pattern. Nothing here is encouragement to begin using cannabis.
 
 ## 3. Using Fix safely and fairly
 

@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { HelpChip, Wordmark } from "@/components/Brand";
 import DailyReframe, { clearReframePref } from "@/components/DailyReframe";
+import ExportButton from "@/components/ExportButton";
 import FixSheet from "@/components/FixSheet";
 import LogScreen from "@/components/LogScreen";
 import Onboarding from "@/components/Onboarding";
@@ -553,6 +554,7 @@ function SettingsView({
       </div>
 
       <div className="mt-8">
+        <ExportButton className="mb-6" />
         {confirming ? (
           <div className="rounded-card border border-frost/30 bg-frost/[0.06] px-4 py-4">
             <p className="text-14 text-ink">forget everything on this device?</p>
