@@ -18,7 +18,7 @@ The things people believe about looking at their own weed use that stop them loo
 
 ## "if i'm not quitting, there's no point tracking."
 
-**Reality:** noticing is its own thing. Most people who look at a pattern change something small — or decide they're fine — without ever setting a quit date. You don't need a destination to read a map. Fix is built for the looking, and it's just as useful if the answer turns out to be "this is fine".
+**Reality:** noticing is its own thing. Most people who look at a pattern change something small — or decide they're fine — without needing a plan. You don't need a destination to read a map. Fix is built for the looking, and it's just as useful if the answer turns out to be "this is fine".
 
 ## "an app like this is going to judge me."
 
@@ -38,7 +38,7 @@ The things people believe about looking at their own weed use that stop them loo
 
 ## "weed isn't a problem for me, so this isn't for me."
 
-**Reality:** Fix isn't for people with a problem. It's for people with a pattern — which is everyone who does anything regularly. Plenty of people who use it will look at the card and conclude things are fine. That's a good outcome, not a failure.
+**Reality:** Fix isn't for people with a problem. It's for people with a pattern — which is everyone who does anything regularly. Plenty of people who use it will look at the card and conclude things are steady. That's a complete answer, and the card won't push for a different one.
 
 ## "an app with my smoking history is a leak waiting to happen."
 
@@ -46,7 +46,7 @@ The things people believe about looking at their own weed use that stop them loo
 
 ## "it's either quit, or carry on exactly as i am."
 
-**Reality:** there's a lot in between. Fewer weeknights. Not before the gym. Not when bored. The goal line is for the thing you'd rather be doing more of, not for abstinence. And "exactly as I am" is a real answer the card won't argue with.
+**Reality:** there's a lot in between — or no change at all is a real answer the card won't argue with. If the week was what you wanted it to be, "steady" is the whole answer. If it wasn't, the goal line is the smallest next thing you'd rather be doing, not a quit date.
 
 ## "the ai is going to lecture me or play therapist."
 
@@ -62,5 +62,5 @@ The things people believe about looking at their own weed use that stop them loo
 
 ## what fix won't tell you
 
-Whether weed is good or bad for you. That isn't something an app should decide from seven nights of taps, and Fix doesn't try. The card shows the shape; what it means is yours — and if a week ever reads like more than a pattern, the [help page](/help) is free, never behind anything, and lists real people to talk to.
+Whether weed is good or bad for you. That isn't something an app should decide from seven nights of taps, and Fix doesn't try. The card shows the shape; what it means is yours — and if you ever want to talk to a person, the [help page](/help) is free, no reason needed, with real people on the line.
 `;
