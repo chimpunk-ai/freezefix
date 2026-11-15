@@ -2,17 +2,46 @@
   "name": "Fix",
   "short_name": "Fix",
   "description": "A private pattern-mirror for people who smoke weed. Three taps a night. One card on Sunday. No streaks, no lectures, no one telling you to quit. Adults 18+.",
+  "id": "/app",
   "start_url": "/app",
   "scope": "/",
   "display": "standalone",
+  "display_override": ["standalone", "minimal-ui", "browser"],
+  "orientation": "portrait",
   "background_color": "#12100E",
   "theme_color": "#12100E",
-  "orientation": "portrait",
+  "lang": "en",
+  "dir": "ltr",
+  "categories": ["health", "lifestyle", "productivity"],
   "icons": [
     { "src": "/icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" },
     { "src": "/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
     { "src": "/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
     { "src": "/icon-maskable.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "maskable" },
     { "src": "/icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
-  ]
+  ],
+  "shortcuts": [
+    {
+      "name": "Tonight's three taps",
+      "short_name": "Log",
+      "description": "Open the log for tonight",
+      "url": "/app",
+      "icons": [{ "src": "/icon-192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Your weeks",
+      "short_name": "Weeks",
+      "description": "The shelf of past weeks",
+      "url": "/app/weeks",
+      "icons": [{ "src": "/icon-192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Get help",
+      "short_name": "Help",
+      "description": "Numbers to talk to, free forever",
+      "url": "/help",
+      "icons": [{ "src": "/icon-192.png", "sizes": "192x192" }]
+    }
+  ],
+  "prefer_related_applications": false
 }

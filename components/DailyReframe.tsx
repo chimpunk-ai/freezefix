@@ -3,29 +3,39 @@
 import { useEffect, useState } from "react";
 import { mythItems, type MythItem } from "@/lib/myth-items";
 
-// A one-line reassurance shown once at the top of the log on each new day.
+// A single myth-vs-reality card shown once a day when the user opens the log.
 //
-// What this is:
-//   - A rotating "myth → reality" card from lib/myth-items.ts: the SAME
-//     content the landing page's accordion shows. One new item each day the
-//     user opens the app; over time they see all of them. Dismissible, and
-//     muted via "don't show these".
+// Why a card:
+//   - A rotating line at the top of the log. Dry, not cheerful, no emoji.
+//   - One a day. Same-day open shows nothing. Next day shows the next one.
+//   - Dismissible per day with "got it", muted for good with "don't show these".
+//   - The card never mentions weed on its chrome: lock-screen-safe, same as
+//     the reminders.
 //
-// What this is NOT:
-//   - A substance claim. Every item is about the *looking* — judgement,
-//     privacy, the habit of noticing — not about cannabis pharmacology,
-//     doses, strains or health outcomes. The product vision rules those out,
-//     and so does this component. If the content ever drifts into a health
-//     claim it needs cited evidence and qualified review first.
+// Where the item comes from:
+//   - First open of a new day: ask /api/reframe (the model, bounded by the
+//     prompt in that route — nothing about pharmacology, doses or outcomes).
+//   - If the request fails, or the model drifts, the route itself falls back
+//     to lib/myth-items.ts. We also fall back here if the fetch throws.
+//   - The item is cached in localStorage so the same day opens see the same
+//     card, and so an offline second-open still has something to show.
 //
-// Storage:
-//   - `ff_reframe` = { lastDay: "YYYY-MM-DD", index: number, muted: boolean }
-//     Keyed per device, cleared by forget-everything.
+// Why not just the 11-item pool: it repeats inside two weeks. The model can
+// produce fresh angles on the same bounded subject indefinitely, and the
+// recent-list avoids near-duplicates.
+//
+// Storage keys (both pinned by scripts/test-legal.ts):
+//   - ff_reframe       — today's card + the mute flag
+//   - ff_reframe_seen  — a small window of recent openings for the "avoid" hint
 
-type Stored = { lastDay: string; index: number; muted: boolean };
+type Stored = { lastDay: string; shown: MythItem | null; muted: boolean };
+type Seen = { items: string[] };
 
 const KEY = "ff_reframe";
-const EMPTY: Stored = { lastDay: "", index: -1, muted: false };
+const SEEN_KEY = "ff_reframe_seen";
+const EMPTY: Stored = { lastDay: "", shown: null, muted: false };
+const EMPTY_SEEN: Seen = { items: [] };
+const SEEN_WINDOW = 20;
 
 function readStored(): Stored {
   if (typeof window === "undefined") return EMPTY;
@@ -35,7 +45,10 @@ function readStored(): Stored {
     const p = JSON.parse(raw) as Partial<Stored>;
     return {
       lastDay: typeof p.lastDay === "string" ? p.lastDay : "",
-      index: Number.isInteger(p.index) ? Number(p.index) : -1,
+      shown:
+        p.shown && typeof p.shown === "object" && typeof (p.shown as MythItem).myth === "string"
+          ? { myth: (p.shown as MythItem).myth, reality: (p.shown as MythItem).reality }
+          : null,
       muted: Boolean(p.muted),
     };
   } catch {
@@ -52,10 +65,32 @@ function writeStored(next: Stored): void {
   }
 }
 
+function readSeen(): Seen {
+  if (typeof window === "undefined") return EMPTY_SEEN;
+  try {
+    const raw = window.localStorage.getItem(SEEN_KEY);
+    if (!raw) return EMPTY_SEEN;
+    const p = JSON.parse(raw) as Partial<Seen>;
+    return { items: Array.isArray(p.items) ? p.items.filter((s): s is string => typeof s === "string").slice(-SEEN_WINDOW) : [] };
+  } catch {
+    return EMPTY_SEEN;
+  }
+}
+
+function writeSeen(next: Seen): void {
+  if (typeof window === "undefined") return;
+  try {
+    window.localStorage.setItem(SEEN_KEY, JSON.stringify({ items: next.items.slice(-SEEN_WINDOW) }));
+  } catch {
+    /* ignore */
+  }
+}
+
 export function clearReframePref(): void {
   if (typeof window === "undefined") return;
   try {
     window.localStorage.removeItem(KEY);
+    window.localStorage.removeItem(SEEN_KEY);
   } catch {
     /* ignore */
   }
@@ -69,78 +104,128 @@ function todayISO(): string {
   return `${y}-${m}-${day}`;
 }
 
-// Decide once, outside of an effect, what to show on this open. The function
-// also advances the stored pointer so the next open sees the next item. Runs
-// only in the browser (guarded by typeof window), via useState initializer so
-// React doesn't re-render us before we've rendered once.
-function pickReframe(items: MythItem[]): MythItem | null {
-  if (typeof window === "undefined") return null;
-  const now = todayISO();
-  const prev = readStored();
-  if (prev.muted) return null;
-  if (prev.lastDay === now) return null; // already seen today
-  const next = (prev.index + 1) % items.length;
-  writeStored({ lastDay: now, index: next, muted: false });
-  return items[next];
+function nextFromPool(seen: string[]): MythItem {
+  const pool = mythItems();
+  const unseen = pool.filter((p) => !seen.includes(p.myth));
+  const pick = unseen.length ? unseen[Math.floor(Math.random() * unseen.length)] : pool[Math.floor(Math.random() * pool.length)];
+  return pick;
 }
 
-export default function DailyReframe() {
-  const items = mythItems();
-  // useState initializer runs once per mount, before the first paint, so
-  // there is no effect-driven re-render — and nothing to upset React 19's
-  // "no setState in an effect body" lint rule.
-  const [shown, setShown] = useState<MythItem | null>(() => pickReframe(items));
-  // Hydration safety: the server has no window, so it renders null; mark the
-  // component mounted on the client so we can render the card without a
-  // hydration mismatch.
-  const [mounted, setMounted] = useState(false);
-  useEffect(() => { setMounted(true); }, []);
+async function fetchReframe(seen: string[], signal: AbortSignal): Promise<MythItem> {
+  try {
+    const res = await fetch("/api/reframe", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ avoid: seen, seed: todayISO() }),
+      signal,
+    });
+    if (res.ok) {
+      const data = (await res.json()) as Partial<MythItem>;
+      if (typeof data.myth === "string" && typeof data.reality === "string" && data.myth && data.reality) {
+        return { myth: data.myth, reality: data.reality };
+      }
+    }
+  } catch {
+    /* fall through to local pool */
+  }
+  return nextFromPool(seen);
+}
 
-  if (!mounted || !shown) return null;
+type Status = "idle" | "loading" | "shown" | "hidden";
+
+export default function DailyReframe() {
+  const [status, setStatus] = useState<Status>("idle");
+  const [item, setItem] = useState<MythItem | null>(null);
+
+  useEffect(() => {
+    const prev = readStored();
+    if (prev.muted) {
+      setStatus("hidden");
+      return;
+    }
+    const today = todayISO();
+    if (prev.lastDay === today && prev.shown) {
+      // Already seen today — not re-shown. Settling without a card is the
+      // right behaviour; opening the app a second time in one day shouldn't
+      // feel like a drip feed.
+      setStatus("hidden");
+      return;
+    }
+
+    // New day (or first ever open). Fetch one.
+    setStatus("loading");
+    const controller = new AbortController();
+    const seen = readSeen().items;
+
+    fetchReframe(seen, controller.signal).then((picked) => {
+      if (controller.signal.aborted) return;
+      setItem(picked);
+      setStatus("shown");
+      writeStored({ lastDay: today, shown: picked, muted: false });
+      writeSeen({ items: [...seen, picked.myth].slice(-SEEN_WINDOW) });
+    });
+
+    return () => controller.abort();
+  }, []);
+
+  if (status === "hidden" || status === "idle") return null;
 
   function dismiss() {
-    setShown(null);
+    setStatus("hidden");
   }
 
   function mute() {
     const prev = readStored();
     writeStored({ ...prev, muted: true });
-    setShown(null);
+    setStatus("hidden");
   }
 
   return (
-    <div
-      role="status"
-      aria-live="polite"
-      className="mx-5 mt-4 overflow-hidden rounded-card border border-line bg-card/70 lg:mx-0"
+    <aside
+      role="note"
+      aria-label="a quiet reminder"
+      className="ff-reframe mx-5 mt-4 overflow-hidden rounded-sheet border border-line bg-card/60 lg:mx-0"
     >
-      <div className="flex items-start gap-4 p-4 lg:p-5">
-        <div className="min-w-0 flex-1">
-          <p className="text-12 uppercase tracking-[0.14em] text-ink-faint">a reminder</p>
-          <p className="mt-2 font-display text-16 leading-snug text-ink lg:text-18">
-            &ldquo;{shown.myth}&rdquo;
-          </p>
-          <p className="mt-2 text-13 leading-relaxed text-ink-soft lg:text-14">
-            <span className="text-ink">reality:</span> {shown.reality}
-          </p>
-          <div className="mt-3 flex flex-wrap items-center gap-x-5 gap-y-2 text-12 text-ink-faint">
-            <button
-              type="button"
-              onClick={dismiss}
-              className="min-h-11 text-ink-soft underline decoration-line underline-offset-4 hover:text-ink"
-            >
-              got it
-            </button>
-            <button
-              type="button"
-              onClick={mute}
-              className="min-h-11 underline decoration-line underline-offset-4 hover:text-ink-soft"
-            >
-              don&rsquo;t show these
-            </button>
-          </div>
+      <div className="relative p-5 lg:px-7 lg:py-6">
+        {/* The hairline on the left is the only ornament. It pairs with the
+            Sunday mirror and the fix sheet; three places, same signature. */}
+        <span aria-hidden className="absolute left-0 top-5 bottom-5 w-[2px] rounded-full bg-accent/60" />
+        <div className="min-h-[88px] pl-4 lg:pl-5">
+          {status === "loading" || !item ? (
+            <div aria-live="polite" className="animate-pulse space-y-2">
+              <div className="h-3 w-24 rounded bg-line" />
+              <div className="h-5 w-3/4 rounded bg-line" />
+              <div className="h-4 w-1/2 rounded bg-line" />
+            </div>
+          ) : (
+            <>
+              <p className="text-11 uppercase tracking-[0.18em] text-ink-faint">a quiet reminder</p>
+              <p className="mt-2.5 font-display text-18 italic leading-snug text-ink lg:text-22">
+                &ldquo;{item.myth}&rdquo;
+              </p>
+              <p className="mt-2.5 text-14 leading-relaxed text-ink-soft lg:text-15">
+                <span className="not-italic text-ink">reality.</span> {item.reality}
+              </p>
+              <div className="mt-4 flex flex-wrap items-center gap-x-6 gap-y-2 text-12 text-ink-faint">
+                <button
+                  type="button"
+                  onClick={dismiss}
+                  className="min-h-9 text-ink-soft underline decoration-line underline-offset-4 hover:text-ink"
+                >
+                  got it
+                </button>
+                <button
+                  type="button"
+                  onClick={mute}
+                  className="min-h-9 underline decoration-line underline-offset-4 hover:text-ink-soft"
+                >
+                  don&rsquo;t show these
+                </button>
+              </div>
+            </>
+          )}
         </div>
       </div>
-    </div>
+    </aside>
   );
 }

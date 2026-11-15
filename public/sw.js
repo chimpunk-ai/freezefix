@@ -44,7 +44,7 @@
 //   CACHE_NAME includes a date-tagged version. Bump it to force an
 //   immediate refresh of pre-cached pages on next activate.
 
-const VERSION = "v4-2026-11-14";
+const VERSION = "v5-2026-11-15";
 const CACHE_NAME = `freezefix-${VERSION}`;
 
 // Pre-cached shells — pages a user is most likely to open first, and the
@@ -56,6 +56,7 @@ const PRECACHE = [
   "/app/weeks",
   "/app/settings",
   "/plans",
+  "/install",
   "/help",
   "/privacy",
   "/terms",

@@ -132,6 +132,7 @@ check("CODE-age-gate-matches-terms", /adult where you live|age of adulthood/i.te
     ff_chime_asked: /clearChimePref\(\)/,
     ff_region: /removeItem\("ff_region"\)/,
     ff_reframe: /clearReframePref\(\)/,
+    ff_reframe_seen: /clearReframePref\(\)/,
   } as Record<string, RegExp>;
   for (const k of keys) {
     check(`CODE-forget-clears-${k}`, Boolean(clears[k]) && clears[k].test(forgetBody), `forget() must clear ${k}`);
