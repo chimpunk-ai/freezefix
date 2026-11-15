@@ -1,6 +1,8 @@
 import Link from "next/link";
 import type { ReactNode } from "react";
 import { HelpChip, Wordmark } from "@/components/Brand";
+import HeaderInstallButton from "@/components/HeaderInstallButton";
+import ThemeToggle from "@/components/ThemeToggle";
 
 // Layout primitives shared by every public route, so the site reads as one
 // piece at every width. Three measures and nothing else:
@@ -73,9 +75,12 @@ export function SiteHeader({
 }) {
   return (
     <header className="w-full">
-      <Container measure={measure} className="flex items-center justify-between gap-4 py-5">
-        <Wordmark />
-        <nav aria-label="site" className="flex items-center gap-2 sm:gap-4">
+      <Container measure={measure} className="flex items-start justify-between gap-4 py-5">
+        <div className="flex flex-col items-start gap-2.5">
+          <Wordmark />
+          <ThemeToggle />
+        </div>
+        <nav aria-label="site" className="flex items-center gap-2 pt-1 sm:gap-4">
           {nav.map((n) => (
             <Link
               key={n.href}
@@ -93,6 +98,7 @@ export function SiteHeader({
               {cta.label}
             </Link>
           ) : null}
+          <HeaderInstallButton />
           <HelpChip compact />
         </nav>
       </Container>
