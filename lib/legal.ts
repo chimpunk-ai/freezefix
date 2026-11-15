@@ -178,7 +178,16 @@ Privacy questions: **privacy@getfreezefix.com**. Safety concerns: **safety@getfr
 const REFUNDS_SECTION = `
 **There is nothing to refund today.** Fix does not take payments on this website or in any app at the moment. The app shows a seven-day free week and the price we intend to charge after it, so nothing surprises you later; but until payments are switched on, the free week does not end and nothing can be charged. No card is asked for.
 
-If a paid plan goes live, this page will be updated **before** the first payment is taken to describe exactly how to cancel, how refunds work in the UK, the EU and elsewhere, and how long you have under local law to change your mind. The intent is one tap to cancel from inside the app, with no phone call and no retention offer.
+**When payments do go live, this is the intent:**
+
+- **One tap to cancel** from inside the app settings. No phone call, no retention offer, no cancellation fee.
+- **UK buyers:** a 14-day right to change your mind under the Consumer Contracts (Information, Cancellation and Additional Charges) Regulations 2013, with a full refund if you ask within those 14 days.
+- **EU buyers:** the equivalent 14-day withdrawal right under Directive 2011/83/EU.
+- **Elsewhere:** whichever is more generous &mdash; our refund promise or your local consumer-protection law.
+- **Proration:** if you cancel partway through a paid year, you keep access until the end of the paid period; we do not pro-rate a partial-year refund beyond the statutory window above.
+- **Payment issues:** chargebacks, double-charges, or an upgrade you did not intend are refunded in full, no questions, by writing to the address below.
+
+This page will be updated with the final policy **before** the first payment is ever taken, and the version shown here on the day you paid is the version that applies to your purchase.
 
 Nothing in these terms takes away refund or consumer rights you have under the law where you live.
 `;
@@ -200,7 +209,7 @@ We never encourage drug use.
 
 ## 2. You must be an adult
 
-Fix is only for adults aged 18 or over (or the age of adulthood where you live, if higher). By using it you confirm you meet this age. Fix has no accounts, so there is nothing to close; if we learn that someone under 18 has used it, we will delete anything we hold.
+Fix is only for adults aged 18 or over (or the age of adulthood where you live, if higher). By using it you confirm you meet this age. Fix has no accounts, so there is nothing to close; if we learn that someone under 18 has used it, we will delete anything we hold. **If you are a parent, carer or guardian** and believe a minor has used Fix, write to **hello@getfreezefix.com** with "under-18" in the subject &mdash; we respond within three working days and delete anything attributable to that device.
 
 ## 3. Using Fix safely and fairly
 

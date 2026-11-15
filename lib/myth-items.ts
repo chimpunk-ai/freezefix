@@ -19,7 +19,7 @@ export function mythItems(): MythItem[] {
     {
       myth: "if i'm not quitting, there's no point tracking.",
       reality:
-        "noticing is its own thing. most people who look at a pattern change something small — or decide they're fine — without ever setting a quit date. you don't need a destination to read a map.",
+        "noticing is its own thing. most people who look at a pattern change something small — or decide they're fine — without needing a plan. you don't need a destination to read a map.",
     },
     {
       myth: "an app like this is going to judge me.",
@@ -44,7 +44,7 @@ export function mythItems(): MythItem[] {
     {
       myth: "weed isn't a problem for me, so this isn't for me.",
       reality:
-        "fix isn't for people with a problem. it's for people with a pattern — which is everyone who does anything regularly. the card showing “fine” is a good outcome, not a failure.",
+        "fix isn't for people with a problem. it's for people with a pattern — which is everyone who does anything regularly. a card saying “things look steady” is a complete answer.",
     },
     {
       myth: "an app with my smoking history is a leak waiting to happen.",
@@ -54,7 +54,7 @@ export function mythItems(): MythItem[] {
     {
       myth: "it's either quit, or carry on exactly as i am.",
       reality:
-        "there's a lot in between. fewer weeknights. not before the gym. not when bored. direction is the whole measure.",
+        "there's a lot in between. fewer weeknights. not before the gym. not when bored. and “exactly as i am” is a real answer the card won't argue with.",
     },
     {
       myth: "the ai is going to lecture me or play therapist.",

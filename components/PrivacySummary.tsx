@@ -8,13 +8,18 @@
 export default function PrivacySummary() {
   return (
     <section
-      aria-labelledby="privacy-summary-heading"
+      aria-label="Privacy summary at a glance"
       className="mb-10 rounded-sheet border border-line bg-card p-5 sm:p-6"
     >
       <p className="text-12 uppercase tracking-[0.18em] text-signpost">at a glance</p>
-      <h2 id="privacy-summary-heading" className="mt-2 font-display text-28 text-ink">
+      {/* Deliberately a <p>, not a heading. The <h1> for the privacy policy
+          itself appears in the Markdown below this card; giving this summary
+          its own h2 would appear BEFORE the h1 in document order and break
+          heading hierarchy for screen readers (Nov 2026 a11y audit). The
+          section's aria-label carries the label for assistive tech. */}
+      <p className="mt-2 font-display text-28 text-ink">
         What stays on your phone, and the one thing that leaves it.
-      </h2>
+      </p>
       <p className="mt-3 max-w-[58ch] text-14 leading-relaxed text-ink-soft">
         A plain map of how your data actually moves. The full policy below is the version that
         counts; this card is so you can tell at a glance.

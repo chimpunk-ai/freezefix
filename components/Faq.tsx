@@ -21,7 +21,7 @@ export function faqItems(paymentsOn: boolean): FaqItem[] {
     },
     {
       q: "what does fix actually get when i ask it something?",
-      a: "the last seven nights of taps (smoked or not, your face, your chips, whether you did your thing, up to 160 characters of any note), your question, the last few lines of that chat, your made-up name, and a two-letter country code. that goes to our ai provider, anthropic, to write the reply. it isn't used to train anything and is deleted on their side within 30 days. we keep no copy of the question or the answer — only a hashed daily count.",
+      a: "the last seven nights of taps (smoked or not, your face, your chips, whether you did your thing, up to 160 characters of any note), your question, the last few lines of that chat, your made-up name, and a two-letter country code. that goes to our ai provider, anthropic, to write the reply. it isn't used to train anything and is deleted on their side within 30 days — unless anthropic's safety systems flag a message as risky, in which case they may keep that one message up to two years for abuse review. we keep no copy of the question or the answer — only a hashed daily count.",
     },
     {
       q: "what if i miss a night?",

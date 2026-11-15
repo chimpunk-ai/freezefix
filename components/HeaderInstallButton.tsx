@@ -24,6 +24,14 @@ type BIPEvent = Event & {
 
 type Platform = "android" | "ios" | "other";
 
+// Sized loud on mobile (install is the point of the button there) and quiet
+// on laptop/desktop (where install is less likely to be the action). The
+// signpost fill shows up on narrow widths; above md: it's a muted outline.
+const BTN_CLASS =
+  "ff-chip inline-flex min-h-9 items-center gap-1 rounded-pill px-3 text-13 font-medium no-underline transition-transform hover:-translate-y-[1px] " +
+  "bg-signpost text-signpost-ink ff-cta-shadow " +
+  "md:bg-transparent md:text-ink-soft md:ff-cta-shadow-none md:border md:border-line md:hover:border-ink-faint";
+
 function detectPlatform(): Platform {
   if (typeof navigator === "undefined") return "other";
   const ua = navigator.userAgent;
@@ -111,7 +119,7 @@ export default function HeaderInstallButton() {
             /* user cancelled or browser blocked; nothing to do */
           }
         }}
-        className="ff-chip inline-flex min-h-9 items-center rounded-pill bg-signpost px-3 text-13 font-medium text-signpost-ink no-underline ff-cta-shadow transition-transform hover:-translate-y-[1px]"
+        className={BTN_CLASS}
       >
         {label}
       </button>
@@ -127,7 +135,7 @@ export default function HeaderInstallButton() {
           aria-expanded={open}
           aria-haspopup="dialog"
           onClick={() => setOpen((o) => !o)}
-          className="ff-chip inline-flex min-h-9 items-center rounded-pill bg-signpost px-3 text-13 font-medium text-signpost-ink no-underline ff-cta-shadow transition-transform hover:-translate-y-[1px]"
+          className={BTN_CLASS}
         >
           {label}
         </button>
@@ -163,7 +171,7 @@ export default function HeaderInstallButton() {
   return (
     <Link
       href="/install"
-      className="ff-chip inline-flex min-h-9 items-center rounded-pill bg-signpost px-3 text-13 font-medium text-signpost-ink no-underline ff-cta-shadow transition-transform hover:-translate-y-[1px]"
+      className={BTN_CLASS}
     >
       {label}
     </Link>

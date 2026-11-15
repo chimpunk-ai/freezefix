@@ -154,6 +154,20 @@ export default function HelpScreen({ screen, region, onRegionChange, onBack, dir
 
       <CountrySwitcher region={region} onChange={onRegionChange} />
 
+      {/* Direct openers of /help (parents, friends, partners who were googling)
+          need a separate path — the top of this screen is written for the user
+          themselves. The "worried" screen already exists; this is just the way
+          in. Hidden when the visitor is already on it, when they came from an
+          in-app handoff (direct=false), and on the under-18 stop. */}
+      {direct && screen !== "worried" && screen !== "under18" && (
+        <a
+          href="/help?screen=worried"
+          className="self-center py-2 text-sm text-ink-soft underline decoration-line underline-offset-4 hover:text-ink"
+        >
+          Worried about someone else? &rarr;
+        </a>
+      )}
+
       {onBack && (
         <button onClick={onBack} className="self-center py-2 text-sm text-ink-faint underline underline-offset-4">
           Back to Fix
