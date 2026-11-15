@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import HeaderInstallButton from "@/components/HeaderInstallButton";
 import { Container, Kicker, Main, SiteHeader } from "@/components/Shell";
 import SiteFooter from "@/components/SiteFooter";
 
@@ -31,8 +32,14 @@ export default function InstallPage() {
             <p className="mt-4 max-w-[58ch] text-16 text-ink-soft lg:text-20 lg:leading-[1.4]">
               fix doesn&rsquo;t live in the app store. you open it in your browser once, add it to your
               home screen, and after that it opens the way a native app would &mdash; its own icon, full
-              screen, no browser bar. nothing to download, nothing to sign up for.
+              screen, no browser bar. nothing to download, no account to make.
             </p>
+            <div className="mt-6 flex flex-wrap items-center gap-4">
+              <HeaderInstallButton />
+              <span className="text-13 text-ink-faint">
+                on this device, if your browser supports it.
+              </span>
+            </div>
           </section>
 
           <section
@@ -123,9 +130,14 @@ export default function InstallPage() {
                 </Link>.
               </p>
               <p>
-                <span className="text-ink">everything still lives on your device.</span> no account is
-                created, no email is asked for, nothing is uploaded. uninstalling the shortcut doesn&rsquo;t
-                send anything to us.
+                <span className="text-ink">your log still lives on your device.</span> no account is
+                created, no email is asked for. uninstalling the shortcut doesn&rsquo;t send anything to
+                us. the one exception is Fix &mdash; when you press send, that message and the week it
+                refers to travels to our ai provider to write the reply; the{" "}
+                <Link href="/privacy" className="underline decoration-line underline-offset-4 hover:text-ink">
+                  privacy page
+                </Link>{" "}
+                says exactly what goes and how long it&rsquo;s kept.
               </p>
               <p>
                 <span className="text-ink">updates arrive on their own.</span> when fix changes, the

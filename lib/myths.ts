@@ -46,7 +46,7 @@ The things people believe about looking at their own weed use that stop them loo
 
 ## "it's either quit, or carry on exactly as i am."
 
-**Reality:** there's a lot in between. Fewer weeknights. Not before the gym. Not when bored. The goal line is for the thing you'd rather be doing more of, not for abstinence. Direction is the whole measure: one more run than last week is the entire message.
+**Reality:** there's a lot in between. Fewer weeknights. Not before the gym. Not when bored. The goal line is for the thing you'd rather be doing more of, not for abstinence. And "exactly as I am" is a real answer the card won't argue with.
 
 ## "the ai is going to lecture me or play therapist."
 

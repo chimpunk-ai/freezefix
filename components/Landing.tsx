@@ -76,6 +76,15 @@ export default function Landing({ paymentsOn }: { paymentsOn: boolean }) {
                   what it costs
                 </Link>
               </div>
+              {!paymentsOn && (
+                <p className="mt-3 max-w-[42ch] text-13 text-ink-faint">
+                  payments aren&rsquo;t switched on yet &mdash; nothing can be charged and nothing locks.
+                  the price on <Link href="/plans" className="underline decoration-line underline-offset-4 hover:text-ink-soft">/plans</Link> is what it will be.
+                </p>
+              )}
+              <p className="mt-3 max-w-[42ch] text-13 text-ink-faint">
+                a missed night is a dot, not a mark. the next night you just show up.
+              </p>
               <p className="mt-4 text-14 text-ink-faint">
                 or{" "}
                 <TryFix className="inline min-h-0 underline decoration-line underline-offset-4 hover:text-ink-soft">
