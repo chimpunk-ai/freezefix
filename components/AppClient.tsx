@@ -417,6 +417,11 @@ function SettingsView({
           <input
             value={name}
             onChange={(e) => setName(e.target.value.slice(0, 24))}
+            autoComplete="off"
+            autoCapitalize="none"
+            autoCorrect="off"
+            spellCheck={false}
+            enterKeyHint="done"
             className="mt-2 w-full rounded-card border border-line bg-card px-4 py-3 font-display text-20 text-ink focus:border-accent/50 focus:outline-none"
           />
         </label>

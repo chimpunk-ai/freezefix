@@ -2,6 +2,7 @@ import Link from "next/link";
 import type { ReactNode } from "react";
 import { HelpChip, Wordmark } from "@/components/Brand";
 import HeaderInstallButton from "@/components/HeaderInstallButton";
+import NavLink from "@/components/NavLink";
 import ThemeToggle from "@/components/ThemeToggle";
 
 // Layout primitives shared by every public route, so the site reads as one
@@ -53,6 +54,8 @@ type NavItem = { href: string; label: string };
 
 const PUBLIC_NAV: NavItem[] = [
   { href: "/plans", label: "what it costs" },
+  { href: "/myths", label: "myths & reality" },
+  { href: "/install", label: "install" },
   { href: "/privacy", label: "privacy" },
 ];
 
@@ -82,13 +85,14 @@ export function SiteHeader({
         </div>
         <nav aria-label="site" className="flex items-center gap-2 pt-1 sm:gap-4">
           {nav.map((n) => (
-            <Link
+            <NavLink
               key={n.href}
               href={n.href}
               className="hidden min-h-11 items-center px-1 text-14 text-ink-faint no-underline hover:text-ink sm:inline-flex"
+              activeClassName="text-ink"
             >
               {n.label}
-            </Link>
+            </NavLink>
           ))}
           {cta ? (
             <Link

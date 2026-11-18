@@ -103,6 +103,10 @@ export default function LogScreen({
   const streamRef = useRef<MediaStream | null>(null);
   const startedRef = useRef(0);
   const tickRef = useRef<number | null>(null);
+  // "add more" flag: set true by the review-phase button before re-entering
+  // the recording flow, so finish() appends to the existing draft instead
+  // of replacing it. Reset after each finish so the flag is one-shot.
+  const appendRef = useRef(false);
 
   const stopStream = () => {
     streamRef.current?.getTracks().forEach((t) => t.stop());
@@ -177,16 +181,27 @@ export default function LogScreen({
 
   async function finish(blob: Blob) {
     setPhase("transcribing");
+    const appending = appendRef.current;
+    appendRef.current = false; // one-shot; next recording starts fresh unless user asks again
     try {
       const out = await transcribe(blob, (p) => setDownload(p.percent < 100 ? p.percent : null));
       setDownload(null);
       if (!out.text) {
         setVoiceMsg("didn't catch that — try again or type.");
-        setPhase("ready");
+        setPhase(appending ? "review" : "ready");
         return;
       }
-      setDraft(out.text.slice(0, 500));
-      setHeard(out.language && out.language !== "en" ? languageName(out.language) : undefined);
+      if (appending && draft.trim()) {
+        // User tapped "add more" after an earlier transcription. Glue the
+        // new words on with a single space and keep inside the 500-char cap.
+        const joined = `${draft.trim()} ${out.text.trim()}`.slice(0, 500);
+        setDraft(joined);
+      } else {
+        setDraft(out.text.slice(0, 500));
+      }
+      if (out.language && out.language !== "en") {
+        setHeard(languageName(out.language));
+      }
       setVoiceMsg(null);
       setPhase("review");
     } catch (err) {
@@ -238,11 +253,13 @@ export default function LogScreen({
       tickRef.current = window.setInterval(() => {
         const s = Math.round((Date.now() - startedRef.current) / 1000);
         setSeconds(s);
-        // Two minutes max. Whisper-tiny handles this via chunk_length_s: 30
-        // in lib/transcribe.ts, so a 120s recording transcribes as 4 chunks
-        // and still runs on the device. A hard cap keeps a thumb that fell
-        // asleep on the button from spending battery indefinitely.
-        if (s >= 120) stopRec();
+        // One minute per hold. The user can tap "add more" after the first
+        // transcription to record again and append to the same draft, so
+        // anything longer than a minute still fits (up to the 500-char cap
+        // on the whole note). Keeps the thumb-asleep-on-button failure mode
+        // from spending battery indefinitely, and keeps transcription under
+        // 20s on a mid phone (2 chunks of 30s via chunk_length_s).
+        if (s >= 60) stopRec();
       }, 200);
     } catch (err) {
       stopStream();
@@ -464,7 +481,7 @@ export default function LogScreen({
                     else void startRec();
                   }
                 }}
-                aria-label={phase === "recording" ? "listening — release to stop" : "say what you want, up to two minutes, kept on this phone"}
+                aria-label={phase === "recording" ? "listening — release to stop" : "say what you want, up to a minute at a time, kept on this phone"}
                 aria-pressed={phase === "recording"}
                 disabled={phase === "transcribing"}
                 className={[
@@ -498,7 +515,7 @@ export default function LogScreen({
                     ? `getting the speech model once · ${download}%`
                     : note
                       ? "words kept on this phone. audio already gone."
-                      : "up to two minutes, if you want. it isn't required, and it never leaves this phone."}
+                      : "up to a minute. tap again if you have more. it never leaves this phone."}
                 </p>
               </div>
               {phase === "ready" && download !== null ? (
@@ -521,8 +538,8 @@ export default function LogScreen({
             {phase === "explain" ? (
               <div className="ff-rise mt-3 rounded-card border border-line bg-card p-4" role="group" aria-label="before the microphone">
                 <p className="text-14 text-ink">
-                  fix will listen for up to two minutes, turn it into text on this phone, and throw the
-                  audio away. nothing is sent anywhere.
+                  fix will listen for up to a minute at a time, turn it into text on this phone, and
+                  throw the audio away. you can tap again to say more. nothing is sent anywhere.
                 </p>
                 <p className="mt-2 text-12 text-ink-faint">
                   the first time, it downloads a small speech model once ({MODEL_SIZE_LABEL}). after that it works
@@ -573,12 +590,31 @@ export default function LogScreen({
                   </button>
                   <button
                     type="button"
+                    onClick={() => {
+                      // Append the next transcription onto this draft instead of
+                      // replacing it. Mic button hand-off: flag the append, drop
+                      // back to the "ready" phase, user holds again. finish()
+                      // handles the glue.
+                      appendRef.current = true;
+                      setVoiceMsg(null);
+                      setPhase("ready");
+                    }}
+                    disabled={draft.length >= 500}
+                    className="ff-chip min-h-11 rounded-pill border border-line px-4 text-14 text-ink hover:border-accent/40 disabled:opacity-50"
+                  >
+                    add more
+                  </button>
+                  <button
+                    type="button"
                     onClick={discardDraft}
                     className="ff-chip min-h-11 rounded-pill border border-line px-4 text-14 text-ink-soft hover:border-accent/40"
                   >
                     discard
                   </button>
                 </div>
+                {draft.length >= 500 ? (
+                  <p className="mt-2 text-12 text-ink-faint">500 characters is the whole note&rsquo;s cap. tap <em>use it</em> or trim the text to add more.</p>
+                ) : null}
               </div>
             ) : null}
 
