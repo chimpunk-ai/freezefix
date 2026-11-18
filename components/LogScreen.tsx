@@ -238,7 +238,11 @@ export default function LogScreen({
       tickRef.current = window.setInterval(() => {
         const s = Math.round((Date.now() - startedRef.current) / 1000);
         setSeconds(s);
-        if (s >= 10) stopRec();
+        // Two minutes max. Whisper-tiny handles this via chunk_length_s: 30
+        // in lib/transcribe.ts, so a 120s recording transcribes as 4 chunks
+        // and still runs on the device. A hard cap keeps a thumb that fell
+        // asleep on the button from spending battery indefinitely.
+        if (s >= 120) stopRec();
       }, 200);
     } catch (err) {
       stopStream();
@@ -460,7 +464,7 @@ export default function LogScreen({
                     else void startRec();
                   }
                 }}
-                aria-label={phase === "recording" ? "listening — release to stop" : "say a few words, up to ten seconds, kept on this phone"}
+                aria-label={phase === "recording" ? "listening — release to stop" : "say what you want, up to two minutes, kept on this phone"}
                 aria-pressed={phase === "recording"}
                 disabled={phase === "transcribing"}
                 className={[
@@ -480,7 +484,7 @@ export default function LogScreen({
               <div className="min-w-0 flex-1" aria-live="polite">
                 <p className="text-14 text-ink-soft">
                   {phase === "recording"
-                    ? `listening · 0:${String(seconds).padStart(2, "0")}`
+                    ? `listening · ${Math.floor(seconds / 60)}:${String(seconds % 60).padStart(2, "0")}`
                     : phase === "transcribing"
                       ? download !== null
                         ? `getting the speech model · ${download}%`
@@ -494,7 +498,7 @@ export default function LogScreen({
                     ? `getting the speech model once · ${download}%`
                     : note
                       ? "words kept on this phone. audio already gone."
-                      : "ten seconds, if you want. it isn't required, and it never leaves this phone."}
+                      : "up to two minutes, if you want. it isn't required, and it never leaves this phone."}
                 </p>
               </div>
               {phase === "ready" && download !== null ? (
@@ -517,8 +521,8 @@ export default function LogScreen({
             {phase === "explain" ? (
               <div className="ff-rise mt-3 rounded-card border border-line bg-card p-4" role="group" aria-label="before the microphone">
                 <p className="text-14 text-ink">
-                  fix will listen for up to ten seconds, turn it into text on this phone, and throw the audio
-                  away. nothing is sent anywhere.
+                  fix will listen for up to two minutes, turn it into text on this phone, and throw the
+                  audio away. nothing is sent anywhere.
                 </p>
                 <p className="mt-2 text-12 text-ink-faint">
                   the first time, it downloads a small speech model once ({MODEL_SIZE_LABEL}). after that it works

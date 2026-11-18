@@ -1,10 +1,15 @@
 import { Container } from "@/components/Shell";
 import { TRIAL_DAYS, pricesFor } from "@/lib/plans";
 
-// The questions people actually have before they type a made-up name into a
-// weed app. Answers are the same facts the privacy page and terms make, in
-// fewer words — if one of these ever disagrees with lib/legal.ts, the legal
-// page wins and this file is wrong.
+// The six questions people most actually ask before they try the app. Trimmed
+// from nine in Nov 2026 after a user audit found the earlier list long enough
+// to read like a terms page. The three dropped items (miss-a-night, bad-place,
+// who-is-this-for) are answered on the landing above the fold, on /help, and
+// by myths-&-reality below respectively — so losing them here doesn't lose
+// coverage, it just shortens the scroll.
+//
+// If any answer here ever disagrees with /privacy or /terms, those pages win
+// and this file is wrong.
 
 export type FaqItem = { q: string; a: string };
 
@@ -13,41 +18,29 @@ export function faqItems(paymentsOn: boolean): FaqItem[] {
   return [
     {
       q: "is this a quit app?",
-      a: "no. fix doesn't ask you to stop, count clean days, or reset anything when you smoke. it shows you what your week looked like and leaves the next step to you — including no step at all.",
+      a: "no. fix doesn’t ask you to stop, count clean days, or reset anything when you smoke. it shows your week and leaves the next step to you — including no step at all.",
     },
     {
       q: "who can see my log?",
-      a: "nobody. it's stored in your browser on this device, not on a server. there's no account, so there's nothing to log in to and nothing for us to look at. the one time anything leaves is when you press send to ask fix a question.",
+      a: "nobody. it’s stored in your browser on this device, not on a server. no account to log in to, nothing on our side to look up. the one time anything leaves is when you press send to ask fix a question.",
     },
     {
       q: "what does fix actually get when i ask it something?",
-      a: "the last seven nights of taps (smoked or not, your face, your chips, whether you did your thing, up to 160 characters of any note), your question, the last few lines of that chat, your made-up name, and a two-letter country code. that goes to our ai provider, anthropic, to write the reply. it isn't used to train anything and is deleted on their side within 30 days — unless anthropic's safety systems flag a message as risky, in which case they may keep that one message up to two years for abuse review. we keep no copy of the question or the answer — only a hashed daily count.",
-    },
-    {
-      q: "what if i miss a night?",
-      a: "nothing. there's no streak to break and no catch-up quiz. a night you didn't log shows as a dot on the sunday card — never as a no. the next night you just show up.",
+      a: "the last seven nights of taps, your question, the last few lines of chat, your made-up name, and a two-letter country code. that goes to our ai provider (anthropic) to write the reply, isn’t used to train anything, and is deleted on their side within 30 days. we keep no copy.",
     },
     {
       q: "does it cost anything?",
       a: paymentsOn
         ? `${TRIAL_DAYS} days free, no card. then ${p.yearly} a year or ${p.monthly} a month. cancel in one tap from settings; your log stays on your device either way.`
-        : `right now the whole thing is free while we finish the payments side — nothing can be charged and nothing locks. the plan is ${p.yearly} a year or ${p.monthly} a month, with ${TRIAL_DAYS} days free and no card. the help page is free forever.`,
+        : `right now the whole thing is free while we finish the payments side — nothing can be charged and nothing locks. the plan is ${p.yearly} a year or ${p.monthly} a month, with ${TRIAL_DAYS} days free and no card.`,
     },
     {
-      q: "no account — really? what's the catch?",
-      a: "a name you make up is the whole sign-in. no email, no phone, no password. the catch is the honest one: if you clear this browser's site data or lose the phone, the log is gone. there's no copy anywhere and no way for us to recover it. we'd rather say that plainly than hold your data.",
-    },
-    {
-      q: "what if i'm in a bad place?",
-      a: "fix isn't a crisis service and doesn't pretend to be. the help page is free, never behind the age gate or any plan, and lists real numbers for your country. if what you type to fix reads like a crisis, it stops being a chart with manners and shows those numbers instead.",
-    },
-    {
-      q: "who is this for?",
-      a: "adults who smoke weed and want to see the shape of it without being told off. you have to be 18, or the age of adulthood where you live if that's higher. it isn't medical advice and it doesn't diagnose anything.",
+      q: "no account — really? what’s the catch?",
+      a: "a name you make up is the whole sign-in. no email, no phone, no password. the catch is the honest one: if you clear this browser’s site data or lose the phone, the log is gone. there’s no copy anywhere.",
     },
     {
       q: "can i delete everything?",
-      a: "yes — settings → forget everything wipes the log, your name and your settings from this device. the only thing it can't reach is a week you already sent to fix; our provider deletes that on its own 30-day schedule.",
+      a: "yes — settings → forget everything wipes the log, your name and your settings from this device. the only thing it can’t reach is a week you already sent to fix; our provider deletes that on its own 30-day schedule.",
     },
   ];
 }
@@ -66,7 +59,7 @@ export default function Faq({ paymentsOn }: { paymentsOn: boolean }) {
             short answers. the long ones are on the{" "}
             <a href="/privacy" className="underline decoration-line underline-offset-4 hover:text-ink">privacy page</a> and
             the <a href="/terms" className="underline decoration-line underline-offset-4 hover:text-ink">terms</a>, and
-            they say the same thing. the things people <em>believe</em> that aren&rsquo;t true are{" "}
+            they say the same thing. the beliefs people <em>hold</em> that aren&rsquo;t true are{" "}
             <a href="#myths" className="underline decoration-line underline-offset-4 hover:text-ink">right below</a>.
           </p>
         </div>
