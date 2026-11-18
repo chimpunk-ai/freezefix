@@ -59,6 +59,10 @@ export type WeekStats = {
   moodAfterNoSmoke: number | null;
   /** Average mood logged on the day AFTER a smoke night, when both days exist. */
   moodAfterSmoke: number | null;
+  /** Average mood logged ON a smoke night, in the shown 7-day window. */
+  moodOnSmoke: number | null;
+  /** Average mood logged ON a no-smoke night, in the shown 7-day window. */
+  moodOnNoSmoke: number | null;
   sentences: string[];
   observation: string | null;
   goalLine: GoalLine | null;
@@ -274,6 +278,8 @@ export function weekStats(entries: Entries, goal: Goal | null, end = todayISO())
     weekendSmokes,
     moodAfterNoSmoke: mood.afterNoSmoke,
     moodAfterSmoke: mood.afterSmoke,
+    moodOnSmoke: mood.onSmoke,
+    moodOnNoSmoke: mood.onNoSmoke,
     sentences,
     observation,
     goalLine,
