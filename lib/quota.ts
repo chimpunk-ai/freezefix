@@ -119,6 +119,9 @@ export async function rpc(name: string, args: Record<string, unknown>, opts?: { 
 }
 
 // Uses one of today's allowance. Returns allowed=false if the limit is reached.
+// When the fallback path runs (DB offline / paused / missing RPC), the result
+// also carries a setCookie string — the caller must forward it on the
+// response headers or the cookie-based quota will reset on every request.
 export async function consumeQuota(req: Request, deviceId: string, kind: QuotaKind): Promise<QuotaResult> {
   const paid = await isPaid(deviceId);
   const limit = paid ? LIMITS[kind].paid : LIMITS[kind].free;

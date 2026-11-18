@@ -140,6 +140,7 @@ export default function DailyReframe() {
   useEffect(() => {
     const prev = readStored();
     if (prev.muted) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setStatus("hidden");
       return;
     }

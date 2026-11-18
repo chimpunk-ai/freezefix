@@ -77,7 +77,11 @@ export default function LogScreen({
   // Demo mode: follow the script whenever it moves on.
   useEffect(() => {
     if (!demo) return;
+    // Demo props write into local state once on prop change. This is how the
+    // scripted ritual demo drives the real LogScreen component.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setSmoked(demo.smoked);
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setMood(demo.mood);
     setTriggers(demo.triggers);
     setGoalDone(demo.goalDone);
