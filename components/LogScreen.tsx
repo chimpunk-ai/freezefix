@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import AddMoment from "@/components/AddMoment";
+import TodayMoments from "@/components/TodayMoments";
 import { MoodFace } from "@/components/MoodFace";
 import {
   MAX_TRIGGERS,
@@ -68,6 +69,8 @@ export default function LogScreen({
   // ones they didn't pick, just without having to scan the row twice.
   const triggerOrder = orderedTriggers(profile.preferredTriggers);
 
+  // Bumped whenever a moment is added so TodayMoments re-reads from storage.
+  const [momentsTick, setMomentsTick] = useState(0);
   const [smoked, setSmoked] = useState<boolean | null>(demo ? demo.smoked : existing ? existing.smoked : null);
   const [mood, setMood] = useState<Mood | null>(demo ? demo.mood : existing ? existing.mood : null);
   const [triggers, setTriggers] = useState<TriggerId[]>(demo ? demo.triggers : existing ? existing.triggers : []);
@@ -703,10 +706,11 @@ export default function LogScreen({
           three-tap log stays untouched above), still inside the app shell.
           The nightly log is one event; a moment is any-time. Fix reads both. */}
       <div className="mt-8 border-t border-line/60 pt-5">
-        <AddMoment />
+        <AddMoment onSaved={() => setMomentsTick((n) => n + 1)} />
         <p className="mt-2 text-12 text-ink-faint">
           something to remember from the day. stays on this phone; the sunday card and fix read it.
         </p>
+        <TodayMoments refreshKey={momentsTick} />
       </div>
 
       <div className="mt-6 flex items-center justify-between gap-4">

@@ -12,10 +12,12 @@
 //     saturated; nothing that reads as a gamification layer.
 //   - Mobile-first (grid-cols-2) with a comfortable laptop layout at md:.
 //
-// Server component. No interactivity needed; everything is read-only.
+// Reads moments through MomentsThisWeek (a tiny client component) so the
+// insights panel itself stays server-renderable. Everything else is read-only.
 
 import { MIN_MOOD_SAMPLES, type WeekStats } from "@/lib/pattern";
 import { TRIGGER_LABEL, type TriggerId } from "@/lib/entry";
+import MomentsThisWeek from "@/components/MomentsThisWeek";
 
 export default function WeekInsights({ stats }: { stats: WeekStats }) {
   const { logged, smoked, cells, topTrigger, topTriggerCount, moodOnSmoke, moodOnNoSmoke, moodOnSmokeN, moodOnNoSmokeN, moodTrendText } = compute(stats);
@@ -56,6 +58,11 @@ export default function WeekInsights({ stats }: { stats: WeekStats }) {
         <MoodSparkline stats={stats} />
         <TriggerMix stats={stats} />
       </div>
+
+      {/* Moments this week. Hidden when there are none; a day-by-day breakdown
+          feels like a timeline (which this surface is not), so we show a count
+          and the newest three previews only. */}
+      <MomentsThisWeek className="mt-3" />
     </section>
   );
 }
