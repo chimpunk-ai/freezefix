@@ -18,6 +18,34 @@ type Turn = { role: "user" | "assistant"; text: string };
 
 type CrisisLine = { label: string; display: string; tel?: string; url?: string; note?: string };
 
+// Pattern-derived question prompts the user can tap instead of typing. Built
+// entirely from THEIR data, not from a canned list — a prompt only surfaces
+// when the week has the signal to support it. Three max. "Fix never messages
+// first" still holds: the sheet is only open because the user tapped to open
+// it; these chips just save them the typing.
+function suggestedQuestions(stats: WeekStats): string[] {
+  const out: string[] = [];
+  const t = stats.topTrigger;
+  const label = t ? TRIGGER_LABEL[t] : null;
+  if (label && stats.topTriggerCount >= 2) {
+    out.push(`what happened on the "${label}" nights?`);
+  }
+  if (
+    stats.moodAfterNoSmoke !== null &&
+    stats.moodAfterSmoke !== null &&
+    Math.abs(stats.moodAfterNoSmoke - stats.moodAfterSmoke) >= 0.35
+  ) {
+    out.push("did mood change around the smoke nights?");
+  }
+  if (stats.smoked >= 3) {
+    out.push("is there a pattern i'm not seeing?");
+  }
+  if (stats.logged > 0 && out.length < 3) {
+    out.push("how did this week compare to last?");
+  }
+  return out.slice(0, 3);
+}
+
 function opener(name: string, stats: WeekStats): string {
   const who = name.trim() || "you";
   if (stats.topTrigger && stats.topTriggerCount >= 2) {
@@ -246,6 +274,24 @@ export default function FixSheet({
                 >
                   i need a minute
                 </button>
+              </div>
+            ) : null}
+
+            {/* Pattern-derived question chips. Only shown before the user has
+                typed anything and before they've asked once, to avoid cluttering
+                a live conversation. Tap pre-fills the input, doesn't send. */}
+            {thread.length === 1 && !input && !capped && !crisis ? (
+              <div className="flex flex-wrap gap-2" aria-label="suggested questions">
+                {suggestedQuestions(stats).map((q) => (
+                  <button
+                    key={q}
+                    type="button"
+                    onClick={() => setInput(q)}
+                    className="ff-chip min-h-9 rounded-pill border border-line bg-card/70 px-3 text-13 text-ink-soft hover:border-accent/40 hover:text-ink"
+                  >
+                    {q}
+                  </button>
+                ))}
               </div>
             ) : null}
 

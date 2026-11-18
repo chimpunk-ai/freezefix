@@ -10,6 +10,7 @@
 export const TRIGGERS = [
   "after-work",
   "bored",
+  "stressed",
   "with-friends",
   "couldnt-sleep",
   "after-her",
@@ -22,6 +23,7 @@ export type TriggerId = (typeof TRIGGERS)[number];
 export const TRIGGER_LABEL: Record<TriggerId, string> = {
   "after-work": "after work",
   bored: "bored",
+  stressed: "stressed",
   "with-friends": "with friends",
   "couldnt-sleep": "couldn't sleep",
   "after-her": "after her",

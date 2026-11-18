@@ -120,15 +120,30 @@ function moodAfter(
   afterSmoke: number | null;
   afterNoSmokeN: number;
   afterSmokeN: number;
+  onSmoke: number | null;
+  onNoSmoke: number | null;
+  onSmokeN: number;
+  onNoSmokeN: number;
 } {
   const afterNoSmoke: number[] = [];
   const afterSmoke: number[] = [];
+  const onSmoke: number[] = [];
+  const onNoSmoke: number[] = [];
+  // Same-night mood comparison pulls from the last 7 days; next-day pulls
+  // from 14 so there's always a next-day pair even for yesterday.
   for (let i = 0; i < 14; i++) {
     const day = addDays(end, -i);
-    const next = addDays(day, 1);
     const e = entries[day];
+    if (!e) continue;
+    // Same-night mood, only for nights inside the shown 7-day window.
+    if (i < 7) {
+      if (e.smoked) onSmoke.push(e.mood);
+      else onNoSmoke.push(e.mood);
+    }
+    // Next-day mood for the correlation claim the card already uses.
+    const next = addDays(day, 1);
     const n = entries[next];
-    if (!e || !n) continue;
+    if (!n) continue;
     if (e.smoked) afterSmoke.push(n.mood);
     else afterNoSmoke.push(n.mood);
   }
@@ -137,6 +152,10 @@ function moodAfter(
     afterSmoke: average(afterSmoke),
     afterNoSmokeN: afterNoSmoke.length,
     afterSmokeN: afterSmoke.length,
+    onSmoke: average(onSmoke),
+    onNoSmoke: average(onNoSmoke),
+    onSmokeN: onSmoke.length,
+    onNoSmokeN: onNoSmoke.length,
   };
 }
 
@@ -196,6 +215,23 @@ export function weekStats(entries: Entries, goal: Goal | null, end = todayISO())
 
     if (top && count >= 2) {
       sentences.push(`you tapped “${TRIGGER_LABEL[top]}” on ${numberWord(count)} of them.`);
+    }
+
+    // Same-night mood comparison: "mood on those nights was lower on average."
+    // Uses the same MIN_MOOD_SAMPLES floor as the day-after comparison so a
+    // single noisy night can't carry a sentence that looks like a trend.
+    if (
+      mood.onSmoke !== null &&
+      mood.onNoSmoke !== null &&
+      mood.onSmokeN >= MIN_MOOD_SAMPLES &&
+      mood.onNoSmokeN >= MIN_MOOD_SAMPLES
+    ) {
+      const diff = mood.onNoSmoke - mood.onSmoke;
+      if (Math.abs(diff) >= 0.35) {
+        sentences.push(
+          `the mood you logged on the smoke nights was ${diff > 0 ? "a little lower" : "a little higher"} on average.`
+        );
+      }
     }
 
     // The mood comparison is the only correlation claim the card makes. Under

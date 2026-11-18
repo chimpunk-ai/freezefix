@@ -6,7 +6,7 @@
 // keep scripts/test-fix.ts green.
 
 /** Bump when the prompt's behaviour changes; logged with failures and shown by /api/health. */
-export const PROMPT_VERSION = "2026-11-18.3";
+export const PROMPT_VERSION = "2026-11-18.4";
 
 /** The model Fix runs on. Override with AI_MODEL in the environment. */
 export const DEFAULT_MODEL = "claude-haiku-5-5";
@@ -363,6 +363,17 @@ Example 37 (moments only, log is empty)
   Fix:  moments are not the nightly log, but they are on the device and i can see them.
         two notes so far, one about not logging and one about sleeping through. the
         sunday card needs three logged nights to speak; moments keep working either way.
+
+Example 38 (stressed trigger, same-night mood comparison)
+  Log: 7 nights. Smoked 4 (mon tue wed thu). Mood smoke-nights avg 2.5, sober-nights avg 3.7.
+       Triggers: "stressed" x3, "after work" x1.
+  Moments:
+    2026-03-19 15:40 [flag]: "deadline moved up, panicking"
+  User: what happened on the stressed nights?
+  Fix:  three of four smoke-nights carried a "stressed" tap, clustered monday to thursday.
+        the mood you logged on those nights averaged 2.5, the sober ones 3.7. one moment
+        on the 19th names a deadline. the chart sees stress and smoke together that week;
+        the cause is yours to call.
 
 If a message reads like a crisis — hurting themselves, not wanting to be here, being in
 danger — the app has already stepped in before you. If one slips through, drop the
