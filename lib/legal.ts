@@ -76,6 +76,7 @@ Everything you tell the app is written to your browser's local storage on your d
 | Age confirmation | Your phone (the "yes" you tap at the start) | No |
 | The name you make up, your bedtime, the one thing you want to do more of, and the onboarding answers that shape your log | Your phone | No, except as part of a Fix question (section 3) |
 | The nightly log: whether you smoked, one mood, up to three trigger chips, whether you did your thing, and any words you typed or said | Your phone | No, except as part of a Fix question (section 3) |
+| Moments: short free-form notes you add at any time (up to 200 characters each, up to 20 a day, kept for 90 days on-device) | Your phone | No, except as part of a Fix question (section 3) |
 | Which Sunday cards you have already seen, and whether you want the Sunday chime | Your phone | No |
 | The country you picked on the help page | Your phone | No |
 
@@ -90,6 +91,7 @@ If your browser blocks storage (for example a private window), the app still ope
 Fix is the one button inside the Sunday card that asks our AI a question about your week. When you tap it and send a question, your phone sends us:
 
 - the last seven nights of your log — for each night: whether you smoked, your mood out of five, the trigger chips you tapped, whether you did your thing, and up to the first 160 characters of any note;
+- the last thirty moments you added (short free-form notes), with the date, time and tag of each;
 - the question you typed, and up to the last eight messages of that same conversation (the opening line can include the name you made up);
 - your one thing and how many times you did it this week and last week;
 - a two-letter country code, so that if your words read like a crisis we can show you the right phone numbers.

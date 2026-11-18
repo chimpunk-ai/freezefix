@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { TRIGGER_LABEL, type Entries } from "@/lib/entry";
+import { recentMoments } from "@/lib/moments";
 import { buildFixContext, numberWord, type WeekStats } from "@/lib/pattern";
 import type { Goal } from "@/lib/profile";
 
@@ -93,7 +94,7 @@ export default function FixSheet({
         body: JSON.stringify({
           message,
           history,
-          context: buildFixContext(stats, entries, goal),
+          context: buildFixContext(stats, entries, goal, recentMoments(7)),
           region,
         }),
       });

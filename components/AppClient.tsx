@@ -18,6 +18,7 @@ import { clearSeen, dueMirror, latestMirror, markSeen } from "@/lib/mirror";
 import { recentWeeks, weekStats, type WeekStats } from "@/lib/pattern";
 import { BEDTIMES, GOAL_EXAMPLES, bedtimeLabel, clearProfile, patchProfile, readProfile, type Profile } from "@/lib/profile";
 import { clearChimePref, readChimePref, writeChimePref, type ChimePref } from "@/lib/chime-pref";
+import { clearMoments } from "@/lib/moments";
 import { trialState } from "@/lib/trial";
 
 // The app shell. No navigation tree, no home screen, no feed: the log is the
@@ -399,7 +400,8 @@ function SettingsView({
     clearProfile(); // ff_profile
     clearSeen(); // ff_mirror_seen
     clearChimePref(); // ff_chime, ff_chime_asked
-    clearReframePref(); // ff_reframe
+    clearReframePref(); // ff_reframe, ff_reframe_seen
+    clearMoments(); // ff_moments
     try {
       window.localStorage.removeItem("ff_region"); // help-page country pick
     } catch {
