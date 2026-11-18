@@ -143,8 +143,20 @@ export async function consumeQuota(req: Request, deviceId: string, kind: QuotaKi
       p_ip_limit: limit * IP_MULTIPLIER,
     })) as { allowed: boolean; used: number };
     return { allowed: Boolean(out.allowed), used: Number(out.used) || 0, limit, reason: out.allowed ? undefined : "limit" };
-  } catch {
-    return { allowed: false, used: 0, limit, reason: "unavailable" };
+  } catch (err) {
+    // The RPC can fail for a bunch of reasons that have nothing to do with the
+    // user hitting a limit: the Supabase project paused (free tier does this
+    // after 7 days idle), the schema hasn't been migrated, the anon key was
+    // rotated, a brief network blip. Hard-failing here used to return 503 and
+    // the UI would show "fix is quiet right now. try again in a minute." for
+    // every request, which is indistinguishable from the app being broken.
+    //
+    // Fall back to the per-device cookie counter — the same path we use when
+    // the DB isn't configured at all. It's weaker (cookie can be cleared, no
+    // per-IP cap) but it keeps the product working and still caps the spend.
+    // Log the failure for the owner so they can fix the underlying DB issue.
+    console.warn("quota rpc failed, falling back to cookie counter:", err);
+    return countInCookie(req, kind, limit);
   }
 }
 
