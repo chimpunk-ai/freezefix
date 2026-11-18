@@ -443,3 +443,13 @@ html[data-reveal-ready] [data-reveal]:not([data-shown]) {
     scroll-behavior: auto !important;
   }
 }
+
+/* /help: the server-rendered emergency fallback (components/HelpFallback.tsx)
+   paints with the initial HTML. Once the client HelpPage below it has
+   JavaScript and hydrates, the inline script in HelpFallback sets
+   `document.documentElement.classList.add('js')`, which this rule picks up
+   to collapse the fallback. No JS? Then `.js` is never set, and the
+   fallback stays — giving a crisis visitor working tel: links regardless. */
+html.js [data-help-fallback] {
+  display: none;
+}

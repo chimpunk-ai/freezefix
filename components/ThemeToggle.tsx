@@ -33,7 +33,7 @@ export default function ThemeToggle({ className = "" }: { className?: string }) 
     <div
       role="group"
       aria-label="appearance"
-      className={`inline-flex items-center rounded-pill border border-line bg-card/70 p-[3px] text-12 ${className}`.trim()}
+      className={`inline-flex items-center rounded-pill border border-line bg-card/70 p-1 text-12 ${className}`.trim()}
     >
       {(["light", "dark"] as const).map((v) => {
         const on = theme === v;
@@ -42,9 +42,13 @@ export default function ThemeToggle({ className = "" }: { className?: string }) 
             key={v}
             type="button"
             aria-pressed={on}
+            aria-label={v === "light" ? "Light theme" : "Dark theme"}
             onClick={() => choose(v)}
             className={[
-              "ff-chip inline-flex min-h-7 items-center rounded-pill px-2.5 transition-colors",
+              // 44x44 minimum per iOS HIG / Material 48. The pill shape and
+              // the icon-plus-label stay visually quiet; the click surface is
+              // what used to be too small. (Round-3 mobile UX audit.)
+              "ff-chip inline-flex min-h-11 min-w-11 items-center justify-center rounded-pill px-3 transition-colors",
               on ? "bg-ink text-bg" : "text-ink-faint hover:text-ink-soft",
               ready ? "" : "opacity-80",
             ].join(" ")}

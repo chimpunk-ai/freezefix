@@ -200,7 +200,42 @@ export default function InstallPage() {
           <SiteFooter />
         </Container>
       </Main>
+      <HowToJsonLd />
     </>
+  );
+}
+
+// Google uses this to surface the install steps as a rich result in search.
+// Keeps the IPHONE_STEPS / ANDROID_STEPS below as the single source of truth
+// for both the on-page copy and the machine-readable structured data.
+function HowToJsonLd() {
+  const data = {
+    "@context": "https://schema.org",
+    "@type": "HowTo",
+    name: "Install Fix on your phone (iOS or Android)",
+    description:
+      "How to install getfreezefix.com as an app on iPhone (Safari Add to Home Screen) and Android (Chrome Install app). No app store, no account, no download.",
+    totalTime: "PT1M",
+    step: [
+      ...IPHONE_STEPS.map((s, i) => ({
+        "@type": "HowToStep",
+        position: i + 1,
+        name: `iPhone — ${s.title}`,
+        text: s.detail,
+      })),
+      ...ANDROID_STEPS.map((s, i) => ({
+        "@type": "HowToStep",
+        position: IPHONE_STEPS.length + i + 1,
+        name: `Android — ${s.title}`,
+        text: s.detail,
+      })),
+    ],
+  };
+  return (
+    <script
+      type="application/ld+json"
+      dangerouslySetInnerHTML={{ __html: JSON.stringify(data) }}
+    />
   );
 }
 
