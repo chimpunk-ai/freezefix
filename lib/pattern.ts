@@ -272,7 +272,7 @@ export function recentWeeks(entries: Entries, goal: Goal | null, count = 12, end
  * the server, and quoted back by the model. Deliberately factual: no
  * interpretation, no causes.
  */
-export function buildFixContext(stats: WeekStats, entries: Entries, goal: Goal | null, maxChars = 2400): string {
+export function buildFixContext(stats: WeekStats, entries: Entries, goal: Goal | null, moments: ReadonlyArray<{ at: number; day: string; text: string; tag: string }> = [], maxChars = 2400): string {
   const lines: string[] = [];
   lines.push("THEIR OWN LOG, LAST SEVEN DAYS (newest last):");
   for (const c of stats.cells) {
@@ -304,6 +304,20 @@ export function buildFixContext(stats: WeekStats, entries: Entries, goal: Goal |
         (g ? ` Done this week: ${g.done}.` : "") +
         (g?.lastWeekDone !== null && g?.lastWeekDone !== undefined ? ` Last week: ${g.lastWeekDone}.` : "")
     );
+  }
+  // Moments: short free-form notes the user has added across the week. These
+  // are context, not the log — never confuse them with a log entry. Capped
+  // at 20 per day in storage, and the context block itself only shows the
+  // most recent 30 across the whole 7-day window so one noisy day can't
+  // crowd out the rest.
+  if (moments && moments.length) {
+    const recent = moments.slice(-30);
+    lines.push("");
+    lines.push("THEIR OWN MOMENTS THIS WEEK (short free-form notes, NOT log entries):");
+    for (const m of recent) {
+      const hhmm = new Date(m.at).toTimeString().slice(0, 5);
+      lines.push(`  ${m.day} ${hhmm} [${m.tag}]: "${m.text.slice(0, 200)}"`);
+    }
   }
   const text = lines.join("\n");
   return text.length > maxChars ? `${text.slice(0, maxChars)}\n[log truncated]` : text;

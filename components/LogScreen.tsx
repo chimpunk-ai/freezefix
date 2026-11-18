@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import AddMoment from "@/components/AddMoment";
 import { MoodFace } from "@/components/MoodFace";
 import {
   MAX_TRIGGERS,
@@ -698,7 +699,17 @@ export default function LogScreen({
         <p className="mt-3 text-12 text-ink-faint">a filled dot is a night you smoked. an open one isn&rsquo;t.</p>
       </section>
 
-      <div className="mt-10 flex items-center justify-between gap-4 border-t border-line/60 pt-5">
+      {/* Add-a-moment sits above the fix/weeks row: outside the ritual (the
+          three-tap log stays untouched above), still inside the app shell.
+          The nightly log is one event; a moment is any-time. Fix reads both. */}
+      <div className="mt-8 border-t border-line/60 pt-5">
+        <AddMoment />
+        <p className="mt-2 text-12 text-ink-faint">
+          something to remember from the day. stays on this phone; the sunday card and fix read it.
+        </p>
+      </div>
+
+      <div className="mt-6 flex items-center justify-between gap-4">
         <button type="button" onClick={onOpenFix} className="text-14 text-ink-faint hover:text-ink-soft">
           i need fix now
         </button>

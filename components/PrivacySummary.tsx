@@ -31,6 +31,11 @@ export default function PrivacySummary() {
           detail="Smoked or not, one mood, up to three trigger chips, your goal tick, any words. Never uploaded, never synced, no copy anywhere."
         />
         <Row
+          what="Moments"
+          where="This phone's local storage."
+          detail="Short free-form notes you add at any time (up to 200 characters each). Capped at 20 a day and auto-pruned after 90 days so storage can't balloon. Treated the same as the log: never uploaded unless you tap send to Fix."
+        />
+        <Row
           what="The Sunday card"
           where="Worked out on this phone, from the log above."
           detail="Opening it writes nothing new and sends nothing anywhere. The shelf of past weeks is the same log, read back."

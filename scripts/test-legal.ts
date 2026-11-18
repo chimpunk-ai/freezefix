@@ -119,7 +119,7 @@ check("CODE-age-gate-matches-terms", /adult where you live|age of adulthood/i.te
 // Privacy §9: "forget everything" removes every ff_* key the app writes.
 // Collect the keys from the lib files and make sure forget() clears each one.
 {
-  const keyFiles = ["lib/entry.ts", "lib/profile.ts", "lib/mirror.ts", "lib/chime-pref.ts", "components/DailyReframe.tsx", "components/HelpPage.tsx"];
+  const keyFiles = ["lib/entry.ts", "lib/profile.ts", "lib/mirror.ts", "lib/chime-pref.ts", "lib/moments.ts", "components/DailyReframe.tsx", "components/HelpPage.tsx"];
   const keys = new Set<string>();
   for (const f of keyFiles) for (const m of read(f).matchAll(/["'](ff_[a-z_]+)["']/g)) keys.add(m[1]);
   check("CODE-forget-keys-found", keys.size >= 7, `found ${[...keys].join(", ")}`);
@@ -133,6 +133,7 @@ check("CODE-age-gate-matches-terms", /adult where you live|age of adulthood/i.te
     ff_region: /removeItem\("ff_region"\)/,
     ff_reframe: /clearReframePref\(\)/,
     ff_reframe_seen: /clearReframePref\(\)/,
+    ff_moments: /clearMoments\(\)/,
   } as Record<string, RegExp>;
   for (const k of keys) {
     check(`CODE-forget-clears-${k}`, Boolean(clears[k]) && clears[k].test(forgetBody), `forget() must clear ${k}`);
