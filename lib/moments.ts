@@ -87,6 +87,16 @@ export function clearMoments(): void {
   }
 }
 
+/** Remove one moment by its exact timestamp. Returns true if a moment was
+ *  found and removed, false otherwise (already deleted, or never there). */
+export function deleteMoment(at: number): boolean {
+  const all = readMoments();
+  const next = all.filter((m) => m.at !== at);
+  if (next.length === all.length) return false;
+  writeMoments(next);
+  return true;
+}
+
 /** Add a moment. Returns false when today is already at the 20-per-day cap. */
 export function addMoment(text: string, tag: MomentTag = "note"): Moment | null {
   const now = Date.now();
