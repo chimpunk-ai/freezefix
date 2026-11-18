@@ -14,12 +14,13 @@
 // bundle keeps the app shell small. The import goes through `new Function` so
 // neither Turbopack nor any other bundler tries to resolve the URL at build.
 //
-// Why tiny, why WASM: tiny-q8 transcribes ten seconds of speech in a few
-// seconds on a mid-range phone and is good enough for "a few words at
-// bedtime". WASM works everywhere MediaRecorder does; WebGPU would be faster on
-// some devices but adds a path that differs per browser. Revisit if the
-// transcripts are poor in practice: `onnx-community/whisper-base` is the next
-// step up (~80 MB).
+// Why tiny, why WASM: tiny-q8 transcribes a chunk of 30 seconds in a few
+// seconds on a mid-range phone. The LogScreen caps recordings at 2 minutes;
+// the pipeline below chunks them at 30s so a long note still finishes in
+// under a minute on a mid phone. WASM works everywhere MediaRecorder does;
+// WebGPU would be faster on some devices but adds a path that differs per
+// browser. Revisit if transcripts are poor: `onnx-community/whisper-base` is
+// the next step up (~80 MB).
 
 const LIB_URL = "https://cdn.jsdelivr.net/npm/@huggingface/transformers@3.8.1";
 const MODEL_ID = "onnx-community/whisper-tiny";
