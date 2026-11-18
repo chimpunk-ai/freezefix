@@ -29,6 +29,8 @@ export default function InstallPrompt({ compact = false, className = "" }: { com
   const [done, setDone] = useState(false);
 
   useEffect(() => {
+    // Mount-only client-only detection (navigator, display-mode); fine here.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setState(detect());
     const onBip = (e: Event) => {
       e.preventDefault();

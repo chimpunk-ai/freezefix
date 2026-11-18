@@ -123,6 +123,8 @@ export function PatternCard({
       return () => window.clearTimeout(t);
     }
     if (shouldAskOptIn(p, readLastAsked())) {
+      // One-shot gate: open the opt-in once per cooldown window.
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setAskNow(true);
       stampAsked();
     }

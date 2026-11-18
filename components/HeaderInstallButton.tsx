@@ -62,7 +62,11 @@ export default function HeaderInstallButton() {
   const popRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
+    // Mount-only platform detection (reads navigator / matchMedia); values
+    // are device constants so no subscribe path is worth adding.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setPlatform(detectPlatform());
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setInstalled(isStandalone());
 
     const onBip = (e: Event) => {

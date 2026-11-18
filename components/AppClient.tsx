@@ -365,6 +365,10 @@ function SettingsView({
   const router = useRouter();
 
   useEffect(() => {
+    // Mount-only read of a client-only value (localStorage). useSyncExternalStore
+    // would be the stricter pattern, but there's no subscribe path worth adding
+    // for a value that never changes within the lifetime of a Settings view.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setChime(readChimePref());
   }, []);
 

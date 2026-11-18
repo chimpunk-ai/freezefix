@@ -120,16 +120,28 @@ export async function POST(req: Request) {
 
   // 3. Five turns a day free, twenty paid.
   const quota = await consumeQuota(req, deviceId, "fix");
+  // When the DB is offline / paused, consumeQuota falls back to a cookie
+  // counter and returns its own set-cookie string. We must forward BOTH
+  // cookies (device + quota) on every response so the cookie-based cap
+  // actually persists across requests.
+  const quotaCookie = (quota as { setCookie?: string }).setCookie;
+  const makeHeaders = (): Headers => {
+    const h = new Headers();
+    h.append("set-cookie", setCookie);
+    if (quotaCookie) h.append("set-cookie", quotaCookie);
+    return h;
+  };
+
   if (!quota.allowed) {
     return NextResponse.json(
       { error: quota.reason === "unavailable" ? "unavailable" : "limit", limit: quota.limit },
-      { status: quota.reason === "unavailable" ? 503 : 429, headers: { "set-cookie": setCookie } }
+      { status: quota.reason === "unavailable" ? 503 : 429, headers: makeHeaders() }
     );
   }
 
   const key = aiKey();
   if (!key) {
-    return NextResponse.json({ error: "unavailable" }, { status: 503, headers: { "set-cookie": setCookie } });
+    return NextResponse.json({ error: "unavailable" }, { status: 503, headers: makeHeaders() });
   }
 
   const context = typeof body.context === "string" ? body.context.slice(0, 3000) : "";
@@ -141,11 +153,11 @@ export async function POST(req: Request) {
 
   const out = await ask(SYSTEM, messages, key);
   if ("error" in out) {
-    return NextResponse.json({ error: out.error }, { status: 502, headers: { "set-cookie": setCookie } });
+    return NextResponse.json({ error: out.error }, { status: 502, headers: makeHeaders() });
   }
 
   return NextResponse.json(
     { reply: endWithStatement(out.text), used: quota.used + 1, limit: quota.limit },
-    { headers: { "set-cookie": setCookie } }
+    { headers: makeHeaders() }
   );
 }

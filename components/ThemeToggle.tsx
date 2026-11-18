@@ -20,7 +20,9 @@ export default function ThemeToggle({ className = "" }: { className?: string }) 
   useEffect(() => {
     // Highlight whatever is actually showing — stored choice if there is one,
     // otherwise the OS preference the bootstrap script picked at first paint.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setTheme(readThemePref() ?? resolvedTheme());
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setReady(true);
   }, []);
 

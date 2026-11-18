@@ -42,6 +42,28 @@ export default function Landing({ paymentsOn }: { paymentsOn: boolean }) {
       <SiteHeader cta={{ href: "/app", label: "open the app" }} />
       <Reveal />
 
+      {/* WebSite JSON-LD: tells Google this is a single-site product, hands it
+          the brand name, and declares the search box (even though we don't have
+          site search — the site IS the search, this way the rich result is
+          cleaner). SoftwareApplication is deliberately omitted until we have
+          real reviews to cite; schema.org rules require aggregateRating or
+          an offer, and faking either is worse than no card at all. */}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "WebSite",
+            name: "Fix",
+            alternateName: "FreezeFix",
+            url: "https://getfreezefix.com",
+            description:
+              "A private pattern-mirror for people who smoke weed and wonder how it's sitting in their life.",
+            inLanguage: "en-GB",
+          }),
+        }}
+      />
+
       <Main>
         {/* Hero: words left, the real card right. */}
         <section aria-labelledby="hero-heading" className="overflow-x-clip">
