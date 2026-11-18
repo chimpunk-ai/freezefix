@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 
 import { MoodFace } from "@/components/MoodFace";
 import { WeekCurve, WeekCurveKey } from "@/components/WeekCurve";
+import WeekInsights from "@/components/WeekInsights";
 import { MOOD_LABEL, dayFromISO, prettyDay, type Mood } from "@/lib/entry";
 import { goalSentence, type WeekStats } from "@/lib/pattern";
 import { playSundayChime } from "@/lib/chime";
@@ -158,6 +159,10 @@ export function PatternCard({
           </p>
         ))}
       </div>
+
+      {/* The at-a-glance insights panel. Hidden on the shelf's compact card
+          because the shelf's job is to show many weeks small, not deep. */}
+      {compact ? null : <WeekInsights stats={stats} />}
 
       <div className="mt-5">
         <WeekCurve stats={stats} id={compact ? `c${stats.end.replace(/-/g, "")}` : undefined} />
