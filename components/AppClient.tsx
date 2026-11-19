@@ -14,7 +14,7 @@ import { ShelfTrend, ShelfTrendKey } from "@/components/ShelfTrend";
 import { Container, Main } from "@/components/Shell";
 import { useRegion } from "@/components/useRegion";
 import { clearEntries, readEntries, todayISO, type Entries } from "@/lib/entry";
-import { DEFAULT_COMPANION_NAME, entriesBefore, growthMessage, growthSince, seedFromProfile } from "@/lib/companion";
+import { companionFor, DEFAULT_COMPANION_NAME, entriesBefore, growthMessage, growthSince, seedFromProfile } from "@/lib/companion";
 import { CompanionBadge } from "@/components/CompanionBadge";
 import { clearSeen, dueMirror, latestMirror, markSeen } from "@/lib/mirror";
 import { recentWeeks, weekStats, type WeekStats } from "@/lib/pattern";
@@ -231,6 +231,11 @@ export default function AppClient({ view = "log" }: { view?: View }) {
                       profile.companionName || profile.name,
                       growthSince(seedFromProfile(profile), entriesBefore(entries, sheet.start), entries)
                     )
+                  : null
+              }
+              companion={
+                profile.showCompanion !== false
+                  ? companionFor(profile.companionName || profile.name, entries)
                   : null
               }
             />
