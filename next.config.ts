@@ -72,9 +72,25 @@ const nextConfig: NextConfig = {
         ],
       },
       // Icons and the manifest can be cached for a day; they change rarely.
+      // Includes favicon.ico in case a legacy agent requests it even though
+      // our icon set is linked by rel="icon" in the head.
       {
-        source: "/:f(manifest.webmanifest|icon.*|apple-touch-icon.*)",
+        source: "/:f(manifest.webmanifest|icon.*|apple-touch-icon.*|favicon.ico)",
         headers: [{ key: "Cache-Control", value: "public, max-age=86400" }],
+      },
+      // Open Graph image + offline shell + any other static image in /public.
+      // One hour at the edge is enough for og-image (we change it rarely);
+      // the offline page is only served from the SW in practice but we cache
+      // its origin fetch too for the rare case the SW hasn't installed.
+      {
+        source: "/:f(og-image.png|offline.html)",
+        headers: [{ key: "Cache-Control", value: "public, max-age=3600" }],
+      },
+      // robots.txt and sitemap.xml: Google and other crawlers hit these
+      // frequently. A 10-minute cache cuts a lot of pointless origin hits.
+      {
+        source: "/:f(robots.txt|sitemap.xml)",
+        headers: [{ key: "Cache-Control", value: "public, max-age=600" }],
       },
     ];
   },
