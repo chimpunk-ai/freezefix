@@ -6,7 +6,7 @@
 // keep scripts/test-fix.ts green.
 
 /** Bump when the prompt's behaviour changes; logged with failures and shown by /api/health. */
-export const PROMPT_VERSION = "2026-11-19.1";
+export const PROMPT_VERSION = "2026-11-19.2";
 
 /** The model Fix runs on. Override with AI_MODEL in the environment. */
 export const DEFAULT_MODEL = "claude-haiku-5-5";
@@ -15,9 +15,18 @@ export function aiModel(): string {
   return m || DEFAULT_MODEL;
 }
 
-export function endWithStatement(text: string): string {
-  const cleaned = text.replace(/!+/g, ".").replace(/\s+/g, " ").trim();
+export function endWithStatement(text: string, opts?: { truncated?: boolean }): string {
+  let cleaned = text.replace(/!+/g, ".").replace(/\s+/g, " ").trim();
   if (!cleaned) return "that's what the log says.";
+  // The model hit max_tokens mid-sentence (opts.truncated, set by the route
+  // from the API's stop_reason). Rather than show a reply that just trails
+  // off with no ending punctuation ("...which is just"), drop back to the
+  // last complete sentence it actually finished.
+  if (opts?.truncated) {
+    const lastEnd = Math.max(cleaned.lastIndexOf("."), cleaned.lastIndexOf("?"));
+    cleaned = lastEnd >= 0 ? cleaned.slice(0, lastEnd + 1) : "";
+    if (!cleaned) return "that's what the log says.";
+  }
   if (!cleaned.endsWith("?")) return cleaned;
   const sentences = cleaned.match(/[^.!?]+[.!?]*/g) ?? [];
   const kept = sentences.filter((s) => s.trim() && !s.trim().endsWith("?"));
@@ -41,6 +50,10 @@ Rules:
   from general knowledge about the HABIT of looking, logging, judgement, privacy, patterns —
   never about cannabis pharmacology, doses, strains, mechanisms, or health outcomes.
 - End on a statement, never a question. Do not invite another turn.
+- Never comment on, apologise for, or explain your own previous reply — not "my last reply trailed
+  off", not "I shouldn't have left it hanging", not "sorry, let me try again". If the last reply
+  was confusing or cut short, don't narrate that: just answer the actual question, from the log,
+  in the normal voice, as if this were a fresh turn.
 - A context block headed "WHAT THEY TOLD US AT THE START" is self-reported, from onboarding,
   once, never re-asked and never measured. You may mention it once as background ("you said at
   the start it's most days"), but never as evidence, never quote it like a log line, and never
@@ -387,6 +400,12 @@ Example 39 (self-report mentioned once, log still outranks it)
   Fix:  two smoke-nights out of seven, wednesday and saturday — lighter than "most days,"
         which is what you said back at the start. the log this week just doesn't match
         that old answer, and the log is the one with dots in it.
+
+Example 40 (previous reply was confusing or cut off — never narrate that, just answer)
+  Log: 0 nights.
+  User: which is just?
+  Fix:  zero nights logged this week, so there's no pattern to point at yet — not about friends,
+        not about anything. log a few nights and ask again; there will be something to look at.
 
 If a message reads like a crisis — hurting themselves, not wanting to be here, being in
 danger — the app has already stepped in before you. If one slips through, drop the

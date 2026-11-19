@@ -55,7 +55,6 @@ type NavItem = { href: string; label: string };
 const PUBLIC_NAV: NavItem[] = [
   { href: "/plans", label: "what it costs" },
   { href: "/myths", label: "myths & reality" },
-  { href: "/install", label: "install" },
   { href: "/privacy", label: "privacy" },
 ];
 

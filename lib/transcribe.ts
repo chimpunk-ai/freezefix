@@ -14,17 +14,23 @@
 // bundle keeps the app shell small. The import goes through `new Function` so
 // neither Turbopack nor any other bundler tries to resolve the URL at build.
 //
-// Why tiny, why WASM: tiny-q8 transcribes a chunk of 30 seconds in a few
-// seconds on a mid-range phone. The LogScreen caps recordings at 2 minutes;
-// the pipeline below chunks them at 30s so a long note still finishes in
-// under a minute on a mid phone. WASM works everywhere MediaRecorder does;
+// Why base, why WASM: base-q8 still transcribes a chunk of 30 seconds in a
+// handful of seconds on a mid-range phone, well inside the LogScreen's
+// 2-minute cap chunked at 30s. WASM works everywhere MediaRecorder does;
 // WebGPU would be faster on some devices but adds a path that differs per
-// browser. Revisit if transcripts are poor: `onnx-community/whisper-base` is
-// the next step up (~80 MB).
+// browser.
+//
+// Bumped from whisper-tiny to whisper-base on 19 Nov 2026 after users
+// reported real transcripts dropping words — tiny is the least accurate
+// Whisper size, and this was the documented next step. Also added a 5s
+// stride between chunks: with chunk_length_s alone, a word spoken right at
+// a 30s boundary can land half in one chunk and half in the next and get
+// dropped entirely; the overlap gives the model enough context on both
+// sides of the seam to transcribe it once instead of losing it.
 
 const LIB_URL = "https://cdn.jsdelivr.net/npm/@huggingface/transformers@3.8.1";
-const MODEL_ID = "onnx-community/whisper-tiny";
-export const MODEL_SIZE_LABEL = "about 40 MB";
+const MODEL_ID = "onnx-community/whisper-base";
+export const MODEL_SIZE_LABEL = "about 80 MB";
 const TARGET_RATE = 16000;
 const MIN_SECONDS = 0.6;
 
@@ -219,7 +225,7 @@ export async function transcribe(blob: Blob, onProgress?: (p: Progress) => void)
   ]);
   let out: AsrOutput;
   try {
-    out = await pipe(audio, { task: "transcribe", chunk_length_s: 30, return_timestamps: false });
+    out = await pipe(audio, { task: "transcribe", chunk_length_s: 30, stride_length_s: 5, return_timestamps: false });
   } catch (err) {
     throw new VoiceError("decode-failed", err instanceof Error ? err.message : "model");
   } finally {

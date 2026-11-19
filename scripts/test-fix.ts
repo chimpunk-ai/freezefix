@@ -157,6 +157,24 @@ for (const [id, input, expected] of EWS_CASES) {
   check(id, got === expected, `want "${expected}" got "${got}"`);
 }
 
+// A reply cut off by max_tokens must drop back to the last complete
+// sentence, never show a dangling fragment with no ending punctuation.
+const TRUNCATED_CASES: Array<[string, string, string]> = [
+  ["trunc-drops-dangling-fragment", "two of seven nights. the goal line reads 0 of 3 so far, which is just", "two of seven nights."],
+  ["trunc-keeps-complete-sentences", "four of seven nights. mostly after work. the trend is", "four of seven nights. mostly after work."],
+  ["trunc-no-complete-sentence-falls-back", "the goal line reads 0 of 3 so far, which is just", "that's what the log says."],
+  ["trunc-ends-cleanly-unchanged", "two of seven nights.", "two of seven nights."],
+];
+for (const [id, input, expected] of TRUNCATED_CASES) {
+  const got = endWithStatement(input, { truncated: true });
+  check(id, got === expected, `want "${expected}" got "${got}"`);
+}
+// untruncated replies are never trimmed back this way, even if they'd look truncated.
+check(
+  "trunc-false-leaves-dangling-text-alone",
+  endWithStatement("the goal line reads 0 of 3 so far, which is just") === "the goal line reads 0 of 3 so far, which is just",
+);
+
 // Property: the output never ends with "?"
 for (let i = 0; i < 20; i++) {
   const seed = ["three nights", "mood two", "friday the trigger was bored"][i % 3];
