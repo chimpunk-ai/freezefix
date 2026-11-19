@@ -1,4 +1,5 @@
 import { companionFor, STAGE_LABEL } from "@/lib/companion";
+import { CompanionAvatar } from "@/components/CompanionAvatar";
 import type { Entries } from "@/lib/entry";
 
 /**
@@ -14,7 +15,8 @@ export function CompanionBadge({ name, entries }: { name: string; entries: Entri
   const { level, stage, currentStreak, longestStreak, nightsToNextLevel } = companion;
 
   return (
-    <div className="mb-5 flex items-center justify-between gap-3 rounded-card border border-line bg-card px-4 py-3">
+    <div className="mb-5 flex items-center gap-3 rounded-card border border-line bg-card px-4 py-3">
+      <CompanionAvatar stage={stage} size={40} className="shrink-0 text-ink-soft" animate={false} />
       <div className="min-w-0">
         <p className="truncate text-14 text-ink">
           <span className="font-medium">{companion.name}</span>{" "}
