@@ -126,8 +126,18 @@ export function readProfile(): Profile {
     // Narrow the optional arrays carefully — stored profiles from before
     // these fields existed will simply pass through as undefined, which is
     // what the UI already treats as "not asked".
+    // Validated against the canonical INTERFERES list, the same way
+    // preferredTriggers is validated against TRIGGERS just below. This used
+    // to only check typeof === "string", so a garbage or stale value (an
+    // old copy of this field from before INTERFERES changed shape, or
+    // corrupted storage) would pass through unfiltered and later get
+    // echoed back to the user (behaviour-profile copy) and into Fix's
+    // self-report context ("said it gets in the way of: <whatever that
+    // string was>") as if it were one of the real onboarding options.
     const interferesWith = Array.isArray(p.interferesWith)
-      ? (p.interferesWith.filter((s): s is string => typeof s === "string").slice(0, 8))
+      ? (p.interferesWith.filter(
+          (s): s is string => typeof s === "string" && (INTERFERES as readonly string[]).includes(s)
+        ).slice(0, 8))
       : undefined;
     const preferredTriggers = Array.isArray(p.preferredTriggers)
       ? (p.preferredTriggers
