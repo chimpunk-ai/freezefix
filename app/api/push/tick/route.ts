@@ -19,13 +19,23 @@ export async function POST(req: Request) {
   if (!secret || req.headers.get("x-tick-secret") !== secret) {
     return NextResponse.json({ error: "forbidden" }, { status: 403 });
   }
-  if (!pushConfigured()) return NextResponse.json({ error: "off" }, { status: 503 });
+  // Reminders aren't configured yet (no VAPID keys in secrets, or no DB).
+  // This is a deliberate "feature off" state, not a server error. Returning
+  // 503 made the GitHub Actions cron (every 10 min = 36 hits in 6h) register
+  // as 5xx in Cloudflare metrics, which skewed the observable error rate up
+  // to 15% while nothing was actually broken. Return 200 noop instead; the
+  // cron sees success and doesn't retry, metrics stay honest.
+  if (!pushConfigured()) {
+    return NextResponse.json({ ok: true, noop: "reminders-not-configured" });
+  }
 
   const pub = process.env.VAPID_PUBLIC_KEY as string;
   let key: CryptoKey;
   try {
     key = await importVapidPrivateKey(pub, process.env.VAPID_PRIVATE_KEY as string);
   } catch {
+    // Bad key format IS a real server error — the secret is present but
+    // wrong, so this one stays as 500 so it shows up in alerting.
     return NextResponse.json({ error: "bad_keys" }, { status: 500 });
   }
 

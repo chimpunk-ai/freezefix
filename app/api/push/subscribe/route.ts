@@ -7,7 +7,10 @@ import { parseSubscribeBody, pushConfigured, upsertSubscription } from "@/lib/pu
 // parser, and nothing about the log is in the body.
 export async function POST(req: Request) {
   if (!pushConfigured()) {
-    return NextResponse.json({ error: "off" }, { status: 503 });
+    // Reminders not configured on the server. Not a 5xx: the UI expects a
+    // specific reason so it can show "reminders aren't available yet" instead
+    // of "something broke". Stays as 200 with an explicit flag.
+    return NextResponse.json({ ok: false, reason: "not-configured" });
   }
   let body: unknown;
   try {
