@@ -11,6 +11,19 @@ import type { Stat, StatKey } from "@/lib/companion";
 // Every bar only ever fills from the left; there is no "lost" state. See
 // lib/companion.ts's comment on statsFor for why that's safe to promise.
 
+// Compact's five columns are too narrow for the full words — "awareness"
+// and "self-understanding" were truncating into an unreadable "AWARENE…"
+// and wrapping into a two-line overflow. Fixed four-letter codes fit every
+// column without truncation or wrapping; the full word is still one tap/
+// hover away via the wrapper's `title`.
+const SHORT_LABEL: Record<StatKey, string> = {
+  awareness: "awar",
+  mindfulness: "mind",
+  consistency: "cons",
+  resilience: "resi",
+  selfUnderstanding: "self",
+};
+
 export function CompanionStats({
   stats,
   captions,
@@ -35,7 +48,7 @@ export function CompanionStats({
                 />
               ))}
             </div>
-            <p className="mt-1 truncate text-[10px] uppercase tracking-wide text-ink-faint">{s.label}</p>
+            <p className="mt-1 text-center text-[10px] uppercase tracking-wide text-ink-faint">{SHORT_LABEL[s.key]}</p>
           </div>
         ))}
       </div>
