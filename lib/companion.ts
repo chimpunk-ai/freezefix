@@ -237,7 +237,7 @@ export type Stat = {
 
 export const STAT_ORDER: StatKey[] = ["awareness", "mindfulness", "consistency", "resilience", "selfUnderstanding"];
 
-const STAT_LABEL: Record<StatKey, string> = {
+export const STAT_LABEL: Record<StatKey, string> = {
   awareness: "awareness",
   mindfulness: "mindfulness",
   consistency: "consistency",
@@ -337,4 +337,40 @@ export function statsFor(seed: ProfileSeed, entries: Entries): Stat[] {
     maxTier: MAX_TIER,
     blurb: STAT_BLURB[key],
   }));
+}
+
+// --- the "it grew" moment -------------------------------------------------
+//
+// "After saving a journal, trigger a satisfying but subtle character
+// progression animation... 'Your awareness just grew.'" — from the product
+// vision. Built by diffing real before/after state (never a guess, never
+// shown for a night that didn't actually move a bar), and never mentioning
+// whether the night was a smoke night — same rule as everything else here.
+
+export type Growth = { leveledUp: boolean; grownStat: StatKey | null };
+
+/** What changed between one log state and the next, for exactly one save. */
+export function growthSince(seed: ProfileSeed, before: Entries, after: Entries): Growth {
+  const beforeLevel = levelFor(Object.keys(before).length);
+  const afterLevel = levelFor(Object.keys(after).length);
+  const beforeStats = statsFor(seed, before);
+  const afterStats = statsFor(seed, after);
+
+  let grownStat: StatKey | null = null;
+  for (let i = 0; i < STAT_ORDER.length; i++) {
+    if (afterStats[i].tier > beforeStats[i].tier) {
+      grownStat = STAT_ORDER[i];
+      break;
+    }
+  }
+  return { leveledUp: afterLevel > beforeLevel, grownStat };
+}
+
+/** One quiet line for the saved screen, or null when nothing moved this
+ *  time (most nights, once the easy early bars are full) — never padded
+ *  out with a generic "nice job" when nothing actually grew. */
+export function growthMessage(name: string, growth: Growth): string | null {
+  if (growth.leveledUp) return `${name} just grew — a new level.`;
+  if (growth.grownStat) return `your ${STAT_LABEL[growth.grownStat]} grew a little.`;
+  return null;
 }
