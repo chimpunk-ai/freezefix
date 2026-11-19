@@ -61,6 +61,13 @@ const REQUIRED_RULES: Array<[string, string]> = [
   ["end-on-statement", /end on a statement/i],
   ["no-moralise", /never moralise/i],
   ["no-clean-relapse-streak", /clean, relapse, streak/i],
+  // The companion feature (lib/companion.ts) gives everyone a logging streak
+  // and a level, shown on its own screen. That is a different thing from the
+  // "clean/relapse streak" framing banned just above — this rule exists so
+  // Fix never contradicts a feature the user can see with their own eyes
+  // ("no streaks" would become a lie), while still refusing to compute or
+  // echo that number itself, since it isn't in Fix's context.
+  ["companion-streak-boundary", /companion.*levels up from logging consistency/i],
   ["no-recommend-quitting", /never recommend quitting/i],
   ["no-doses-strains", /strains, doses/i],
   ["no-diagnosis", /never give medical advice or a diagnosis/i],
@@ -71,7 +78,15 @@ for (const [id, re] of REQUIRED_RULES) {
 }
 
 // Few-shot examples: count + shape.
-const examples = sys.match(/^Example \d+$/gm) ?? [];
+//
+// Headers are "Example N" for the first few and "Example N (short label)"
+// from Example 16 on. A bare `\d+$` anchor only ever matched the former —
+// it silently under-counted by more than half the bank (15 of 39) and let
+// `exampleBlocks` merge everything from Example 16 onward into one giant
+// tail block, which still passed the per-block Log/User/Fix checks below
+// because SOME line inside that huge block matched each one. Matching the
+// optional trailing label closes that gap.
+const examples = sys.match(/^Example \d+(?: \(.*\))?$/gm) ?? [];
 check(
   "FIX-examples-count",
   examples.length >= 10,
@@ -79,7 +94,7 @@ check(
 );
 
 // Every Example N block must contain a Log:, a User: and a Fix: line.
-const exampleBlocks = sys.split(/^Example \d+$/m).slice(1); // drop preamble
+const exampleBlocks = sys.split(/^Example \d+(?: \(.*\))?$/m).slice(1); // drop preamble
 check(
   "FIX-example-blocks-count-matches",
   exampleBlocks.length === examples.length,
@@ -156,6 +171,36 @@ for (const [id, input, expected] of EWS_CASES) {
   const got = endWithStatement(input);
   check(id, got === expected, `want "${expected}" got "${got}"`);
 }
+
+// -- companion/streak consistency ----------------------------------------
+//
+// The "pure meta" example once answered "what makes this different from
+// other tracker apps?" with "no counter of days off, no streaks, no
+// scoreboard" — true when it was written, false once the companion feature
+// (a logging streak + level, shown on its own screen) ships. A reviewer
+// restoring that line from an old copy/paste would reintroduce a claim Fix
+// would make that the product itself contradicts on screen.
+check(
+  "FIX-no-stale-no-streaks-claim",
+  !/no counter of days off, no streaks, no scoreboard/i.test(sys),
+  "the meta example still denies a feature (companion streak/level) the app now ships",
+);
+// And the replacement must still carry the point that example was making:
+// no scoreboard of smoking itself, which is the thing the harm-reduction
+// rules actually promise.
+check(
+  "FIX-meta-example-still-disclaims-smoking-scoreboard",
+  /no scoreboard of what you smoked/i.test(sys),
+);
+// The one example that's allowed to use the word "streak" in a Fix: reply
+// is the companion-boundary one, and only to point away from itself, never
+// to state or imply a number.
+const streakInReplies = replyText.includes("streak");
+check(
+  "FIX-streak-only-appears-pointing-to-companion-screen",
+  streakInReplies && replyText.includes("that number lives on the companion screen"),
+  "a Fix: reply uses 'streak' without the boundary language that keeps it from quoting a number",
+);
 
 // Property: the output never ends with "?"
 for (let i = 0; i < 20; i++) {
