@@ -492,6 +492,19 @@ export default function Onboarding({ onDone }: { onDone: (p: Profile) => void })
               </li>
             ))}
           </ul>
+          {/* One honest line about the one thing that DOES leave the phone —
+              only on your own tap, never automatically. Says no more than
+              lib/legal.ts §3 already discloses; this just surfaces it here,
+              at the point it first matters, instead of only on /privacy. */}
+          <p className="mt-5 text-12 text-ink-faint">
+            if you ask Fix about your week, that week and your question go to our AI provider
+            (Anthropic) to write the reply — only when you tap ask, never on their own. voice notes
+            are typed out on your phone and never leave it.{" "}
+            <Link href="/privacy" className="underline decoration-line underline-offset-4">
+              full detail
+            </Link>
+            .
+          </p>
           <button type="button" onClick={() => setStep(10)} className={`mt-8 ${primaryBtn}`}>
             see your profile
           </button>
