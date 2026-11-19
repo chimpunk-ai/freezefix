@@ -206,3 +206,24 @@ jobs:
         # The shelf's three sample weeks go through the real weekStats; the
         # first stays thin so "a gap is a dot, never a no" is visibly true.
         run: npm run test:landing
+
+      - name: Companion (gamification) tests
+        # Level/stage thresholds and the streak math (longest streak never
+        # resets downward, a gap never shows as a loss) — the one part of
+        # this feature that has to stay reconciled with Fix's own
+        # never-grade-smoking rules as the code around it changes.
+        run: npm run test:companion
+
+      - name: Push reminders tests
+        run: npm run test:push
+
+      - name: Quota tests
+        # Server-side daily limits and their cookie fallback when the
+        # database isn't configured or the RPC fails.
+        run: npm run test:quota
+
+      - name: Entry log tests
+        run: npm run test:entry
+
+      - name: Moments tests
+        run: npm run test:moments
