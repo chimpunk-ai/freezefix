@@ -309,12 +309,29 @@ export function recentWeeks(entries: Entries, goal: Goal | null, count = 12, end
   return out;
 }
 
+/** What they told us once, at onboarding — never re-asked, never verified
+ *  against anything. Kept separate from the log on purpose: these are five
+ *  self-reported answers from day one, not a measurement. */
+export type SelfReport = {
+  frequency?: string;
+  triedCuttingDown?: string;
+  interferesWith?: string[];
+  smokeTime?: string;
+};
+
 /**
  * The only text Fix is allowed to be grounded in. Built from entries, sent to
  * the server, and quoted back by the model. Deliberately factual: no
  * interpretation, no causes.
  */
-export function buildFixContext(stats: WeekStats, entries: Entries, goal: Goal | null, moments: ReadonlyArray<{ at: number; day: string; text: string; tag: string }> = [], maxChars = 2400): string {
+export function buildFixContext(
+  stats: WeekStats,
+  entries: Entries,
+  goal: Goal | null,
+  moments: ReadonlyArray<{ at: number; day: string; text: string; tag: string }> = [],
+  selfReport?: SelfReport,
+  maxChars = 2400
+): string {
   const lines: string[] = [];
   lines.push("THEIR OWN LOG, LAST SEVEN DAYS (newest last):");
   for (const c of stats.cells) {
@@ -360,6 +377,18 @@ export function buildFixContext(stats: WeekStats, entries: Entries, goal: Goal |
       const hhmm = new Date(m.at).toTimeString().slice(0, 5);
       lines.push(`  ${m.day} ${hhmm} [${m.tag}]: "${m.text.slice(0, 200)}"`);
     }
+  }
+  // Self-report: what they told us once at onboarding, never re-asked and
+  // never verified. Kept visually separate from the log above and labeled
+  // as self-reported so Fix can mention it as background without ever
+  // treating it as something it measured.
+  if (selfReport && (selfReport.frequency || selfReport.triedCuttingDown || selfReport.interferesWith?.length || selfReport.smokeTime)) {
+    lines.push("");
+    lines.push("WHAT THEY TOLD US AT THE START (self-reported once, not log data — never treat as measured):");
+    if (selfReport.frequency) lines.push(`  how often: ${selfReport.frequency}`);
+    if (selfReport.triedCuttingDown) lines.push(`  tried cutting down before: ${selfReport.triedCuttingDown}`);
+    if (selfReport.interferesWith?.length) lines.push(`  said it gets in the way of: ${selfReport.interferesWith.join(", ")}`);
+    if (selfReport.smokeTime) lines.push(`  usual time: ${selfReport.smokeTime}`);
   }
   const text = lines.join("\n");
   return text.length > maxChars ? `${text.slice(0, maxChars)}\n[log truncated]` : text;

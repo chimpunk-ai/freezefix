@@ -57,8 +57,8 @@ export default function TodayMoments({ refreshKey = 0, className = "" }: Props) 
 
   if (!items.length) return null;
 
-  function undo(at: number) {
-    if (deleteMoment(at)) {
+  function undo(id: string) {
+    if (deleteMoment(id)) {
       setItems(momentsForDay(todayISO()));
     }
   }
@@ -72,7 +72,7 @@ export default function TodayMoments({ refreshKey = 0, className = "" }: Props) 
     <ul className={`mt-4 space-y-2 ${className}`.trim()} aria-label="today's moments">
       {reversed.map((m) => (
         <li
-          key={m.at}
+          key={m.id}
           className="flex items-start gap-3 rounded-card border border-line bg-card/50 px-3 py-2.5"
         >
           <div className="mt-[2px] flex shrink-0 flex-col items-center text-11 text-ink-faint">
@@ -86,7 +86,7 @@ export default function TodayMoments({ refreshKey = 0, className = "" }: Props) 
           </p>
           <button
             type="button"
-            onClick={() => undo(m.at)}
+            onClick={() => undo(m.id)}
             aria-label={`undo moment from ${hhmm(m.at)}`}
             className="min-h-9 shrink-0 self-center rounded-pill px-2 text-12 text-ink-faint underline decoration-line underline-offset-4 hover:text-ink-soft"
           >
