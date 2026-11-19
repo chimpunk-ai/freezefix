@@ -19,7 +19,8 @@ import {
 } from "@/lib/profile";
 import { TRIGGERS, TRIGGER_LABEL, todayISO, type TriggerId } from "@/lib/entry";
 import { buildBehaviourProfile } from "@/lib/behaviour-profile";
-import { companionFor, DEFAULT_COMPANION_NAME, STAGE_LABEL } from "@/lib/companion";
+import { companionFor, traitFor, DEFAULT_COMPANION_NAME, STAGE_LABEL } from "@/lib/companion";
+import { CompanionAvatar } from "@/components/CompanionAvatar";
 import { plansFor, TRIAL_DAYS, type PlanId } from "@/lib/plans";
 
 // Twelve small screens. No email, no password, no phone number: a pet-name,
@@ -499,6 +500,11 @@ export default function Onboarding({ onDone }: { onDone: (p: Profile) => void })
 
       {step === 10 ? (
         <section className="ff-rise">
+          {/* Same order as before: the profile data (what they just told us,
+              in their own words) is the headline, exactly as it was. The
+              avatar is added AFTER it, inside the existing "meet your
+              companion" box — nothing here is removed or demoted, the
+              drawing is just new. */}
           <p className="text-12 uppercase tracking-[0.18em] text-signpost">built from what you just told us</p>
           <h1 className="mt-2 font-display text-28 text-ink">
             {name.trim() ? `${name.trim()}'s` : "your"} cannabis behaviour profile.
@@ -519,12 +525,13 @@ export default function Onboarding({ onDone }: { onDone: (p: Profile) => void })
             what you told it before that.
           </p>
 
-          <div className="mt-6 rounded-sheet border border-line bg-card p-6">
-            <p className="text-12 uppercase tracking-[0.18em] text-signpost">give it a name</p>
+          <div className="mt-6 flex flex-col items-center rounded-sheet border border-line bg-card px-6 py-8 text-center">
+            <CompanionAvatar stage="seed" size={104} className="text-ink" />
+            <p className="mt-2 text-12 uppercase tracking-[0.18em] text-signpost">give it a name</p>
             <h2 className="mt-2 font-display text-20 text-ink">meet your companion.</h2>
-            <p className="mt-2 text-14 text-ink-soft">
+            <p className="mt-2 max-w-[32ch] text-14 text-ink-soft">
               it levels up when you log a night — never when you do or don&rsquo;t smoke. a gap in the log
-              never costs you anything you&rsquo;ve already earned.
+              never costs you anything you&rsquo;ve already earned. ({traitFor({ smokeTime, frequency, triedCuttingDown })})
             </p>
             <input
               value={companionName}
@@ -535,9 +542,10 @@ export default function Onboarding({ onDone }: { onDone: (p: Profile) => void })
               autoCorrect="off"
               spellCheck={false}
               enterKeyHint="done"
-              className="mt-4 w-full rounded-card border border-line bg-bg px-4 py-3 font-display text-20 text-ink placeholder:text-ink-faint focus:border-accent/50 focus:outline-none"
+              aria-label="give your companion a name"
+              className="mt-4 w-full max-w-[22ch] rounded-card border border-line bg-bg px-4 py-3 text-center font-display text-16 text-ink placeholder:text-ink-faint focus:border-accent/50 focus:outline-none"
             />
-            <p className="mt-3 text-14 text-ink-soft">
+            <p className="mt-3 text-12 text-ink-faint">
               {(() => {
                 const c = companionFor(companionName, {});
                 return `${c.name} starts as ${STAGE_LABEL[c.stage]} — level ${c.level}. you can rename it or turn it off any time in settings.`;

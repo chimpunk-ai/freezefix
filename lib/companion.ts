@@ -110,6 +110,31 @@ export function streaksFor(entries: Entries, today: string = todayISO()): { curr
   return { current, longest };
 }
 
+// A one-line personality for the companion reveal at onboarding, when the
+// log has zero nights and every companion would otherwise be identical
+// (seed, level 1). This isn't gamifying smoking — it never mentions whether
+// they smoke more or less — it's reflecting the shape of their OWN answers
+// back at them, same honest-mirror rule as lib/behaviour-profile.ts. Picked
+// by simple priority, not scored or weighted, so it stays easy to reason
+// about and impossible to feel "graded" by.
+export function traitFor(input: {
+  smokeTime?: string;
+  frequency?: string;
+  triedCuttingDown?: string;
+}): string {
+  if (input.triedCuttingDown === "tried, and it stuck for a while") {
+    return "steady — you've done this before, and it held.";
+  }
+  if (input.triedCuttingDown === "tried, and slipped back") {
+    return "persistent — you've been here before and came back to look again.";
+  }
+  if (input.smokeTime === "late night") return "a night owl, by your own account.";
+  if (input.smokeTime === "after work") return "quietly unwinds, same time most days.";
+  if (input.frequency === "it varies a lot") return "hard to pin down — even to yourself.";
+  if (input.frequency === "pretty much daily") return "consistent, at least in this.";
+  return "just getting started — the shape comes later.";
+}
+
 export function companionFor(name: string, entries: Entries, today?: string): Companion {
   const totalNightsLogged = Object.keys(entries).length;
   const { current, longest } = streaksFor(entries, today);

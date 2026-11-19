@@ -8,7 +8,7 @@
 //     silently drops to zero just because tonight hasn't been logged yet.
 //   - The "longest streak" number ever decreasing.
 
-import { companionFor, levelFor, nightsToNextLevel, stageFor, streaksFor, DEFAULT_COMPANION_NAME } from "../lib/companion";
+import { companionFor, levelFor, nightsToNextLevel, stageFor, streaksFor, traitFor, DEFAULT_COMPANION_NAME } from "../lib/companion";
 import { addDays, type Entries, type Entry } from "../lib/entry";
 
 type Result = { id: string; ok: boolean; note?: string };
@@ -106,6 +106,33 @@ check("streaks-empty-log", streaksFor({}, "2026-11-19").current === 0 && streaks
 {
   const c = companionFor("  Rex  ", {}, "2026-11-19");
   check("companion-name-trimmed", c.name === "Rex");
+}
+
+// --- traitFor ----------------------------------------------------------------
+// The onboarding reveal's one-line personality, read from the person's own
+// answers, not fabricated. Must never mention smoking more/less/dosage —
+// same forbidden-words boundary Fix's own prompt holds (lib/fix-prompt.ts).
+
+const FORBIDDEN_IN_TRAIT = /\b(less|more weed|smok(e|ing)|dose|doses|strain|relapse|clean|addict)\b/i;
+
+check("trait-never-mentions-smoking-amount", !FORBIDDEN_IN_TRAIT.test(traitFor({})));
+check(
+  "trait-stuck-before-wins-over-slipped-back",
+  traitFor({ triedCuttingDown: "tried, and it stuck for a while" }).includes("held")
+);
+check(
+  "trait-slipped-back-distinct-from-stuck",
+  traitFor({ triedCuttingDown: "tried, and slipped back" }) !==
+    traitFor({ triedCuttingDown: "tried, and it stuck for a while" })
+);
+check("trait-late-night", /night owl/.test(traitFor({ smokeTime: "late night" })));
+check("trait-after-work", /unwind/.test(traitFor({ smokeTime: "after work" })));
+check("trait-no-answers-is-honest-not-invented", traitFor({}).includes("later"));
+for (const s of ["after work", "the evening", "late night", "weekends only", "varies, honestly"]) {
+  check(`trait-no-crash-smoketime-${s.replace(/\s+/g, "-")}`, typeof traitFor({ smokeTime: s }) === "string");
+}
+for (const f of ["pretty much daily", "most days", "a few times a week", "weekends mostly", "it varies a lot"]) {
+  check(`trait-no-crash-frequency-${f.replace(/\s+/g, "-")}`, typeof traitFor({ frequency: f }) === "string");
 }
 
 const pass = results.filter((r) => r.ok).length;

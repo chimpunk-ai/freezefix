@@ -337,6 +337,18 @@ a {
   to { opacity: 1; }
 }
 
+/* The companion's one entrance: a small settle-in, not a bounce loop — it
+   plays once when the avatar first mounts (onboarding's reveal, or the
+   in-app badge on load) and never again, same restraint as ff-rise. Covered
+   by the prefers-reduced-motion rule above like every other animation here. */
+.ff-companion-rise {
+  animation: ff-companion-rise 520ms cubic-bezier(0.2, 0.8, 0.25, 1) both;
+}
+@keyframes ff-companion-rise {
+  from { opacity: 0; transform: translateY(10px) scale(0.92); }
+  to { opacity: 1; transform: none; }
+}
+
 .ff-chip {
   transition: transform 140ms cubic-bezier(0.2, 0.8, 0.3, 1), background-color 140ms ease, border-color 140ms ease;
 }
