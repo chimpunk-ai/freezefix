@@ -51,7 +51,24 @@ type AsrOutput = { text?: string; language?: string; chunks?: Array<{ text?: str
 type AsrPipeline = (audio: Float32Array, opts: Record<string, unknown>) => Promise<AsrOutput>;
 
 // Bundler-proof dynamic import of a URL.
-const importUrl = new Function("u", "return import(u)") as (u: string) => Promise<Record<string, unknown>>;
+//
+// Built lazily (inside this function, not at module scope) on purpose: the
+// `new Function(...)` constructor call itself needs 'unsafe-eval' in the
+// page's CSP, same as eval() — it doesn't matter that the string it builds
+// is just "return import(u)". When this was built at module load time, any
+// page whose bundle pulled in this file (even one that never records a
+// voice note) threw that EvalError the instant the module evaluated,
+// because our CSP's script-src only allows 'wasm-unsafe-eval', not
+// 'unsafe-eval'. That's what took getfreezefix.com's landing page down on
+// 19 Nov 2026: the crash had nothing to do with WeekInsights (see the
+// commented-out import below, which stays removed pending its own
+// diagnosis, but was never the real cause here). Deferring this call means
+// a page that never touches voice notes never builds it and never trips
+// the CSP check. Recording a voice note still needs 'unsafe-eval' — see
+// the script-src comment in next.config.ts, updated alongside this.
+function buildImportUrl(): (u: string) => Promise<Record<string, unknown>> {
+  return new Function("u", "return import(u)") as (u: string) => Promise<Record<string, unknown>>;
+}
 
 let pipePromise: Promise<AsrPipeline> | null = null;
 let cancelled = false;
@@ -97,7 +114,7 @@ async function loadPipeline(onProgress?: (p: Progress) => void): Promise<AsrPipe
   if (!isSupported()) throw new VoiceError("unsupported");
   let mod: Record<string, unknown>;
   try {
-    mod = await importUrl(LIB_URL);
+    mod = await buildImportUrl()(LIB_URL);
   } catch {
     throw new VoiceError("model-download-failed", "library");
   }
