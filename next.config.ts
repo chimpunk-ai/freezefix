@@ -9,6 +9,20 @@ const nextConfig: NextConfig = {
     //     jsDelivr, which lib/transcribe.ts imports Whisper from at runtime.
     //     'wasm-unsafe-eval' is needed because WebAssembly.compileStreaming
     //     runs user-fetched WASM; without it, voice notes break.
+    //     'unsafe-eval' is ALSO needed, separately: lib/transcribe.ts builds
+    //     a bundler-proof dynamic import with `new Function("u", "return
+    //     import(u)")`, and the Function constructor is gated by
+    //     'unsafe-eval' no matter what string it's given — this is not the
+    //     same check as 'wasm-unsafe-eval'. Without it, calling that
+    //     constructor throws an EvalError. Added 19 Nov 2026 after that
+    //     throw took down the whole site: the call used to happen at
+    //     module load time, so any page whose bundle included
+    //     lib/transcribe.ts (landing included, via a shared chunk) crashed
+    //     on load, not just the voice-note flow. The module-scope call is
+    //     now deferred to inside loadPipeline() (see lib/transcribe.ts), so
+    //     a page that never touches voice notes won't trip this even
+    //     without the directive — but recording one still needs it, so it
+    //     stays. Follow-up: a nonce-based CSP would let us drop this.
     //   - style: self + inline (Tailwind inlines critical styles) + Google
     //     Fonts' CSS at fonts.googleapis.com.
     //   - font: Google Fonts' font files at fonts.gstatic.com.
@@ -27,7 +41,7 @@ const nextConfig: NextConfig = {
     // behaviour. A nonce-based CSP is the next step; tracked for a follow-up.
     const CSP = [
       "default-src 'self'",
-      "script-src 'self' 'unsafe-inline' 'wasm-unsafe-eval' https://cdn.jsdelivr.net",
+      "script-src 'self' 'unsafe-inline' 'unsafe-eval' 'wasm-unsafe-eval' https://cdn.jsdelivr.net",
       "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
       "font-src 'self' https://fonts.gstatic.com",
       "img-src 'self' data: blob:",
