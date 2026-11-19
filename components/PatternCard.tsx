@@ -92,6 +92,7 @@ export function PatternCard({
   onClose,
   dimmed = false,
   compact = false,
+  growthLine = null,
 }: {
   name: string;
   stats: WeekStats;
@@ -100,6 +101,11 @@ export function PatternCard({
   dimmed?: boolean;
   /** Smaller heading and padding, for three-up shelves. Same content. */
   compact?: boolean;
+  /** "fix just grew — a new level.", from lib/companion.ts's growthMessage,
+   *  diffed across the whole week — or null, shown as nothing, same rule
+   *  as the per-night version: never padded with a generic line. Omitted
+   *  entirely on the dimmed/demo cards (no real growth to report). */
+  growthLine?: string | null;
 }) {
   const who = name.trim() || "you";
   const line = stats.goalLine;
@@ -182,6 +188,8 @@ export function PatternCard({
       ) : null}
 
       {stats.observation ? <p className="mt-3 text-14 text-ink-faint">{stats.observation}</p> : null}
+
+      {!dimmed && growthLine ? <p className="mt-3 text-14 text-accent">{growthLine}</p> : null}
 
       <p className="mt-5 text-12 text-ink-faint">only you know what it means.</p>
 

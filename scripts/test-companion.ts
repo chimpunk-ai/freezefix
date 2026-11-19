@@ -10,6 +10,7 @@
 
 import {
   companionFor,
+  entriesBefore,
   growthMessage,
   growthSince,
   levelFor,
@@ -340,6 +341,28 @@ check(
   "growth-message-leveling-up-wins-over-a-stat",
   growthMessage("fix", { leveledUp: true, grownStat: "awareness" }).includes("level")
 );
+
+// --- entriesBefore ---------------------------------------------------------
+// Reconstructs "the log as it stood before day X", for the Sunday card's
+// whole-week growth line. Cutoff day itself must be excluded.
+
+{
+  const e = fill("2026-11-10", 10); // 10..19
+  const before = entriesBefore(e, "2026-11-15");
+  check("entries-before-excludes-cutoff-and-later", !("2026-11-15" in before) && !("2026-11-19" in before));
+  check("entries-before-keeps-earlier-days", "2026-11-10" in before && "2026-11-14" in before);
+  check("entries-before-empty-log-stays-empty", Object.keys(entriesBefore({}, "2026-11-15")).length === 0);
+  check("entries-before-cutoff-before-everything-is-empty", Object.keys(entriesBefore(e, "2026-11-01")).length === 0);
+}
+
+{
+  // A week's worth of new nights logged, starting fresh, must show up as
+  // real growth when diffed against "before the week started".
+  const full = fill("2026-11-13", 7); // a full week, 13..19
+  const before = entriesBefore(full, "2026-11-13");
+  const growth = growthSince(EMPTY_PROFILE_SEED, before, full);
+  check("entries-before-feeds-a-real-week-growth", growth.leveledUp || growth.grownStat !== null);
+}
 
 const pass = results.filter((r) => r.ok).length;
 const fail = results.length - pass;

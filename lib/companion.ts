@@ -374,3 +374,16 @@ export function growthMessage(name: string, growth: Growth): string | null {
   if (growth.grownStat) return `your ${STAT_LABEL[growth.grownStat]} grew a little.`;
   return null;
 }
+
+/** Entries strictly before a given day — used to reconstruct "the log as
+ *  it stood at the start of this week" so the Sunday card can show what
+ *  grew across the whole week (growthSince, above) without a second
+ *  stored snapshot anywhere. `day` itself is excluded, so passing a
+ *  week's own start date gives everything before that week began. */
+export function entriesBefore(entries: Entries, day: string): Entries {
+  const out: Entries = {};
+  for (const [d, e] of Object.entries(entries)) {
+    if (d < day) out[d] = e;
+  }
+  return out;
+}
