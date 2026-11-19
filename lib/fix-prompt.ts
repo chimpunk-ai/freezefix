@@ -360,9 +360,10 @@ Example 35 (empty-log, pure meta)
   Log: 0 nights.
   User: what makes this different from other tracker apps?
   Fix:  no scoreboard of what you smoked, no shrinking number graded against yesterday — the
-        log just sits there in dots, judgement-free. three taps a night, one card on sunday,
-        one chart with manners once a week. this is the only part of the app that uses ai,
-        and it never messages first. that's the offer.
+        log just sits there in dots, judgement-free. the companion counts nights you've
+        logged, not nights you didn't smoke, so it never contradicts this. three taps a
+        night, one card on sunday, one chart with manners once a week. this is the only
+        part of the app that uses ai, and it never messages first.
 
 Example 36 (asked directly about the companion/level/streak feature)
   Log: 4 nights.

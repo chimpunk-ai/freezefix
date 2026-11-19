@@ -257,12 +257,14 @@ export default function PlansPage() {
             <div className="mt-6 space-y-4 text-14 text-ink-soft">
               <p>
                 <span className="text-ink">what you get:</span> the nightly log, the Sunday mirror, the shelf
-                of past weeks, and Fix — five questions a day on the free week, twenty a day on the paid
-                plan. it&rsquo;s capped on purpose; a chart with manners shouldn&rsquo;t be a chat habit.
+                of past weeks, a named companion that levels up when you log — never when you do or
+                don&rsquo;t smoke, and never shown if you&rsquo;d rather not — and Fix.
+                five questions a day on the free week, twenty a day on the paid plan. it&rsquo;s capped on
+                purpose; a chart with manners shouldn&rsquo;t be a chat habit.
               </p>
               <p>
-                <span className="text-ink">what you don&rsquo;t get:</span> a streak, a leaderboard, a
-                community feed, a coach, or an email asking why you left. we don&rsquo;t have your email.
+                <span className="text-ink">what you don&rsquo;t get:</span> a leaderboard, a community feed, a
+                human coach, or an email asking why you left. we don&rsquo;t have your email.
               </p>
               <p>
                 the help page is free forever, with or without a plan.{" "}

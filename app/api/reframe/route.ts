@@ -37,7 +37,7 @@ Scope — every item must be about the LOOKING, not about weed itself. Pick from
 - the honesty of a tap when nobody is watching
 - what a pattern can and cannot say
 - privacy, data, who sees the log
-- what fix does, what it refuses to do (no streaks, no coach, no diagnosis)
+- what fix does, what it refuses to do (no score for smoking less, no coach, no diagnosis)
 - small habit-forming cues versus willpower
 - missed nights, imperfect weeks, catch-up anxiety
 - "it's either quit or carry on" and the shape in between

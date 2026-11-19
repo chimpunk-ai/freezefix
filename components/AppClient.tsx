@@ -14,6 +14,8 @@ import { ShelfTrend, ShelfTrendKey } from "@/components/ShelfTrend";
 import { Container, Main } from "@/components/Shell";
 import { useRegion } from "@/components/useRegion";
 import { clearEntries, readEntries, todayISO, type Entries } from "@/lib/entry";
+import { DEFAULT_COMPANION_NAME } from "@/lib/companion";
+import { CompanionBadge } from "@/components/CompanionBadge";
 import { clearSeen, dueMirror, latestMirror, markSeen } from "@/lib/mirror";
 import { recentWeeks, weekStats, type WeekStats } from "@/lib/pattern";
 import { BEDTIMES, GOAL_EXAMPLES, bedtimeLabel, clearProfile, patchProfile, readProfile, type Profile } from "@/lib/profile";
@@ -182,6 +184,9 @@ export default function AppClient({ view = "log" }: { view?: View }) {
       ) : (
         <Container className="grid items-start gap-10 lg:grid-cols-[minmax(0,560px)_minmax(280px,400px)] lg:justify-center lg:gap-16">
           <div className="min-w-0">
+            {profile.showCompanion !== false ? (
+              <CompanionBadge name={profile.companionName || profile.name} entries={entries} />
+            ) : null}
             <DailyReframe />
             <LogScreen
               profile={profile}
@@ -366,6 +371,8 @@ function SettingsView({
   const [bedtime, setBedtime] = useState(profile.bedtime);
   const [goalText, setGoalText] = useState(profile.goal?.text ?? "");
   const [target, setTarget] = useState(profile.goal?.target ?? 2);
+  const [companionName, setCompanionName] = useState(profile.companionName ?? "");
+  const [showCompanion, setShowCompanion] = useState(profile.showCompanion ?? true);
   const [saved, setSaved] = useState(false);
   const [confirming, setConfirming] = useState(false);
   const [chime, setChime] = useState<ChimePref>("unset");
@@ -393,6 +400,8 @@ function SettingsView({
       goal: goalText.trim()
         ? { text: goalText.trim().slice(0, 80), target, madeAt: profile.goal?.madeAt ?? todayISO() }
         : null,
+      companionName: companionName.trim().slice(0, 24),
+      showCompanion,
     });
     onChange(p);
     setSaved(true);
@@ -498,6 +507,49 @@ function SettingsView({
               </button>
             ))}
             <span className="self-center text-12 text-ink-faint">times a week</span>
+          </div>
+        </div>
+
+        <div>
+          <p className="text-14 text-ink-soft">your companion</p>
+          <p className="mt-1 text-12 text-ink-faint">
+            levels up when you log a night — never when you do or don&rsquo;t smoke. a gap in the log
+            never resets anything you&rsquo;ve already earned.
+          </p>
+          <input
+            value={companionName}
+            onChange={(e) => setCompanionName(e.target.value.slice(0, 24))}
+            placeholder={DEFAULT_COMPANION_NAME}
+            autoComplete="off"
+            autoCapitalize="none"
+            autoCorrect="off"
+            spellCheck={false}
+            enterKeyHint="done"
+            className="mt-3 w-full rounded-card border border-line bg-card px-4 py-3 text-16 text-ink placeholder:text-ink-faint focus:border-accent/50 focus:outline-none"
+          />
+          <div className="mt-3 flex flex-wrap gap-2">
+            <button
+              type="button"
+              onClick={() => setShowCompanion(true)}
+              aria-pressed={showCompanion}
+              className={[
+                "ff-chip rounded-pill border px-3.5 py-2 text-14",
+                showCompanion ? "border-accent/50 bg-accent/15 text-accent" : "border-line bg-card text-ink-soft",
+              ].join(" ")}
+            >
+              show it
+            </button>
+            <button
+              type="button"
+              onClick={() => setShowCompanion(false)}
+              aria-pressed={!showCompanion}
+              className={[
+                "ff-chip rounded-pill border px-3.5 py-2 text-14",
+                !showCompanion ? "border-accent/50 bg-accent/15 text-accent" : "border-line bg-card text-ink-soft",
+              ].join(" ")}
+            >
+              just the plain mirror
+            </button>
           </div>
         </div>
 

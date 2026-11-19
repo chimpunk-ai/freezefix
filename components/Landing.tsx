@@ -88,7 +88,7 @@ export default function Landing({ paymentsOn }: { paymentsOn: boolean }) {
                 next step to you. if there is one.
               </p>
               <p className="mt-3 max-w-[38ch] text-14 text-ink-soft">
-                three taps a night. one card on sunday. no streak, no score, nobody telling you off.
+                three taps a night. one card on sunday. nobody telling you off.
               </p>
               <div className="mt-7 flex flex-wrap items-center gap-3">
                 <Link href="/app" className={cta}>
