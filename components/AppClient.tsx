@@ -14,7 +14,7 @@ import { ShelfTrend, ShelfTrendKey } from "@/components/ShelfTrend";
 import { Container, Main } from "@/components/Shell";
 import { useRegion } from "@/components/useRegion";
 import { clearEntries, readEntries, todayISO, type Entries } from "@/lib/entry";
-import { DEFAULT_COMPANION_NAME } from "@/lib/companion";
+import { DEFAULT_COMPANION_NAME, entriesBefore, growthMessage, growthSince, seedFromProfile } from "@/lib/companion";
 import { CompanionBadge } from "@/components/CompanionBadge";
 import { clearSeen, dueMirror, latestMirror, markSeen } from "@/lib/mirror";
 import { recentWeeks, weekStats, type WeekStats } from "@/lib/pattern";
@@ -220,7 +220,20 @@ export default function AppClient({ view = "log" }: { view?: View }) {
         <div className="fixed inset-0 z-40 flex items-end justify-center bg-black/60 md:items-center md:p-6" role="dialog" aria-modal="true" aria-label="your week">
           <button type="button" aria-label="close" onClick={closeSheet} className="absolute inset-0 cursor-default" />
           <div className="ff-sheet relative max-h-[90vh] w-full max-w-[560px] overflow-y-auto rounded-t-sheet border border-line bg-bg p-3 md:rounded-sheet">
-            <PatternCard name={profile.name} stats={sheet} onAsk={() => { closeSheet(); openFix(); }} onClose={closeSheet} />
+            <PatternCard
+              name={profile.name}
+              stats={sheet}
+              onAsk={() => { closeSheet(); openFix(); }}
+              onClose={closeSheet}
+              growthLine={
+                profile.showCompanion !== false
+                  ? growthMessage(
+                      profile.companionName || profile.name,
+                      growthSince(seedFromProfile(profile), entriesBefore(entries, sheet.start), entries)
+                    )
+                  : null
+              }
+            />
           </div>
         </div>
       ) : null}
