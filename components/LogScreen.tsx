@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import AddMoment from "@/components/AddMoment";
 import TodayMoments from "@/components/TodayMoments";
 import { MoodFace } from "@/components/MoodFace";
+import { growthMessage, growthSince, seedFromProfile } from "@/lib/companion";
 import {
   MAX_TRIGGERS,
   MOODS,
@@ -77,6 +78,9 @@ export default function LogScreen({
   const [note, setNote] = useState(existing?.note ?? "");
   const [goalDone, setGoalDone] = useState<boolean | undefined>(demo ? demo.goalDone : existing?.goalDone);
   const [saved, setSaved] = useState(demo ? demo.saved : Boolean(existing));
+  // Set once, right when a save actually moves a bar — never recomputed on
+  // re-render, so it can't drift from the specific save that earned it.
+  const [growthMsg, setGrowthMsg] = useState<string | null>(null);
 
   // Demo mode: follow the script whenever it moves on.
   useEffect(() => {
@@ -310,6 +314,10 @@ export default function LogScreen({
       note: note.trim() ? note.trim() : undefined,
       goalDone,
     });
+    if (profile.showCompanion !== false) {
+      const growth = growthSince(seedFromProfile(profile), entries, next);
+      setGrowthMsg(growthMessage(profile.companionName || profile.name, growth));
+    }
     setSaved(true);
     onSaved(next);
   }
@@ -328,10 +336,14 @@ export default function LogScreen({
           <p className="mt-2 text-14 text-ink-faint">
             {smoked ? "logged as a night you smoked." : "logged as a night you didn't."}
           </p>
+          {growthMsg ? <p className="mt-1 text-13 text-accent">{growthMsg}</p> : null}
           <div className="mt-6 flex flex-wrap gap-3">
             <button
               type="button"
-              onClick={() => setSaved(false)}
+              onClick={() => {
+                setGrowthMsg(null);
+                setSaved(false);
+              }}
               className="ff-chip rounded-pill border border-line px-4 py-2 text-14 text-ink-soft hover:border-accent/40"
             >
               change it

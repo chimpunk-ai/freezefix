@@ -10,6 +10,8 @@
 
 import {
   companionFor,
+  growthMessage,
+  growthSince,
   levelFor,
   levelName,
   levelProgress,
@@ -293,6 +295,50 @@ check(
     const consistency = stats.find((s) => s.key === "consistency");
     return Boolean(consistency && consistency.tier > 0);
   })()
+);
+
+// --- growthSince / growthMessage ----------------------------------------
+// The post-save "your awareness just grew" line. Must only ever fire when
+// a bar actually moved for THIS save, and must never mention smoking.
+
+check(
+  "growth-first-ever-log-grows-something",
+  (() => {
+    const before: Entries = {};
+    const after: Entries = { "2026-11-19": entry("2026-11-19", true) };
+    const growth = growthSince(EMPTY_PROFILE_SEED, before, after);
+    return growth.leveledUp || growth.grownStat !== null;
+  })()
+);
+
+check(
+  "growth-identical-entries-grows-nothing",
+  (() => {
+    const e = fill("2026-11-01", 5);
+    const growth = growthSince(EMPTY_PROFILE_SEED, e, e);
+    return !growth.leveledUp && growth.grownStat === null;
+  })()
+);
+
+check(
+  "growth-message-null-when-nothing-grew",
+  growthMessage("fix", { leveledUp: false, grownStat: null }) === null
+);
+
+check(
+  "growth-message-never-mentions-smoking",
+  (() => {
+    const msgs = [
+      growthMessage("fix", { leveledUp: true, grownStat: null }),
+      growthMessage("fix", { leveledUp: false, grownStat: "awareness" }),
+    ];
+    return msgs.every((m) => !m || !FORBIDDEN_IN_TRAIT.test(m));
+  })()
+);
+
+check(
+  "growth-message-leveling-up-wins-over-a-stat",
+  growthMessage("fix", { leveledUp: true, grownStat: "awareness" }).includes("level")
 );
 
 const pass = results.filter((r) => r.ok).length;
