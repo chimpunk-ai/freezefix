@@ -39,13 +39,20 @@ const nextConfig: NextConfig = {
     // 'unsafe-inline' on script-src is unavoidable today because the theme
     // bootstrap and /help fallback use inline <script> tags for before-paint
     // behaviour. A nonce-based CSP is the next step; tracked for a follow-up.
+    //
+    // static.cloudflareinsights.com / cloudflareinsights.com: Cloudflare's
+    // own Web Analytics beacon, auto-injected at the edge for this zone —
+    // nothing in this repo loads it. Without these two entries it was
+    // blocked outright (console error on every single page load); added
+    // 19 Nov 2026 rather than leaving Cloudflare's own first-party
+    // analytics broken.
     const CSP = [
       "default-src 'self'",
-      "script-src 'self' 'unsafe-inline' 'unsafe-eval' 'wasm-unsafe-eval' https://cdn.jsdelivr.net",
+      "script-src 'self' 'unsafe-inline' 'unsafe-eval' 'wasm-unsafe-eval' https://cdn.jsdelivr.net https://static.cloudflareinsights.com",
       "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
       "font-src 'self' https://fonts.gstatic.com",
       "img-src 'self' data: blob:",
-      "connect-src 'self' https://cdn.jsdelivr.net https://huggingface.co https://*.huggingface.co https://*.hf.co",
+      "connect-src 'self' https://cdn.jsdelivr.net https://huggingface.co https://*.huggingface.co https://*.hf.co https://cloudflareinsights.com",
       "worker-src 'self' blob:",
       "manifest-src 'self'",
       "frame-ancestors 'none'",
