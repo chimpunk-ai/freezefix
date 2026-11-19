@@ -230,6 +230,12 @@ export default function AppClient({ view = "log" }: { view?: View }) {
           goal={profile.goal}
           region={region}
           onPaywall={() => setFixOpen(false)}
+          selfReport={{
+            frequency: profile.frequency,
+            triedCuttingDown: profile.triedCuttingDown,
+            interferesWith: profile.interferesWith,
+            smokeTime: profile.smokeTime,
+          }}
         />
       ) : null}
     </Main>

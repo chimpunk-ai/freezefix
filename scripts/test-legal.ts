@@ -72,7 +72,7 @@ const REAL: Array<[string, RegExp]> = [
   ["anthropic-named", /Anthropic/],
   ["voice-on-device", /inside your browser/i],
   ["voice-audio-discarded", /discarded as soon as the text exists/i],
-  ["voice-model-download", /about 40 MB/],
+  ["voice-model-download", /about 80 MB/],
   ["device-cookie-named", /ff_did/],
   ["forget-everything", /forget everything/i],
   ["no-account", /no account/i],

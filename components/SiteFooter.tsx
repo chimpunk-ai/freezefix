@@ -3,11 +3,13 @@
 
 import Link from "next/link";
 
+// "myths & reality" and "worried about someone?" used to be bookmarked here
+// too. Both stay fully reachable (myths & reality is still in the top nav;
+// worried-about-someone is still front and center inside /help itself) — this
+// list is just no longer duplicating them as a second shortcut.
 const LINKS = [
   { href: "/plans", label: "what it costs" },
   { href: "/install", label: "install" },
-  { href: "/myths", label: "myths & reality" },
-  { href: "/help?screen=worried", label: "worried about someone?" },
   { href: "/privacy", label: "privacy" },
   { href: "/terms", label: "terms" },
   { href: "/refunds", label: "refunds" },
