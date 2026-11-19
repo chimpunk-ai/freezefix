@@ -53,7 +53,7 @@ export default function PrivacySummary() {
         <Row
           what="Voice notes"
           where="Your phone only. Recorded and turned into text in your browser."
-          detail="Up to a minute of audio per hold, transcribed on the device by a small speech model and then discarded. Tap again to add more. You check the words before they're kept. The model is downloaded once (about 40 MB) from a CDN, which sees your IP like any download and gets no audio or text."
+          detail="Up to a minute of audio per hold, transcribed on the device by a small speech model and then discarded. Tap again to add more. You check the words before they're kept. The model is downloaded once (about 80 MB) from a CDN, which sees your IP like any download and gets no audio or text."
         />
         <Row
           what="Daily limits and the free week"

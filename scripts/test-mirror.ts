@@ -2,7 +2,7 @@
 // card is due, and the seven-day trial clock. Run: npm run test:mirror
 import { addDays, type Entries, type Entry } from "../lib/entry";
 import { dueMirror, MIRROR_HOUR, weekEndFor } from "../lib/mirror";
-import { goalSentence, numberWord, recentWeeks, weekStats } from "../lib/pattern";
+import { buildFixContext, goalSentence, numberWord, recentWeeks, weekStats } from "../lib/pattern";
 import type { Goal } from "../lib/profile";
 import { trialState, TRIAL_DAYS } from "../lib/trial";
 
@@ -119,6 +119,96 @@ if (!firingStats.sentences.some((s) => s.includes("the day after"))) {
   throw new Error(
     "mood comparison must fire at three samples per side, got: " +
       firingStats.sentences.join(" | "),
+  );
+}
+
+// --- same-night mood comparison (moodOnSmoke / moodOnNoSmoke) --------------
+// Separate from "the day after": this is the mood logged ON the smoke night
+// itself, not the morning after. Before this test, nothing anywhere exercised
+// this branch of weekStats — the sentence it produces, its own MIN_MOOD_SAMPLES
+// floor, and the moodOnSmoke/moodOnNoSmoke fields it exposes on WeekStats were
+// all unverified.
+//
+// 4 smoke nights at mood 2, 3 no-smoke nights at mood 4 -> onSmoke avg 2,
+// onNoSmoke avg 4, diff 2 >= the 0.35 floor, both sides clear MIN_MOOD_SAMPLES.
+const sameNight = fill("2026-10-26", [
+  [true, 2], [false, 4], [true, 2], [false, 4], [true, 2], [false, 4], [true, 2],
+]);
+const sameNightStats = weekStats(sameNight, null, SUNDAY);
+if (sameNightStats.moodOnSmoke !== 2 || sameNightStats.moodOnNoSmoke !== 4) {
+  throw new Error(
+    `moodOnSmoke/moodOnNoSmoke should be 2/4, got ${sameNightStats.moodOnSmoke}/${sameNightStats.moodOnNoSmoke}`,
+  );
+}
+if (!sameNightStats.sentences.some((s) => s.includes("on the smoke nights was a little lower"))) {
+  throw new Error(
+    "the same-night mood comparison should fire and say 'lower' when smoke-night mood is lower, got: " +
+      sameNightStats.sentences.join(" | "),
+  );
+}
+
+// Flip which side is higher: the direction wording must flip with it, not
+// just the fact that something fired.
+const sameNightFlipped = fill("2026-10-26", [
+  [true, 4], [false, 2], [true, 4], [false, 2], [true, 4], [false, 2], [true, 4],
+]);
+const sameNightFlippedStats = weekStats(sameNightFlipped, null, SUNDAY);
+if (!sameNightFlippedStats.sentences.some((s) => s.includes("on the smoke nights was a little higher"))) {
+  throw new Error(
+    "when smoke-night mood is the HIGHER one, the sentence must say 'higher', not 'lower', got: " +
+      sameNightFlippedStats.sentences.join(" | "),
+  );
+}
+
+// Same sample sizes, but moods close together (diff < 0.35): must stay silent.
+const sameNightClose = fill("2026-10-26", [
+  [true, 3], [false, 3], [true, 3], [false, 3], [true, 3], [false, 4], [true, 3],
+]);
+const sameNightCloseStats = weekStats(sameNightClose, null, SUNDAY);
+if (sameNightCloseStats.sentences.some((s) => s.includes("on the smoke nights was"))) {
+  throw new Error(
+    "a same-night mood difference under the 0.35 floor must not produce a sentence, got: " +
+      sameNightCloseStats.sentences.join(" | "),
+  );
+}
+
+// Huge same-night gap, but only 2 samples on the smoke side (below
+// MIN_MOOD_SAMPLES): the mirror must stay silent even though the averages
+// differ by 4 whole mood points. This is the exact promise the comment above
+// moodAfter() in lib/pattern.ts makes ("a single data point... must not
+// whisper it as a trend") -- it was previously enforced for "the day after"
+// but never actually checked for the same-night branch.
+const sameNightThin = fill("2026-10-26", [
+  [true, 1], [false, 5], [false, 5], [false, 5], [false, 5], [false, 5], [true, 1],
+]);
+const sameNightThinStats = weekStats(sameNightThin, null, SUNDAY);
+if (sameNightThinStats.sentences.some((s) => s.includes("on the smoke nights was"))) {
+  throw new Error(
+    "2 smoke-night samples is below MIN_MOOD_SAMPLES and must be withheld even with a huge gap, got: " +
+      sameNightThinStats.sentences.join(" | "),
+  );
+}
+
+// --- "the day after" when the two sides don't actually differ --------------
+// The firing-mood fixture above only ever checked that SOME "day after"
+// sentence appears. It never distinguished "mood moved" from "mood didn't
+// move" -- the `diff < 0.35` -> "didn't move much either way" branch in
+// weekStats() had no test of its own. Build 8 consecutive days, alternating
+// smoked/not, every mood pinned at 3 -- afterSmoke and afterNoSmoke both
+// clear MIN_MOOD_SAMPLES (4 and 3 samples) and both average to exactly 3.
+const flatMoodFrom = addDays(SUNDAY, -7);
+const flatMood = fill(flatMoodFrom, [
+  [true, 3], [false, 3], [true, 3], [false, 3], [true, 3], [false, 3], [true, 3], [false, 3],
+]);
+const flatMoodStats = weekStats(flatMood, null, SUNDAY);
+if (flatMoodStats.moodAfterSmoke !== 3 || flatMoodStats.moodAfterNoSmoke !== 3) {
+  throw new Error(
+    `expected both after-day averages pinned at 3, got ${flatMoodStats.moodAfterSmoke}/${flatMoodStats.moodAfterNoSmoke}`,
+  );
+}
+if (!flatMoodStats.sentences.some((s) => s.includes("didn't move much either way"))) {
+  throw new Error(
+    "equal day-after averages should say the mood didn't move, got: " + flatMoodStats.sentences.join(" | "),
   );
 }
 
@@ -296,4 +386,37 @@ if (!over.ended || over.active) throw new Error("day eight is the paywall");
 
 if (numberWord(0) !== "zero" || numberWord(7) !== "seven") throw new Error("number words stop at seven");
 
-console.log("mirror ok: week stats, after-moods, goal line, Sunday timing, shelf, trial");
+// --- buildFixContext: self-report is labeled and separate from the log -----
+const ctxNoSelfReport = buildFixContext(stats, week, GOAL);
+if (ctxNoSelfReport.includes("WHAT THEY TOLD US AT THE START")) {
+  throw new Error("no self-report section should appear when none is given");
+}
+
+const ctxWithSelfReport = buildFixContext(stats, week, GOAL, [], {
+  frequency: "most days",
+  triedCuttingDown: "tried, and slipped back",
+  interferesWith: ["sleep", "the gym"],
+  smokeTime: "after work",
+});
+if (!ctxWithSelfReport.includes("WHAT THEY TOLD US AT THE START")) {
+  throw new Error("a self-report should produce its own labeled section");
+}
+if (!ctxWithSelfReport.includes("self-reported once, not log data")) {
+  throw new Error("the self-report section must say plainly that it isn't measured");
+}
+if (!ctxWithSelfReport.includes("most days") || !ctxWithSelfReport.includes("sleep, the gym")) {
+  throw new Error("the self-report section must carry the actual answers given");
+}
+// It must come after the log, never replace or precede it.
+if (ctxWithSelfReport.indexOf("THEIR OWN LOG") > ctxWithSelfReport.indexOf("WHAT THEY TOLD US AT THE START")) {
+  throw new Error("the log must still come before the self-report section");
+}
+
+// An empty self-report object (no fields set) should not add a section either —
+// an onboarding profile with everything left blank is not a reason to claim one.
+const ctxEmptySelfReport = buildFixContext(stats, week, GOAL, [], {});
+if (ctxEmptySelfReport.includes("WHAT THEY TOLD US AT THE START")) {
+  throw new Error("an all-empty self-report must not produce a section");
+}
+
+console.log("mirror ok: week stats, after-moods, goal line, Sunday timing, shelf, trial, Fix context self-report");

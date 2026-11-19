@@ -70,7 +70,7 @@ async function ask(system: string, messages: { role: string; content: string }[]
         continue;
       }
       if (!res.ok) return { error: `upstream_${res.status}` as const };
-      const data = (await res.json()) as { content?: { type: string; text?: string }[] };
+      const data = (await res.json()) as { content?: { type: string; text?: string }[]; stop_reason?: string };
       const text = (data.content ?? [])
         .filter((b) => b.type === "text" && b.text)
         .map((b) => b.text as string)
@@ -80,7 +80,10 @@ async function ask(system: string, messages: { role: string; content: string }[]
         lastError = "empty";
         continue;
       }
-      return { text };
+      // stop_reason "max_tokens" means the model was cut off mid-sentence —
+      // endWithStatement trims back to the last complete sentence instead of
+      // showing a reply that just trails off.
+      return { text, truncated: data.stop_reason === "max_tokens" };
     } catch {
       lastError = "timeout";
     }
@@ -157,7 +160,7 @@ export async function POST(req: Request) {
   }
 
   return NextResponse.json(
-    { reply: endWithStatement(out.text), used: quota.used + 1, limit: quota.limit },
+    { reply: endWithStatement(out.text, { truncated: out.truncated }), used: quota.used + 1, limit: quota.limit },
     { headers: makeHeaders() }
   );
 }

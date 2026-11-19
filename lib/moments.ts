@@ -26,9 +26,17 @@ export const MOMENT_TAG_LABEL: Record<MomentTag, string> = {
 };
 
 export type Moment = {
-  at: number;         // ms since epoch (device clock at save time)
-  day: string;        // local YYYY-MM-DD derived from `at` at save time
-  text: string;       // up to 200 chars after trim
+  // Stable unique id, generated at save time. NOT the same as `at`: two
+  // moments can share a millisecond (fast double-tap, or two calls in the
+  // same synchronous tick with no await between them -- both real, per the
+  // "people tap 'add a moment' fast" note in TodayMoments.tsx), and `at`
+  // used to double as the delete/React-key identity. That meant deleting
+  // one of two same-millisecond moments silently deleted both. `id` fixes
+  // that; `at` stays as the display/sort timestamp it always was.
+  id: string;
+  at: number;          // ms since epoch (device clock at save time)
+  day: string;         // local YYYY-MM-DD derived from `at` at save time
+  text: string;        // up to 200 chars after trim
   tag: MomentTag;
 };
 
@@ -45,6 +53,18 @@ function todayLocal(ms: number): string {
   return `${y}-${m}-${dd}`;
 }
 
+/** New unique id for a moment. crypto.randomUUID when available (every
+ *  browser and modern Node this runs in); a Date.now()+random fallback
+ *  otherwise so this never throws. */
+function newMomentId(): string {
+  try {
+    if (typeof crypto !== "undefined" && typeof crypto.randomUUID === "function") return crypto.randomUUID();
+  } catch {
+    /* fall through to the fallback below */
+  }
+  return `${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
+}
+
 export function readMoments(): Moment[] {
   if (typeof window === "undefined") return [];
   try {
@@ -52,8 +72,15 @@ export function readMoments(): Moment[] {
     if (!raw) return [];
     const parsed = JSON.parse(raw);
     if (!Array.isArray(parsed)) return [];
+    // Count occurrences of each `at` value as we go, in storage order, so a
+    // moment saved before `id` existed (or any entry missing/with a
+    // malformed id) gets a synthesized id that's stable for this array and
+    // still disambiguates same-millisecond collisions. This runs before the
+    // sort below, over the array's storage (= add) order, so the
+    // occurrence count is deterministic across reads of the same data.
+    const seenAt = new Map<number, number>();
     return parsed
-      .filter((m): m is Moment => {
+      .filter((m): m is Record<string, unknown> => {
         if (!m || typeof m !== "object") return false;
         const x = m as Record<string, unknown>;
         return (
@@ -62,6 +89,13 @@ export function readMoments(): Moment[] {
           typeof x.text === "string" &&
           (x.tag === "note" || x.tag === "flag" || x.tag === "good" || x.tag === "hard")
         );
+      })
+      .map((x): Moment => {
+        const at = x.at as number;
+        const occurrence = seenAt.get(at) ?? 0;
+        seenAt.set(at, occurrence + 1);
+        const id = typeof x.id === "string" && x.id.length > 0 ? x.id : `legacy-${at}-${occurrence}`;
+        return { id, at, day: x.day as string, text: x.text as string, tag: x.tag as MomentTag };
       })
       .sort((a, b) => a.at - b.at);
   } catch {
@@ -87,11 +121,13 @@ export function clearMoments(): void {
   }
 }
 
-/** Remove one moment by its exact timestamp. Returns true if a moment was
- *  found and removed, false otherwise (already deleted, or never there). */
-export function deleteMoment(at: number): boolean {
+/** Remove one moment by its id (NOT its timestamp -- two moments can share
+ *  a millisecond; `id` is the thing guaranteed unique). Returns true if a
+ *  moment was found and removed, false otherwise (already deleted, or
+ *  never there). */
+export function deleteMoment(id: string): boolean {
   const all = readMoments();
-  const next = all.filter((m) => m.at !== at);
+  const next = all.filter((m) => m.id !== id);
   if (next.length === all.length) return false;
   writeMoments(next);
   return true;
@@ -108,7 +144,7 @@ export function addMoment(text: string, tag: MomentTag = "note"): Moment | null 
   const todayCount = all.filter((m) => m.day === day).length;
   if (todayCount >= MOMENTS_PER_DAY_CAP) return null;
 
-  const next: Moment = { at: now, day, text: trimmed, tag };
+  const next: Moment = { id: newMomentId(), at: now, day, text: trimmed, tag };
 
   // Prune old moments past the 90-day window so storage can't balloon.
   const cutoff = now - KEEP_DAYS * 24 * 60 * 60 * 1000;
