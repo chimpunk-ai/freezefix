@@ -2,8 +2,10 @@
 
 import { useEffect, useState } from "react";
 
+import { CompanionAvatar } from "@/components/CompanionAvatar";
 import { MoodFace } from "@/components/MoodFace";
 import { WeekCurve, WeekCurveKey } from "@/components/WeekCurve";
+import type { Companion } from "@/lib/companion";
 // Temporarily disabled 19 Nov 2026 after a landing-page render error was
 // reported. WeekInsights (and its MomentsThisWeek child) are removed from
 // the render tree below while I diagnose; the Sunday card falls back to the
@@ -93,6 +95,7 @@ export function PatternCard({
   dimmed = false,
   compact = false,
   growthLine = null,
+  companion = null,
 }: {
   name: string;
   stats: WeekStats;
@@ -106,6 +109,13 @@ export function PatternCard({
    *  as the per-night version: never padded with a generic line. Omitted
    *  entirely on the dimmed/demo cards (no real growth to report). */
   growthLine?: string | null;
+  /** The companion's CURRENT state (lib/companion.ts's companionFor), shown
+   *  beside the week heading so the sunday ritual visibly includes the
+   *  character, not just prose about the week. Omitted on dimmed/demo cards
+   *  and when the person has turned the companion off — same opt-out rule
+   *  CompanionBadge already follows. Deliberately not reconstructed
+   *  per-past-week here: that's a bigger, separate piece of work. */
+  companion?: Companion | null;
 }) {
   const who = name.trim() || "you";
   const line = stats.goalLine;
@@ -158,9 +168,19 @@ export function PatternCard({
       ].join(" ")}
     >
       <p className="text-12 uppercase tracking-[0.14em] text-ink-faint">{range(stats.start, stats.end)}</p>
-      <h2 className={["mt-2 font-display text-ink", compact ? "text-20" : "text-28"].join(" ")}>
-        {who}, here&rsquo;s your week
-      </h2>
+      <div className="mt-2 flex items-center gap-3">
+        {!dimmed && companion ? (
+          <CompanionAvatar stage={companion.stage} size={compact ? 32 : 44} className="shrink-0 text-ink-soft" animate={false} />
+        ) : null}
+        <h2 className={["font-display text-ink", compact ? "text-20" : "text-28"].join(" ")}>
+          {who}, here&rsquo;s your week
+        </h2>
+      </div>
+      {!dimmed && companion ? (
+        <p className="mt-1 text-12 text-ink-faint">
+          {companion.name} is at level {companion.level}, {companion.levelName}
+        </p>
+      ) : null}
 
       <div className="mt-4 space-y-2">
         {stats.sentences.map((s, i) => (
