@@ -68,6 +68,8 @@ check("OB-TRIGGERS-nonempty", TRIGGERS.length >= 6);
     interferesWith: ["sleep", "the gym"],
     smokeTime: "after work",
     preferredTriggers: ["after-work", "bored", "couldnt-sleep"],
+    frequency: "most days",
+    triedCuttingDown: "tried, and slipped back",
   };
   writeProfile(p);
   const back = readProfile();
@@ -87,6 +89,33 @@ check("OB-TRIGGERS-nonempty", TRIGGERS.length >= 6);
     Array.isArray(back.preferredTriggers) && back.preferredTriggers.length === 3,
     JSON.stringify(back.preferredTriggers),
   );
+  check("OB-roundtrip-frequency", back.frequency === "most days");
+  check("OB-roundtrip-triedCuttingDown", back.triedCuttingDown === "tried, and slipped back");
+  unmountWindow();
+}
+
+// frequency / triedCuttingDown are additive fields — a profile written before
+// they existed must still parse, and a malformed stored value must be
+// dropped rather than crash the parser (same rule as every other field).
+{
+  const store: Store = new Map();
+  store.set(
+    "ff_profile",
+    JSON.stringify({
+      name: "nico",
+      bedtime: 22,
+      goal: null,
+      ageOk: true,
+      onboarded: true,
+      trialStart: "2026-11-10",
+      frequency: { nested: "bad" }, // wrong: should be a string
+      triedCuttingDown: 12345, // wrong: should be a string
+    }),
+  );
+  mountWindow(store);
+  const back = readProfile();
+  check("OB-malformed-frequency-becomes-undefined", back.frequency === undefined);
+  check("OB-malformed-triedCuttingDown-becomes-undefined", back.triedCuttingDown === undefined);
   unmountWindow();
 }
 

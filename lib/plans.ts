@@ -11,15 +11,19 @@ type Prices = { currency: string; yearly: string; monthly: string; yearlyPerMont
 
 // Keyed by the region the browser reports. The euro is the launch currency in
 // Italy and Spain; the provider still charges in the visitor's own currency.
+// Updated 19 Nov 2026: $61/yr, $17/mo (was $39.99/$9.99), per the founder's
+// own pricing call. Display only, per the note above — the provider's
+// dashboard prices are the ones actually charged and must be updated to
+// match before payments go live.
 const PRICES: Record<string, Prices> = {
-  US: { currency: "USD", yearly: "$39.99", monthly: "$9.99", yearlyPerMonth: "$3.33" },
-  GB: { currency: "GBP", yearly: "£39.99", monthly: "£9.99", yearlyPerMonth: "£3.33" },
-  IT: { currency: "EUR", yearly: "€39.99", monthly: "€9.99", yearlyPerMonth: "€3.33" },
-  ES: { currency: "EUR", yearly: "€39.99", monthly: "€9.99", yearlyPerMonth: "€3.33" },
-  FR: { currency: "EUR", yearly: "€39.99", monthly: "€9.99", yearlyPerMonth: "€3.33" },
-  DE: { currency: "EUR", yearly: "€39.99", monthly: "€9.99", yearlyPerMonth: "€3.33" },
-  NL: { currency: "EUR", yearly: "€39.99", monthly: "€9.99", yearlyPerMonth: "€3.33" },
-  PT: { currency: "EUR", yearly: "€39.99", monthly: "€9.99", yearlyPerMonth: "€3.33" },
+  US: { currency: "USD", yearly: "$61", monthly: "$17", yearlyPerMonth: "$5.08" },
+  GB: { currency: "GBP", yearly: "£61", monthly: "£17", yearlyPerMonth: "£5.08" },
+  IT: { currency: "EUR", yearly: "€61", monthly: "€17", yearlyPerMonth: "€5.08" },
+  ES: { currency: "EUR", yearly: "€61", monthly: "€17", yearlyPerMonth: "€5.08" },
+  FR: { currency: "EUR", yearly: "€61", monthly: "€17", yearlyPerMonth: "€5.08" },
+  DE: { currency: "EUR", yearly: "€61", monthly: "€17", yearlyPerMonth: "€5.08" },
+  NL: { currency: "EUR", yearly: "€61", monthly: "€17", yearlyPerMonth: "€5.08" },
+  PT: { currency: "EUR", yearly: "€61", monthly: "€17", yearlyPerMonth: "€5.08" },
 };
 const FALLBACK: Prices = PRICES.US;
 
