@@ -13,16 +13,23 @@ import { mythItems, type MythItem } from "@/lib/myth-items";
 //     the reminders.
 //
 // Where the item comes from:
-//   - First open of a new day: ask /api/reframe (the model, bounded by the
-//     prompt in that route — nothing about pharmacology, doses or outcomes).
-//   - If the request fails, or the model drifts, the route itself falls back
-//     to lib/myth-items.ts. We also fall back here if the fetch throws.
+//   - The card shows something the instant the log loads: a local pool pick
+//     (lib/myth-items.ts), picked synchronously, no loading skeleton, no
+//     network wait. "Display the reminder immediately... without
+//     unnecessary delays" — a round trip to the model is not immediate.
+//   - In the background, a short-lived request to /api/reframe asks for a
+//     fresher, AI-written card. If it answers inside AI_RACE_TIMEOUT_MS and
+//     the person hasn't already dismissed the card, the local pick is
+//     quietly swapped for it. If it's slow, offline, or the model drifts,
+//     the local pick just stays — it was never wrong, only a fallback.
 //   - The item is cached in localStorage so the same day opens see the same
 //     card, and so an offline second-open still has something to show.
 //
-// Why not just the 11-item pool: it repeats inside two weeks. The model can
-// produce fresh angles on the same bounded subject indefinitely, and the
-// recent-list avoids near-duplicates.
+// Why not just the local pool alone: 14 items repeat inside two weeks of
+// daily opens. The model can produce fresh angles on the same bounded
+// subject indefinitely, and the recent-list avoids near-duplicates — but
+// it's a nice-to-have layered on top of an instant, honest fallback, never
+// something the person has to wait on.
 //
 // Storage keys (both pinned by scripts/test-legal.ts):
 //   - ff_reframe       — today's card + the mute flag
@@ -111,65 +118,76 @@ function nextFromPool(seen: string[]): MythItem {
   return pick;
 }
 
-async function fetchReframe(seen: string[], signal: AbortSignal): Promise<MythItem> {
+// How long the background AI request gets to beat the instant local pick.
+// Short on purpose: this is a "swap it in if it's quick" race, never a
+// "wait for it" block — the card is already on screen either way.
+const AI_RACE_TIMEOUT_MS = 2500;
+
+async function fetchFreshReframe(seen: string[]): Promise<MythItem | null> {
   try {
     const res = await fetch("/api/reframe", {
       method: "POST",
       headers: { "content-type": "application/json" },
       body: JSON.stringify({ avoid: seen, seed: todayISO() }),
-      signal,
+      signal: AbortSignal.timeout(AI_RACE_TIMEOUT_MS),
     });
-    if (res.ok) {
-      const data = (await res.json()) as Partial<MythItem>;
-      if (typeof data.myth === "string" && typeof data.reality === "string" && data.myth && data.reality) {
-        return { myth: data.myth, reality: data.reality };
-      }
+    if (!res.ok) return null;
+    const data = (await res.json()) as Partial<MythItem>;
+    if (typeof data.myth === "string" && typeof data.reality === "string" && data.myth && data.reality) {
+      return { myth: data.myth, reality: data.reality };
     }
+    return null;
   } catch {
-    /* fall through to local pool */
+    return null; // slow, offline, or the model drifted — the local pick stands.
   }
-  return nextFromPool(seen);
 }
 
-type Status = "idle" | "loading" | "shown" | "hidden";
+type Status = "shown" | "hidden";
 
 export default function DailyReframe() {
-  const [status, setStatus] = useState<Status>("idle");
+  const [status, setStatus] = useState<Status>("hidden");
   const [item, setItem] = useState<MythItem | null>(null);
 
   useEffect(() => {
     const prev = readStored();
-    if (prev.muted) {
-      // eslint-disable-next-line react-hooks/set-state-in-effect
-      setStatus("hidden");
-      return;
-    }
+    if (prev.muted) return;
     const today = todayISO();
     if (prev.lastDay === today && prev.shown) {
       // Already seen today — not re-shown. Settling without a card is the
       // right behaviour; opening the app a second time in one day shouldn't
       // feel like a drip feed.
-      setStatus("hidden");
       return;
     }
 
-    // New day (or first ever open). Fetch one.
-    setStatus("loading");
-    const controller = new AbortController();
+    // New day (or first ever open): show something the instant the log
+    // loads, no network wait, no loading state — a local pool pick the
+    // person hasn't seen recently.
     const seen = readSeen().items;
+    const picked = nextFromPool(seen);
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setItem(picked);
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setStatus("shown");
+    writeStored({ lastDay: today, shown: picked, muted: false });
+    writeSeen({ items: [...seen, picked.myth].slice(-SEEN_WINDOW) });
 
-    fetchReframe(seen, controller.signal).then((picked) => {
-      if (controller.signal.aborted) return;
-      setItem(picked);
-      setStatus("shown");
-      writeStored({ lastDay: today, shown: picked, muted: false });
-      writeSeen({ items: [...seen, picked.myth].slice(-SEEN_WINDOW) });
+    // Then try a fresher, AI-written card in the background. If it beats
+    // the race timeout and differs from the local pick, swap it in quietly
+    // — same card slot, no re-render flash, nothing to wait on.
+    let cancelled = false;
+    fetchFreshReframe(seen).then((fresh) => {
+      if (cancelled || !fresh || fresh.myth === picked.myth) return;
+      setItem(fresh);
+      writeStored({ lastDay: today, shown: fresh, muted: false });
+      writeSeen({ items: [...seen, fresh.myth].slice(-SEEN_WINDOW) });
     });
 
-    return () => controller.abort();
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
-  if (status === "hidden" || status === "idle") return null;
+  if (status === "hidden" || !item) return null;
 
   function dismiss() {
     setStatus("hidden");
@@ -192,39 +210,29 @@ export default function DailyReframe() {
             Sunday mirror and the fix sheet; three places, same signature. */}
         <span aria-hidden className="absolute left-0 top-5 bottom-5 w-[2px] rounded-full bg-accent/60" />
         <div className="min-h-[88px] pl-4 lg:pl-5">
-          {status === "loading" || !item ? (
-            <div aria-live="polite" className="animate-pulse space-y-2">
-              <div className="h-3 w-24 rounded bg-line" />
-              <div className="h-5 w-3/4 rounded bg-line" />
-              <div className="h-4 w-1/2 rounded bg-line" />
-            </div>
-          ) : (
-            <>
-              <p className="text-11 uppercase tracking-[0.18em] text-ink-faint">a quiet reminder</p>
-              <p className="mt-2.5 font-display text-18 italic leading-snug text-ink lg:text-22">
-                &ldquo;{item.myth}&rdquo;
-              </p>
-              <p className="mt-2.5 text-14 leading-relaxed text-ink-soft lg:text-15">
-                <span className="not-italic text-ink">reality.</span> {item.reality}
-              </p>
-              <div className="mt-4 flex flex-wrap items-center gap-x-6 gap-y-2 text-12 text-ink-faint">
-                <button
-                  type="button"
-                  onClick={dismiss}
-                  className="min-h-9 text-ink-soft underline decoration-line underline-offset-4 hover:text-ink"
-                >
-                  got it
-                </button>
-                <button
-                  type="button"
-                  onClick={mute}
-                  className="min-h-9 underline decoration-line underline-offset-4 hover:text-ink-soft"
-                >
-                  don&rsquo;t show these
-                </button>
-              </div>
-            </>
-          )}
+          <p className="text-11 uppercase tracking-[0.18em] text-ink-faint">a quiet reminder</p>
+          <p className="mt-2.5 font-display text-18 italic leading-snug text-ink lg:text-22">
+            &ldquo;{item.myth}&rdquo;
+          </p>
+          <p className="mt-2.5 text-14 leading-relaxed text-ink-soft lg:text-15">
+            <span className="not-italic text-ink">reality.</span> {item.reality}
+          </p>
+          <div className="mt-4 flex flex-wrap items-center gap-x-6 gap-y-2 text-12 text-ink-faint">
+            <button
+              type="button"
+              onClick={dismiss}
+              className="min-h-9 text-ink-soft underline decoration-line underline-offset-4 hover:text-ink"
+            >
+              got it
+            </button>
+            <button
+              type="button"
+              onClick={mute}
+              className="min-h-9 underline decoration-line underline-offset-4 hover:text-ink-soft"
+            >
+              don&rsquo;t show these
+            </button>
+          </div>
         </div>
       </div>
     </aside>
