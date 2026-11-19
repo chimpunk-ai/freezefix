@@ -42,7 +42,7 @@ export default function MomentsThisWeek({ className = "" }: { className?: string
           const d = new Date(m.at);
           const when = d.toLocaleDateString("en-GB", { weekday: "short", day: "numeric" }).toLowerCase();
           return (
-            <li key={m.at} className="flex items-start gap-3 text-13 text-ink-soft">
+            <li key={m.id} className="flex items-start gap-3 text-13 text-ink-soft">
               <span className="w-16 shrink-0 text-ink-faint tabular-nums">{when}</span>
               <span className="min-w-0 flex-1">
                 <span className="mr-1 inline-block rounded-pill border border-line/70 px-1.5 text-10 text-ink-faint">

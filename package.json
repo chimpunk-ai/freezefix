@@ -27,6 +27,7 @@
     "test:push": "tsx scripts/test-push.ts",
     "test:quota": "tsx scripts/test-quota.ts",
     "test:entry": "tsx scripts/test-entry.ts",
+    "test:moments": "tsx scripts/test-moments.ts",
     "preview": "opennextjs-cloudflare build && opennextjs-cloudflare preview",
     "deploy": "opennextjs-cloudflare build && opennextjs-cloudflare deploy",
     "upload": "opennextjs-cloudflare build && opennextjs-cloudflare upload",
