@@ -25,6 +25,7 @@
     "test:landing": "tsx scripts/test-landing.ts",
     "test:legal": "tsx scripts/test-legal.ts",
     "test:push": "tsx scripts/test-push.ts",
+    "test:quota": "tsx scripts/test-quota.ts",
     "preview": "opennextjs-cloudflare build && opennextjs-cloudflare preview",
     "deploy": "opennextjs-cloudflare build && opennextjs-cloudflare deploy",
     "upload": "opennextjs-cloudflare build && opennextjs-cloudflare upload",
