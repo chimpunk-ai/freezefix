@@ -44,6 +44,14 @@ export type Profile = {
    *  down before and how that went. Same rule as frequency: their own words,
    *  reflected back, never treated as a diagnosis or a verified history. */
   triedCuttingDown?: string;
+  /** What they named their companion during onboarding. Falls back to
+   *  DEFAULT_COMPANION_NAME (lib/companion.ts) when empty/unset — this
+   *  field only needs to exist when they actually typed something. */
+  companionName?: string;
+  /** Whether the companion/level/streak UI shows at all. Defaults to true
+   *  (set during onboarding) but always overridable — same "clear control
+   *  to turn it off" the app already gives for the Sunday ping. */
+  showCompanion?: boolean;
 };
 
 export const FREQUENCIES = [
@@ -129,6 +137,8 @@ export function readProfile(): Profile {
     const smokeTime = typeof p.smokeTime === "string" ? p.smokeTime.slice(0, 40) : undefined;
     const frequency = typeof p.frequency === "string" ? p.frequency.slice(0, 40) : undefined;
     const triedCuttingDown = typeof p.triedCuttingDown === "string" ? p.triedCuttingDown.slice(0, 60) : undefined;
+    const companionName = typeof p.companionName === "string" ? p.companionName.slice(0, 24) : undefined;
+    const showCompanion = typeof p.showCompanion === "boolean" ? p.showCompanion : undefined;
     return {
       name: typeof p.name === "string" ? p.name.slice(0, 24) : "",
       bedtime: Number.isFinite(bedtime) && bedtime >= 0 && bedtime <= 23 ? bedtime : 23,
@@ -148,6 +158,8 @@ export function readProfile(): Profile {
       preferredTriggers,
       frequency,
       triedCuttingDown,
+      companionName,
+      showCompanion,
     };
   } catch {
     return { ...EMPTY };

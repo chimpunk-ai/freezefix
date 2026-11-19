@@ -19,6 +19,7 @@ import {
 } from "@/lib/profile";
 import { TRIGGERS, TRIGGER_LABEL, todayISO, type TriggerId } from "@/lib/entry";
 import { buildBehaviourProfile } from "@/lib/behaviour-profile";
+import { companionFor, DEFAULT_COMPANION_NAME, STAGE_LABEL } from "@/lib/companion";
 import { plansFor, TRIAL_DAYS, type PlanId } from "@/lib/plans";
 
 // Twelve small screens. No email, no password, no phone number: a pet-name,
@@ -53,7 +54,7 @@ const STEP_NAMES = [
   "your bedtime",
   "one small thing",
   "what this is",
-  "your profile",
+  "your profile & companion",
   "what it costs",
 ] as const;
 const STEP_OPTIONAL = new Set([7, 8]);
@@ -91,6 +92,7 @@ export default function Onboarding({ onDone }: { onDone: (p: Profile) => void })
   const [goalText, setGoalText] = useState("");
   const [target, setTarget] = useState(2);
   const [plan, setPlan] = useState<PlanId>("yearly");
+  const [companionName, setCompanionName] = useState("");
   const region = useRegion();
 
   // age → name → interferes → smokeTime → frequency → cut-down history →
@@ -115,6 +117,8 @@ export default function Onboarding({ onDone }: { onDone: (p: Profile) => void })
       preferredTriggers: preferredTriggers.length ? preferredTriggers : undefined,
       frequency: frequency || undefined,
       triedCuttingDown: triedCuttingDown || undefined,
+      companionName: companionName.trim().slice(0, 24) || undefined,
+      showCompanion: true,
     });
     void fetch("/api/trial/start", { method: "POST" }).catch(() => {});
     onDone(p);
@@ -514,6 +518,33 @@ export default function Onboarding({ onDone }: { onDone: (p: Profile) => void })
             this is month one. the mirror starts measuring for real the first night you log — this is just
             what you told it before that.
           </p>
+
+          <div className="mt-6 rounded-sheet border border-line bg-card p-6">
+            <p className="text-12 uppercase tracking-[0.18em] text-signpost">give it a name</p>
+            <h2 className="mt-2 font-display text-20 text-ink">meet your companion.</h2>
+            <p className="mt-2 text-14 text-ink-soft">
+              it levels up when you log a night — never when you do or don&rsquo;t smoke. a gap in the log
+              never costs you anything you&rsquo;ve already earned.
+            </p>
+            <input
+              value={companionName}
+              onChange={(e) => setCompanionName(e.target.value.slice(0, 24))}
+              placeholder={DEFAULT_COMPANION_NAME}
+              autoComplete="off"
+              autoCapitalize="none"
+              autoCorrect="off"
+              spellCheck={false}
+              enterKeyHint="done"
+              className="mt-4 w-full rounded-card border border-line bg-bg px-4 py-3 font-display text-20 text-ink placeholder:text-ink-faint focus:border-accent/50 focus:outline-none"
+            />
+            <p className="mt-3 text-14 text-ink-soft">
+              {(() => {
+                const c = companionFor(companionName, {});
+                return `${c.name} starts as ${STAGE_LABEL[c.stage]} — level ${c.level}. you can rename it or turn it off any time in settings.`;
+              })()}
+            </p>
+          </div>
+
           <button type="button" onClick={() => setStep(11)} className={`mt-6 ${primaryBtn}`}>
             see what it costs
           </button>

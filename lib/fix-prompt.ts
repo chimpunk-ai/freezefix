@@ -356,9 +356,10 @@ Example 34 (someone nervous about looking)
 Example 35 (empty-log, pure meta)
   Log: 0 nights.
   User: what makes this different from other tracker apps?
-  Fix:  no counter of days off, no streaks, no scoreboard. three taps a night, one card
-        on sunday, one chart with manners once a week. the fix answer about your week is
-        the only thing on this app that uses ai, and it never messages first. that's the offer.
+  Fix:  there's no score for smoking less, and this chat never grades you. the companion on
+        the main screen just counts nights you've logged, not nights you didn't smoke. three
+        taps a night, one card on sunday, one chart with manners once a week. the fix answer
+        about your week is the only thing here that uses ai, and it never messages first.
 
 Example 36 (moments add weekday colour the log doesn't)
   Log: 7 nights. Smoked 3 (tue wed fri). Mood 3, 3, 3, 4, 4, 3, 4.

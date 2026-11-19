@@ -70,6 +70,8 @@ check("OB-TRIGGERS-nonempty", TRIGGERS.length >= 6);
     preferredTriggers: ["after-work", "bored", "couldnt-sleep"],
     frequency: "most days",
     triedCuttingDown: "tried, and slipped back",
+    companionName: "Rex",
+    showCompanion: false,
   };
   writeProfile(p);
   const back = readProfile();
@@ -91,6 +93,51 @@ check("OB-TRIGGERS-nonempty", TRIGGERS.length >= 6);
   );
   check("OB-roundtrip-frequency", back.frequency === "most days");
   check("OB-roundtrip-triedCuttingDown", back.triedCuttingDown === "tried, and slipped back");
+  check("OB-roundtrip-companionName", back.companionName === "Rex");
+  check("OB-roundtrip-showCompanion-false", back.showCompanion === false);
+  unmountWindow();
+}
+
+// showCompanion defaults to undefined (not false) when never set — the UI
+// treats undefined as "on", so a profile that never touched this setting
+// must not come back as explicitly off.
+{
+  const store: Store = new Map();
+  mountWindow(store);
+  writeProfile({
+    name: "nico",
+    bedtime: 22,
+    goal: null,
+    ageOk: true,
+    onboarded: true,
+    trialStart: "2026-11-10",
+  });
+  const back = readProfile();
+  check("OB-companion-unset-is-undefined-not-false", back.showCompanion === undefined, String(back.showCompanion));
+  check("OB-companionName-unset-is-undefined", back.companionName === undefined);
+  unmountWindow();
+}
+
+// A malformed stored value for either new field is dropped, never crashes.
+{
+  const store: Store = new Map();
+  store.set(
+    "ff_profile",
+    JSON.stringify({
+      name: "nico",
+      bedtime: 22,
+      goal: null,
+      ageOk: true,
+      onboarded: true,
+      trialStart: "2026-11-10",
+      companionName: { nested: "bad" }, // wrong: should be a string
+      showCompanion: "yes", // wrong: should be a boolean
+    }),
+  );
+  mountWindow(store);
+  const back = readProfile();
+  check("OB-malformed-companionName-becomes-undefined", back.companionName === undefined);
+  check("OB-malformed-showCompanion-becomes-undefined", back.showCompanion === undefined);
   unmountWindow();
 }
 
