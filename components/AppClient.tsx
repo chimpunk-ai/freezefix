@@ -17,7 +17,7 @@ import { clearEntries, readEntries, todayISO, type Entries } from "@/lib/entry";
 import { companionFor, DEFAULT_COMPANION_NAME, entriesBefore, growthMessage, growthSince, seedFromProfile } from "@/lib/companion";
 import { CompanionBadge } from "@/components/CompanionBadge";
 import { clearSeen, dueMirror, latestMirror, markSeen } from "@/lib/mirror";
-import { recentWeeks, weekStats, type WeekStats } from "@/lib/pattern";
+import { goalSentence, recentWeeks, weekStats, type WeekStats } from "@/lib/pattern";
 import { BEDTIMES, GOAL_EXAMPLES, bedtimeLabel, clearProfile, patchProfile, readProfile, type Profile } from "@/lib/profile";
 import { clearChimePref, readChimePref, writeChimePref, type ChimePref } from "@/lib/chime-pref";
 import { clearMoments } from "@/lib/moments";
@@ -306,6 +306,23 @@ function WeekRail({
           <WeekGrid stats={thisWeek} />
         </div>
         <p className="mt-3 text-12 text-ink-faint">a dot is a night with no entry. it isn&rsquo;t a no.</p>
+        {thisWeek.goalLine ? (
+          <div className="mt-4 border-t border-line pt-4">
+            <div className="flex items-baseline justify-between gap-3">
+              <span className="text-12 text-ink-faint">this week&rsquo;s goal</span>
+              <span className="shrink-0 text-11 text-ink-faint">
+                {thisWeek.goalLine.done}/{thisWeek.goalLine.target}
+              </span>
+            </div>
+            <div className="mt-1.5 h-1.5 w-full overflow-hidden rounded-full bg-line">
+              <div
+                className="h-full rounded-full bg-accent transition-[width]"
+                style={{ width: `${Math.min(100, (thisWeek.goalLine.done / Math.max(1, thisWeek.goalLine.target)) * 100)}%` }}
+              />
+            </div>
+            <p className="mt-1.5 text-12 text-ink-soft">{goalSentence(thisWeek.goalLine)}</p>
+          </div>
+        ) : null}
         {mirrorReady ? (
           <button
             type="button"
