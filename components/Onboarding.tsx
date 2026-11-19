@@ -19,7 +19,7 @@ import {
 } from "@/lib/profile";
 import { TRIGGERS, TRIGGER_LABEL, todayISO, type TriggerId } from "@/lib/entry";
 import { buildBehaviourProfile } from "@/lib/behaviour-profile";
-import { companionFor, seedFromProfile, statsFor, traitFor, DEFAULT_COMPANION_NAME, STAGE_LABEL } from "@/lib/companion";
+import { companionFor, seedFromProfile, statsFor, traitFor, DEFAULT_COMPANION_NAME } from "@/lib/companion";
 import { CompanionAvatar } from "@/components/CompanionAvatar";
 import { CompanionStats } from "@/components/CompanionStats";
 import { plansFor, TRIAL_DAYS, type PlanId } from "@/lib/plans";
@@ -556,7 +556,7 @@ export default function Onboarding({ onDone }: { onDone: (p: Profile) => void })
             <p className="mt-3 text-12 text-ink-faint">
               {(() => {
                 const c = companionFor(companionName, {});
-                return `${c.name} starts as ${STAGE_LABEL[c.stage]} — level ${c.level}. you can rename it or turn it off any time in settings.`;
+                return `${c.name} starts at level ${c.level} — ${c.levelName}. you can rename it or turn it off any time in settings.`;
               })()}
             </p>
 
