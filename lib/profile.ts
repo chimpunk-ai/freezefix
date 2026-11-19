@@ -35,7 +35,31 @@ export type Profile = {
    *  prepared for them rather than generic. Up to five. The daily log still
    *  shows every trigger — this list controls order, not availability. */
   preferredTriggers?: TriggerId[];
+  /** Self-reported, from FREQUENCIES. How often they say they smoke, before
+   *  the log has any nights of its own to show it. Used only to write their
+   *  behaviour profile back to them in their own words — never shown to Fix
+   *  or anyone else as a verified fact. */
+  frequency?: string;
+  /** Self-reported, from CUT_DOWN_HISTORY. Whether they've tried cutting
+   *  down before and how that went. Same rule as frequency: their own words,
+   *  reflected back, never treated as a diagnosis or a verified history. */
+  triedCuttingDown?: string;
 };
+
+export const FREQUENCIES = [
+  "pretty much daily",
+  "most days",
+  "a few times a week",
+  "weekends mostly",
+  "it varies a lot",
+] as const;
+
+export const CUT_DOWN_HISTORY = [
+  "tried, and it stuck for a while",
+  "tried, and slipped back",
+  "never really tried",
+  "not trying to cut down, just want to see it clearly",
+] as const;
 
 export const INTERFERES = [
   "sleep",
@@ -103,6 +127,8 @@ export function readProfile(): Profile {
           .slice(0, 5) as TriggerId[])
       : undefined;
     const smokeTime = typeof p.smokeTime === "string" ? p.smokeTime.slice(0, 40) : undefined;
+    const frequency = typeof p.frequency === "string" ? p.frequency.slice(0, 40) : undefined;
+    const triedCuttingDown = typeof p.triedCuttingDown === "string" ? p.triedCuttingDown.slice(0, 60) : undefined;
     return {
       name: typeof p.name === "string" ? p.name.slice(0, 24) : "",
       bedtime: Number.isFinite(bedtime) && bedtime >= 0 && bedtime <= 23 ? bedtime : 23,
@@ -120,6 +146,8 @@ export function readProfile(): Profile {
       interferesWith,
       smokeTime,
       preferredTriggers,
+      frequency,
+      triedCuttingDown,
     };
   } catch {
     return { ...EMPTY };

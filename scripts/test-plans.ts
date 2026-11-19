@@ -3,7 +3,7 @@
 import { pricesFor, plansFor, trialDates, TRIAL_DAYS } from "../lib/plans";
 
 if (pricesFor("GB").currency !== "GBP") throw new Error("UK should be priced in GBP");
-if (pricesFor("gb").yearly !== "£39.99") throw new Error("region match must ignore case");
+if (pricesFor("gb").yearly !== "£61") throw new Error("region match must ignore case");
 if (pricesFor("US").currency !== "USD") throw new Error("US should be priced in USD");
 if (pricesFor("DE").currency !== "EUR") throw new Error("Germany is a euro market");
 if (pricesFor("JP").currency !== "USD") throw new Error("unlisted regions fall back to USD");
@@ -11,7 +11,7 @@ if (pricesFor(undefined).currency !== "USD") throw new Error("no region falls ba
 
 const uk = plansFor("GB");
 if (!uk.yearly.recommended || uk.monthly.recommended) throw new Error("yearly is the recommended plan");
-if (!uk.yearly.note.includes("£3.33")) throw new Error("yearly must show the per-month figure");
+if (!uk.yearly.note.includes("£5.08")) throw new Error("yearly must show the per-month figure");
 if (!uk.yearly.note.includes("billed yearly")) throw new Error("per-month figure must say it's billed yearly");
 
 // A 4-day trial starting today charges on day 4, and reminds the day before.

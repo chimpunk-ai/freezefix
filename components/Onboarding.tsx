@@ -4,8 +4,11 @@ import { useMemo, useState } from "react";
 import Link from "next/link";
 import { MoodFace } from "@/components/MoodFace";
 import { TrustBadge } from "@/components/TrustBadge";
+import { useRegion } from "@/components/useRegion";
 import {
   BEDTIMES,
+  CUT_DOWN_HISTORY,
+  FREQUENCIES,
   GOAL_EXAMPLES,
   INTERFERES,
   SMOKE_TIMES,
@@ -15,18 +18,28 @@ import {
   type Profile,
 } from "@/lib/profile";
 import { TRIGGERS, TRIGGER_LABEL, todayISO, type TriggerId } from "@/lib/entry";
+import { buildBehaviourProfile } from "@/lib/behaviour-profile";
+import { plansFor, TRIAL_DAYS, type PlanId } from "@/lib/plans";
 
-// Nine small screens. No email, no password, no phone number: a pet-name,
-// what weed is quietly interfering with, when they usually smoke, the trigger
-// chips they want pre-filled in their log, a bedtime, a small goal — and then
-// a plain explanation of what the product actually is and a preview of the
-// Sunday card addressed by name. The seven free days start at the end.
+// Twelve small screens. No email, no password, no phone number: a pet-name,
+// what weed is quietly interfering with, when they usually smoke, how often,
+// what they've tried before, the trigger chips they want pre-filled in their
+// log, a bedtime, a small goal, a plain explanation of what the product
+// actually is, a real behaviour profile built from their own five answers
+// (the wow moment — see lib/behaviour-profile.ts), and then the price. The
+// seven free days start when they tap through the price screen.
 //
 // This is the commitment onboarding the research doc asked for
 // (claude/Competitor_Research_Reframe_CalAI_2026-11.md): long enough that
 // users have done the work of a customer before the paywall arrives, honest
 // enough that none of the screens fake data, a progress bar, or a "scanning…"
-// moment.
+// moment. Updated 19 Nov 2026: moved the paywall to right after the
+// behaviour-profile reveal instead of at the very end with no pricing
+// shown — the founder's call, modelled on Cal AI's "wow moment before the
+// paywall" pattern. It still only *starts the free trial* when tapped
+// (finish(), unchanged) rather than charging anything — payments are
+// frozen and off, so this is the pricing screen's placement changing, not
+// the billing behaviour.
 
 // Spoken by the progress bar. Required steps gate "next"; optional ones don't.
 const STEP_NAMES = [
@@ -34,13 +47,16 @@ const STEP_NAMES = [
   "a name",
   "what weed is in the way of",
   "when you usually smoke",
+  "how often",
+  "what you've tried",
   "your trigger chips",
   "your bedtime",
   "one small thing",
   "what this is",
-  "a preview of sunday",
+  "your profile",
+  "what it costs",
 ] as const;
-const STEP_OPTIONAL = new Set([5, 6]);
+const STEP_OPTIONAL = new Set([7, 8]);
 
 const SMOKE_TIME_LABEL: Record<string, string> = {
   "after work": "evenings, mostly after work",
@@ -50,17 +66,14 @@ const SMOKE_TIME_LABEL: Record<string, string> = {
   "varies, honestly": "no particular time",
 };
 
-function fakeCardCopy(name: string, interferes: string[]): string[] {
-  // The preview card is a non-real sample used as the magic moment. No real
-  // numbers are stored on the user's device from it — it's a drawing of what
-  // sunday will look like when their own log fills in. The copy is drawn from
-  // the interferes answers they just gave, so it feels theirs.
-  const who = name.trim() || "you";
-  const [first] = interferes;
-  const line = first && first !== "nothing in particular"
-    ? `four nights, mostly after "${first}" showed up in your log.`
-    : "four nights, with a mix of triggers across the week.";
-  return [`${who}, your last seven nights.`, line, "on the three nights you didn't smoke, you tapped a slightly better mood the next day."];
+/** One line of the behaviour-profile card: a quiet label and the sentence. */
+function ProfileLine({ label, children }: { label: string; children: string }) {
+  return (
+    <p className="text-14 text-ink-soft">
+      <span className="text-12 uppercase tracking-[0.1em] text-ink-faint">{label}: </span>
+      {children}
+    </p>
+  );
 }
 
 export default function Onboarding({ onDone }: { onDone: (p: Profile) => void }) {
@@ -71,17 +84,25 @@ export default function Onboarding({ onDone }: { onDone: (p: Profile) => void })
   const [name, setName] = useState("");
   const [interferesWith, setInterferesWith] = useState<string[]>([]);
   const [smokeTime, setSmokeTime] = useState<string>("");
+  const [frequency, setFrequency] = useState<string>("");
+  const [triedCuttingDown, setTriedCuttingDown] = useState<string>("");
   const [preferredTriggers, setPreferredTriggers] = useState<TriggerId[]>([]);
   const [bedtime, setBedtime] = useState<number>(23);
   const [goalText, setGoalText] = useState("");
   const [target, setTarget] = useState(2);
+  const [plan, setPlan] = useState<PlanId>("yearly");
+  const region = useRegion();
 
-  const steps = 9; // age → name → interferes → smokeTime → triggers → bedtime → goal → what-this-is → preview
+  // age → name → interferes → smokeTime → frequency → cut-down history →
+  // triggers → bedtime → goal → what-this-is → behaviour profile → pricing
+  const steps = 12;
+
+  const goal: Goal | null = useMemo(
+    () => (goalText.trim() ? { text: goalText.trim().slice(0, 80), target, madeAt: todayISO() } : null),
+    [goalText, target]
+  );
 
   function finish() {
-    const goal: Goal | null = goalText.trim()
-      ? { text: goalText.trim().slice(0, 80), target, madeAt: todayISO() }
-      : null;
     const p = patchProfile({
       name: name.trim().slice(0, 24),
       bedtime,
@@ -92,6 +113,8 @@ export default function Onboarding({ onDone }: { onDone: (p: Profile) => void })
       interferesWith: interferesWith.length ? interferesWith : undefined,
       smokeTime: smokeTime || undefined,
       preferredTriggers: preferredTriggers.length ? preferredTriggers : undefined,
+      frequency: frequency || undefined,
+      triedCuttingDown: triedCuttingDown || undefined,
     });
     void fetch("/api/trial/start", { method: "POST" }).catch(() => {});
     onDone(p);
@@ -125,7 +148,21 @@ export default function Onboarding({ onDone }: { onDone: (p: Profile) => void })
     return [...first, ...rest];
   }, [interferesWith]);
 
-  const preview = useMemo(() => fakeCardCopy(name, interferesWith), [name, interferesWith]);
+  const profile = useMemo(
+    () =>
+      buildBehaviourProfile({
+        name,
+        interferesWith,
+        smokeTime,
+        preferredTriggers,
+        frequency,
+        triedCuttingDown,
+        goal,
+      }),
+    [name, interferesWith, smokeTime, preferredTriggers, frequency, triedCuttingDown, goal]
+  );
+
+  const plans = useMemo(() => plansFor(region), [region]);
 
   if (underage) {
     return (
@@ -276,6 +313,58 @@ export default function Onboarding({ onDone }: { onDone: (p: Profile) => void })
 
       {step === 4 ? (
         <section className="ff-rise">
+          <h1 className="font-display text-28 text-ink">how often, honestly?</h1>
+          <p className="mt-2 text-14 text-ink-faint">no judgment either way. this is just for your own profile.</p>
+          <div className="mt-5 flex flex-wrap gap-2">
+            {FREQUENCIES.map((f) => (
+              <button
+                key={f}
+                type="button"
+                onClick={() => setFrequency(f)}
+                aria-pressed={frequency === f}
+                className={[
+                  "ff-chip rounded-pill border px-3 py-2 text-14",
+                  frequency === f ? chipActive : chipInactive,
+                ].join(" ")}
+              >
+                {f}
+              </button>
+            ))}
+          </div>
+          <button type="button" onClick={() => setStep(5)} className={`mt-7 ${primaryBtn}`} disabled={!frequency}>
+            {frequency ? "next" : "pick one"}
+          </button>
+        </section>
+      ) : null}
+
+      {step === 5 ? (
+        <section className="ff-rise">
+          <h1 className="font-display text-28 text-ink">have you tried cutting down before?</h1>
+          <p className="mt-2 text-14 text-ink-faint">whatever happened, it&rsquo;s not held against you here.</p>
+          <div className="mt-5 flex flex-wrap gap-2">
+            {CUT_DOWN_HISTORY.map((h) => (
+              <button
+                key={h}
+                type="button"
+                onClick={() => setTriedCuttingDown(h)}
+                aria-pressed={triedCuttingDown === h}
+                className={[
+                  "ff-chip rounded-pill border px-3 py-2 text-14",
+                  triedCuttingDown === h ? chipActive : chipInactive,
+                ].join(" ")}
+              >
+                {h}
+              </button>
+            ))}
+          </div>
+          <button type="button" onClick={() => setStep(6)} className={`mt-7 ${primaryBtn}`} disabled={!triedCuttingDown}>
+            {triedCuttingDown ? "next" : "pick one"}
+          </button>
+        </section>
+      ) : null}
+
+      {step === 6 ? (
+        <section className="ff-rise">
           <h1 className="font-display text-28 text-ink">which chips should the log have for you?</h1>
           <p className="mt-2 text-14 text-ink-faint">up to five. these appear as one-tap triggers on the nightly log.</p>
           <div className="mt-5 flex flex-wrap gap-2">
@@ -294,13 +383,13 @@ export default function Onboarding({ onDone }: { onDone: (p: Profile) => void })
               </button>
             ))}
           </div>
-          <button type="button" onClick={() => setStep(5)} className={`mt-7 ${primaryBtn}`} disabled={preferredTriggers.length === 0}>
+          <button type="button" onClick={() => setStep(7)} className={`mt-7 ${primaryBtn}`} disabled={preferredTriggers.length === 0}>
             {preferredTriggers.length === 0 ? "pick at least one" : "next"}
           </button>
         </section>
       ) : null}
 
-      {step === 5 ? (
+      {step === 7 ? (
         <section className="ff-rise">
           <h1 className="font-display text-28 text-ink">when do you usually go to bed?</h1>
           <p className="mt-2 text-14 text-ink-faint">one quiet ping on sunday, around then. that&rsquo;s the only one. optional.</p>
@@ -320,13 +409,13 @@ export default function Onboarding({ onDone }: { onDone: (p: Profile) => void })
               </button>
             ))}
           </div>
-          <button type="button" onClick={() => setStep(6)} className={`mt-7 ${primaryBtn}`}>
+          <button type="button" onClick={() => setStep(8)} className={`mt-7 ${primaryBtn}`}>
             next
           </button>
         </section>
       ) : null}
 
-      {step === 6 ? (
+      {step === 8 ? (
         <section className="ff-rise">
           <h1 className="font-display text-28 text-ink">one small thing you&rsquo;d like to do more of?</h1>
           <p className="mt-2 text-14 text-ink-faint">
@@ -371,13 +460,13 @@ export default function Onboarding({ onDone }: { onDone: (p: Profile) => void })
               </button>
             ))}
           </div>
-          <button type="button" onClick={() => setStep(7)} className={`mt-7 ${primaryBtn}`}>
+          <button type="button" onClick={() => setStep(9)} className={`mt-7 ${primaryBtn}`}>
             next
           </button>
         </section>
       ) : null}
 
-      {step === 7 ? (
+      {step === 9 ? (
         <section className="ff-rise">
           <h1 className="font-display text-28 text-ink">before you start.</h1>
           <p className="mt-4 text-16 text-ink">
@@ -398,42 +487,77 @@ export default function Onboarding({ onDone }: { onDone: (p: Profile) => void })
               </li>
             ))}
           </ul>
-          <button type="button" onClick={() => setStep(8)} className={`mt-8 ${primaryBtn}`}>
-            see what sunday looks like
+          <button type="button" onClick={() => setStep(10)} className={`mt-8 ${primaryBtn}`}>
+            see your profile
           </button>
         </section>
       ) : null}
 
-      {step === 8 ? (
+      {step === 10 ? (
         <section className="ff-rise">
-          <p className="text-12 uppercase tracking-[0.18em] text-signpost">a preview, not a real card</p>
-          <h1 className="mt-2 font-display text-28 text-ink">what your sunday might look like</h1>
-          <article className="mt-5 rounded-sheet border border-line bg-card p-6">
-            <p className="text-12 uppercase tracking-[0.14em] text-ink-faint">the week ending sunday</p>
-            <h2 className="mt-2 font-display text-28 text-ink">{preview[0]}</h2>
-            <p className="mt-4 text-16 text-ink-soft">{preview[1]}</p>
-            <p className="mt-2 text-16 text-ink-soft">{preview[2]}</p>
-            <div className="mt-5 flex gap-1.5" aria-hidden>
-              {["M", "T", "W", "T", "F", "S", "S"].map((d, i) => (
-                <div
-                  key={`${d}-${i}`}
-                  className={[
-                    "flex h-10 flex-1 flex-col items-center justify-center rounded-card border text-12",
-                    i === 2 || i === 5
-                      ? "border-accent/30 bg-accent/10 text-accent"
-                      : i === 6
-                        ? "border-signpost/30 bg-signpost/10 text-signpost"
-                        : "border-line bg-card text-ink-faint",
-                  ].join(" ")}
-                >
-                  <span className="opacity-70">{d}</span>
-                </div>
-              ))}
-            </div>
-            <p className="mt-5 text-12 text-ink-faint">only you know what it means.</p>
+          <p className="text-12 uppercase tracking-[0.18em] text-signpost">built from what you just told us</p>
+          <h1 className="mt-2 font-display text-28 text-ink">
+            {name.trim() ? `${name.trim()}'s` : "your"} cannabis behaviour profile.
+          </h1>
+          <p className="mt-2 text-14 text-ink-faint">
+            not a diagnosis, not a guess — just your own five answers, reflected back in one place.
+          </p>
+          <article className="mt-5 space-y-3 rounded-sheet border border-line bg-card p-6">
+            <ProfileLine label="trigger">{profile.triggerLine}</ProfileLine>
+            <ProfileLine label="frequency">{profile.frequencyLine}</ProfileLine>
+            <ProfileLine label="timing">{profile.timingLine}</ProfileLine>
+            {profile.interferesLine ? <ProfileLine label="what it's in the way of">{profile.interferesLine}</ProfileLine> : null}
+            {profile.historyLine ? <ProfileLine label="history">{profile.historyLine}</ProfileLine> : null}
+            {profile.goalLine ? <ProfileLine label="your thing">{profile.goalLine}</ProfileLine> : null}
           </article>
           <p className="mt-5 text-14 text-ink-soft">
-            the real one fills in with your own nights. seven taps from now.
+            this is month one. the mirror starts measuring for real the first night you log — this is just
+            what you told it before that.
+          </p>
+          <button type="button" onClick={() => setStep(11)} className={`mt-6 ${primaryBtn}`}>
+            see what it costs
+          </button>
+        </section>
+      ) : null}
+
+      {step === 11 ? (
+        <section className="ff-rise">
+          <h1 className="font-display text-28 text-ink">one price. seven days free first.</h1>
+          <p className="mt-2 text-14 text-ink-soft">
+            no card to start. the free week opens the whole thing — log, sunday card, shelf, fix.
+          </p>
+          <div className="mt-6 grid gap-3 sm:grid-cols-2" role="radiogroup" aria-label="billing">
+            {(["yearly", "monthly"] as PlanId[]).map((id) => {
+              const p = plans[id];
+              const selected = plan === id;
+              return (
+                <button
+                  key={id}
+                  type="button"
+                  role="radio"
+                  aria-checked={selected}
+                  onClick={() => setPlan(id)}
+                  className={[
+                    "ff-chip flex min-h-11 w-full flex-col rounded-sheet border p-4 text-left",
+                    selected ? "border-accent/60 bg-accent/[0.07]" : "border-line bg-card hover:border-ink-faint",
+                  ].join(" ")}
+                >
+                  <span className="flex items-center justify-between gap-3">
+                    <span className="text-14 text-ink">{p.label}</span>
+                    <span
+                      aria-hidden
+                      className={["h-4 w-4 rounded-full border", selected ? "border-accent bg-accent" : "border-ink-faint"].join(" ")}
+                    />
+                  </span>
+                  <span className="mt-3 block font-display text-28 leading-none text-ink">{p.price}</span>
+                  <span className="mt-2 block text-12 text-ink-faint">{p.note}</span>
+                </button>
+              );
+            })}
+          </div>
+          <p className="mt-4 text-12 text-ink-faint">
+            {TRIAL_DAYS} days free, then {plans[plan].price} a {plans[plan].per}. payments aren&rsquo;t switched
+            on yet, so right now nothing can actually be charged — this is the price it will be.
           </p>
 
           <div className="mt-6">
@@ -441,7 +565,7 @@ export default function Onboarding({ onDone }: { onDone: (p: Profile) => void })
           </div>
 
           <button type="button" onClick={finish} className={`mt-6 ${primaryBtn}`}>
-            start the free week
+            start {TRIAL_DAYS} days free
           </button>
         </section>
       ) : null}

@@ -173,8 +173,15 @@ jobs:
 
       - name: Onboarding profile schema tests
         # New commitment-onboarding fields (interferesWith / smokeTime /
-        # preferredTriggers) round-trip and legacy profiles still parse.
+        # preferredTriggers / frequency / triedCuttingDown) round-trip and
+        # legacy profiles still parse.
         run: npm run test:onboarding
+
+      - name: Behaviour-profile builder tests
+        # The onboarding "wow moment" only ever reflects back the person's
+        # own answers — never a fabricated pattern from a log that doesn't
+        # exist yet.
+        run: npm run test:behaviour
 
       - name: Country / region helper tests
         run: npm run test:country

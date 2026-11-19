@@ -244,7 +244,7 @@ The replies you get from the "ask Fix about this week" button are written by an 
 
 **Everything on getfreezefix.com is free right now and does not ask for a card.** The log, the Sunday card, the shelf of past weeks, Fix and the help page are open to use without paying anything, without creating an account, and without entering payment details.
 
-**What the app shows.** The app starts a seven-day "free week" when you finish setting it up, and shows the price we intend to charge after it — currently $39.99 a year or $9.99 a month, in your local currency where we know it. We show this so the price is never a surprise. **Until payments are switched on, the free week does not end and no one can be charged.** No subscription, checkout or card capture exists on this site today.
+**What the app shows.** The app starts a seven-day "free week" when you finish setting it up, and shows the price we intend to charge after it — currently $61 a year or $17 a month, in your local currency where we know it. We show this so the price is never a surprise. **Until payments are switched on, the free week does not end and no one can be charged.** No subscription, checkout or card capture exists on this site today.
 
 **If a paid plan goes live** — the exact price, the trial length, the merchant of record, the automatic-renewal rules, the price-change notice and the cancellation flow will all be published here **before** the first payment is taken. Nothing applies retroactively to anyone who used Fix for free before that date. Your log stays on your phone whether or not you ever pay; a paid plan would unlock features, never hold your data hostage.
 
