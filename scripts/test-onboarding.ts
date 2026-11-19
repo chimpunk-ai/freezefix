@@ -173,6 +173,37 @@ check("OB-TRIGGERS-nonempty", TRIGGERS.length >= 6);
   unmountWindow();
 }
 
+// interferesWith must be filtered against the canonical INTERFERES list, the
+// same way preferredTriggers is filtered against TRIGGERS above. A garbage
+// string that happens to be a real `string` (unlike the whole-field-wrong
+// case above) used to pass straight through unfiltered.
+{
+  const store: Store = new Map();
+  store.set(
+    "ff_profile",
+    JSON.stringify({
+      name: "nico",
+      bedtime: 22,
+      goal: null,
+      ageOk: true,
+      onboarded: true,
+      trialStart: "2026-11-10",
+      interferesWith: ["sleep", "made-up-interference", "the gym", 42, null],
+    }),
+  );
+  mountWindow(store);
+  const back = readProfile();
+  check(
+    "OB-interferes-filtered-to-valid-options",
+    Array.isArray(back.interferesWith) &&
+      back.interferesWith.length === 2 &&
+      back.interferesWith[0] === "sleep" &&
+      back.interferesWith[1] === "the gym",
+    JSON.stringify(back.interferesWith),
+  );
+  unmountWindow();
+}
+
 // Length caps hold on parse (defense in depth — writer already slices).
 {
   const store: Store = new Map();
@@ -185,7 +216,15 @@ check("OB-TRIGGERS-nonempty", TRIGGERS.length >= 6);
       ageOk: true,
       onboarded: true,
       trialStart: "2026-11-10",
-      interferesWith: Array.from({ length: 50 }).map((_, i) => `thing-${i}`),
+      // Now that interferesWith is filtered against INTERFERES (fixed
+      // alongside this test — see OB-interferes-filtered-to-valid-options
+      // above), 50 made-up "thing-N" strings can no longer exercise the
+      // slice-to-8 cap: none of them are valid options, so they'd all be
+      // dropped before the slice ever runs. Repeat the real (7-item)
+      // INTERFERES list enough times to clear 8 valid entries instead —
+      // the cap is about count, not distinctness, same as the
+      // preferredTriggers repeat just below.
+      interferesWith: [...INTERFERES, ...INTERFERES],
       // Repeat the full trigger set three times — the parser must accept all
       // valid IDs (after filter), then slice to 5.
       preferredTriggers: [...TRIGGERS, ...TRIGGERS, ...TRIGGERS],
@@ -193,7 +232,7 @@ check("OB-TRIGGERS-nonempty", TRIGGERS.length >= 6);
   );
   mountWindow(store);
   const back = readProfile();
-  check("OB-interferes-slice-8", (back.interferesWith?.length ?? 0) === 8);
+  check("OB-interferes-slice-8", (back.interferesWith?.length ?? 0) === 8, JSON.stringify(back.interferesWith));
   check("OB-triggers-slice-5", (back.preferredTriggers?.length ?? 0) === 5);
   unmountWindow();
 }
