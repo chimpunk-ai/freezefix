@@ -24,6 +24,7 @@
     "test:behaviour": "tsx scripts/test-behaviour-profile.ts",
     "test:landing": "tsx scripts/test-landing.ts",
     "test:legal": "tsx scripts/test-legal.ts",
+    "test:entry": "tsx scripts/test-entry.ts",
     "preview": "opennextjs-cloudflare build && opennextjs-cloudflare preview",
     "deploy": "opennextjs-cloudflare build && opennextjs-cloudflare deploy",
     "upload": "opennextjs-cloudflare build && opennextjs-cloudflare upload",
