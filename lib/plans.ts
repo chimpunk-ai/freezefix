@@ -62,7 +62,13 @@ export const PLANS = plansFor("US");
 
 export function trialDates(from = new Date(), days = TRIAL_DAYS) {
   const ends = new Date(from.getTime() + days * 24 * 60 * 60 * 1000);
-  const fmt = (d: Date) => d.toLocaleDateString(undefined, { day: "numeric", month: "long" });
+  // Pinned to en-GB, same as every other date formatter in this codebase
+  // (lib/pattern.ts, lib/entry.ts, components/PatternCard.tsx, etc.). An
+  // `undefined` locale resolves differently on the Workers server than in
+  // the browser, which produced a real React hydration mismatch (error
+  // #418) on /plans — the exact text rendered server-side didn't match
+  // what the client rendered on mount.
+  const fmt = (d: Date) => d.toLocaleDateString("en-GB", { day: "numeric", month: "long" });
   // The day before the first charge, never earlier than the day the trial
   // started: a one-day trial is reminded the same day, not in the past.
   const reminder = new Date(ends.getTime() - 24 * 60 * 60 * 1000);

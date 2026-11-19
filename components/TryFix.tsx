@@ -4,7 +4,7 @@ import { useState, type ReactNode } from "react";
 import FixSheet from "@/components/FixSheet";
 import { useRegion } from "@/components/useRegion";
 import { readEntries, type Entries } from "@/lib/entry";
-import { weekStats, type WeekStats } from "@/lib/pattern";
+import { weekStats, type SelfReport, type WeekStats } from "@/lib/pattern";
 import { readProfile, type Goal } from "@/lib/profile";
 import { SAMPLE_END, SAMPLE_GOAL, sampleEntries } from "@/lib/sample";
 
@@ -14,14 +14,33 @@ import { SAMPLE_END, SAMPLE_GOAL, sampleEntries } from "@/lib/sample";
 // otherwise it is nico's sample week, and the sheet says so. Nothing here
 // writes to storage, and nothing is sent until they press send.
 
-type Week = { name: string; stats: WeekStats; entries: Entries; goal: Goal | null; sample: boolean };
+type Week = {
+  name: string;
+  stats: WeekStats;
+  entries: Entries;
+  goal: Goal | null;
+  sample: boolean;
+  selfReport?: SelfReport;
+};
 
 function pickWeek(): Week {
   try {
     const profile = readProfile();
     const entries = readEntries();
     if (profile?.onboarded && Object.keys(entries).length > 0) {
-      return { name: profile.name, stats: weekStats(entries, profile.goal), entries, goal: profile.goal, sample: false };
+      return {
+        name: profile.name,
+        stats: weekStats(entries, profile.goal),
+        entries,
+        goal: profile.goal,
+        sample: false,
+        selfReport: {
+          frequency: profile.frequency,
+          triedCuttingDown: profile.triedCuttingDown,
+          interferesWith: profile.interferesWith,
+          smokeTime: profile.smokeTime,
+        },
+      };
     }
   } catch {
     // storage blocked (private window) — fall through to the sample
@@ -49,6 +68,7 @@ export default function TryFix({ className, children }: { className?: string; ch
           goal={week.goal}
           region={region}
           onPaywall={() => setWeek(null)}
+          selfReport={week.selfReport}
           banner={
             week.sample
               ? "you're asking about nico's sample week — a real answer from the real fix. your own week needs a log first."

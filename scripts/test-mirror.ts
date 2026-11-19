@@ -2,7 +2,7 @@
 // card is due, and the seven-day trial clock. Run: npm run test:mirror
 import { addDays, type Entries, type Entry } from "../lib/entry";
 import { dueMirror, MIRROR_HOUR, weekEndFor } from "../lib/mirror";
-import { goalSentence, numberWord, recentWeeks, weekStats } from "../lib/pattern";
+import { buildFixContext, goalSentence, numberWord, recentWeeks, weekStats } from "../lib/pattern";
 import type { Goal } from "../lib/profile";
 import { trialState, TRIAL_DAYS } from "../lib/trial";
 
@@ -386,4 +386,37 @@ if (!over.ended || over.active) throw new Error("day eight is the paywall");
 
 if (numberWord(0) !== "zero" || numberWord(7) !== "seven") throw new Error("number words stop at seven");
 
-console.log("mirror ok: week stats, after-moods, goal line, Sunday timing, shelf, trial");
+// --- buildFixContext: self-report is labeled and separate from the log -----
+const ctxNoSelfReport = buildFixContext(stats, week, GOAL);
+if (ctxNoSelfReport.includes("WHAT THEY TOLD US AT THE START")) {
+  throw new Error("no self-report section should appear when none is given");
+}
+
+const ctxWithSelfReport = buildFixContext(stats, week, GOAL, [], {
+  frequency: "most days",
+  triedCuttingDown: "tried, and slipped back",
+  interferesWith: ["sleep", "the gym"],
+  smokeTime: "after work",
+});
+if (!ctxWithSelfReport.includes("WHAT THEY TOLD US AT THE START")) {
+  throw new Error("a self-report should produce its own labeled section");
+}
+if (!ctxWithSelfReport.includes("self-reported once, not log data")) {
+  throw new Error("the self-report section must say plainly that it isn't measured");
+}
+if (!ctxWithSelfReport.includes("most days") || !ctxWithSelfReport.includes("sleep, the gym")) {
+  throw new Error("the self-report section must carry the actual answers given");
+}
+// It must come after the log, never replace or precede it.
+if (ctxWithSelfReport.indexOf("THEIR OWN LOG") > ctxWithSelfReport.indexOf("WHAT THEY TOLD US AT THE START")) {
+  throw new Error("the log must still come before the self-report section");
+}
+
+// An empty self-report object (no fields set) should not add a section either —
+// an onboarding profile with everything left blank is not a reason to claim one.
+const ctxEmptySelfReport = buildFixContext(stats, week, GOAL, [], {});
+if (ctxEmptySelfReport.includes("WHAT THEY TOLD US AT THE START")) {
+  throw new Error("an all-empty self-report must not produce a section");
+}
+
+console.log("mirror ok: week stats, after-moods, goal line, Sunday timing, shelf, trial, Fix context self-report");
