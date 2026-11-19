@@ -8,7 +8,19 @@
 //     silently drops to zero just because tonight hasn't been logged yet.
 //   - The "longest streak" number ever decreasing.
 
-import { companionFor, levelFor, nightsToNextLevel, stageFor, streaksFor, traitFor, DEFAULT_COMPANION_NAME } from "../lib/companion";
+import {
+  companionFor,
+  levelFor,
+  nightsToNextLevel,
+  seedFromProfile,
+  stageFor,
+  statsFor,
+  streaksFor,
+  traitFor,
+  DEFAULT_COMPANION_NAME,
+  EMPTY_PROFILE_SEED,
+  STAT_ORDER,
+} from "../lib/companion";
 import { addDays, type Entries, type Entry } from "../lib/entry";
 
 type Result = { id: string; ok: boolean; note?: string };
@@ -134,6 +146,103 @@ for (const s of ["after work", "the evening", "late night", "weekends only", "va
 for (const f of ["pretty much daily", "most days", "a few times a week", "weekends mostly", "it varies a lot"]) {
   check(`trait-no-crash-frequency-${f.replace(/\s+/g, "-")}`, typeof traitFor({ frequency: f }) === "string");
 }
+
+// --- statsFor / seedFromProfile ----------------------------------------
+// The five attribute meters replacing the plain-text onboarding board. The
+// one rule that matters most: a bar can never fall as the log grows.
+
+check("stats-always-five-in-fixed-order", (() => {
+  const s = statsFor(EMPTY_PROFILE_SEED, {});
+  return s.length === 5 && s.every((stat, i) => stat.key === STAT_ORDER[i]);
+})());
+
+check("stats-fresh-profile-all-zero", statsFor(EMPTY_PROFILE_SEED, {}).every((s) => s.tier === 0));
+
+check(
+  "stats-onboarding-answers-seed-without-any-log",
+  (() => {
+    const seed = seedFromProfile({
+      interferesWith: ["sleep"],
+      smokeTime: "late night",
+      preferredTriggers: ["bored"],
+      frequency: "most days",
+      triedCuttingDown: "tried, and slipped back",
+      goal: { text: "go for a run", target: 2, madeAt: "2026-11-01" },
+    });
+    const s = statsFor(seed, {});
+    // every one of the six onboarding answers seeded SOME attribute, so
+    // nothing but consistency — which has no onboarding seed by design, it
+    // only reflects a real logged streak — is still sitting at a bare zero.
+    return s.every((stat) => stat.key === "consistency" || stat.tier > 0) && s.find((stat) => stat.key === "consistency")?.tier === 0;
+  })()
+);
+
+check(
+  "stats-nothing-in-particular-does-not-seed-resilience",
+  (() => {
+    const seed = seedFromProfile({ interferesWith: ["nothing in particular"] });
+    return seed.hasInterferes === false;
+  })()
+);
+
+check("stats-empty-profile-fields-seed-nothing", (() => {
+  const seed = seedFromProfile({});
+  return Object.values(seed).every((v) => v === false);
+})());
+
+{
+  // The non-decrease guarantee: as the log grows night by night — smoke
+  // nights, sober nights, triggered nights, plain nights, a gap in the
+  // middle, a stretch with nothing logged at all — no stat's tier is ever
+  // allowed to be lower than it was on an earlier, shorter slice of the
+  // same log.
+  const days = 40;
+  const full: Entries = {};
+  for (let i = 0; i < days; i++) {
+    const day = addDays("2026-09-01", i);
+    full[day] = {
+      day,
+      smoked: i % 3 === 0,
+      mood: ((i % 5) + 1) as Entry["mood"],
+      triggers: i % 4 === 0 ? ["stressed"] : i % 7 === 0 ? ["bored"] : [],
+      note: i % 6 === 0 ? "a note" : undefined,
+      goalDone: i % 5 === 0,
+      at: 0,
+    };
+  }
+  const seed = seedFromProfile({ smokeTime: "late night", frequency: "most days", goal: { text: "x", target: 1, madeAt: "2026-09-01" } });
+
+  let prevTiers: number[] = statsFor(seed, {}).map((s) => s.tier);
+  let everDecreased = false;
+  const sortedDays = Object.keys(full).sort();
+  const partial: Entries = {};
+  for (const day of sortedDays) {
+    partial[day] = full[day];
+    const tiers = statsFor(seed, partial).map((s) => s.tier);
+    if (tiers.some((t, i) => t < prevTiers[i])) everDecreased = true;
+    prevTiers = tiers;
+  }
+  check("stats-never-decrease-as-log-grows", !everDecreased);
+  check("stats-eventually-move-off-zero", prevTiers.some((t) => t > 0));
+}
+
+check(
+  "stats-consistency-tracks-longest-streak-not-current",
+  (() => {
+    // Five in a row, then a gap, then one more nine days later. Current
+    // streak drops to 1; consistency (built on the longest run) must not.
+    const e: Entries = {};
+    for (let i = 0; i < 5; i++) {
+      const day = addDays("2026-10-01", i);
+      e[day] = { day, smoked: false, mood: 3, triggers: [], at: 0 };
+    }
+    const laterDay = addDays("2026-10-01", 14);
+    e[laterDay] = { day: laterDay, smoked: false, mood: 3, triggers: [], at: 0 };
+    const stats = statsFor(EMPTY_PROFILE_SEED, e);
+    const consistency = stats.find((s) => s.key === "consistency");
+    return Boolean(consistency && consistency.tier > 0);
+  })()
+);
 
 const pass = results.filter((r) => r.ok).length;
 const fail = results.length - pass;

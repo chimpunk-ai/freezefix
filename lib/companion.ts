@@ -149,3 +149,142 @@ export function companionFor(name: string, entries: Entries, today?: string): Co
     nightsToNextLevel: nightsToNextLevel(totalNightsLogged),
   };
 }
+
+// --- stats --------------------------------------------------------------
+//
+// Added 20 Nov 2026 at the founder's request: instead of one flat level,
+// the companion carries five named attributes (same five the product
+// vision names), each shown as a filled meter, 0 to 5 bars.
+//
+// CRITICAL RULE, same as the level above, now explicit per-attribute: a
+// stat is never allowed to go down. Every stat is built as a COUNT of
+// things that already happened (an onboarding answer given, a trigger
+// tagged, a night logged, a harder night shown up for, a reflection
+// written) fed through a one-way staircase (tierFor). Counts only grow as
+// the log grows; nothing here is an average, a ratio, or anything that a
+// quiet week could pull back down. The one way a number here could fall is
+// the person deleting their own past entries on purpose (lib/entry.ts
+// removeEntry) — that is their own edit to their own data, not the app
+// grading a gap, and it isn't what "no decrease" is guarding against.
+//
+// The six onboarding answers (lib/behaviour-profile.ts) aren't thrown away
+// to make room for this — each one seeds exactly one or two of the five
+// attributes below, so the same facts the old text board showed are still
+// what the bars are built from, just read as a starting point rather than
+// a list.
+
+export type StatKey = "awareness" | "mindfulness" | "consistency" | "resilience" | "selfUnderstanding";
+
+export type Stat = {
+  key: StatKey;
+  label: string;
+  /** 0-5 bars filled. */
+  tier: number;
+  maxTier: number;
+  /** Why this one grows — shown as a small caption under the meter. */
+  blurb: string;
+};
+
+export const STAT_ORDER: StatKey[] = ["awareness", "mindfulness", "consistency", "resilience", "selfUnderstanding"];
+
+const STAT_LABEL: Record<StatKey, string> = {
+  awareness: "awareness",
+  mindfulness: "mindfulness",
+  consistency: "consistency",
+  resilience: "resilience",
+  selfUnderstanding: "self-understanding",
+};
+
+const STAT_BLURB: Record<StatKey, string> = {
+  awareness: "grows when you name what's going on — a trigger, a time, a pattern.",
+  mindfulness: "grows with every honest check-in, logged or not.",
+  resilience: "grows when you show up on the harder nights, not just the easy ones.",
+  selfUnderstanding: "grows with reflections and the goal you set for yourself.",
+  consistency: "tracks your longest run on the app — it only ever grows, never resets.",
+};
+
+const MAX_TIER = 5;
+
+// Counts needed to light each of the 5 bars. Deliberately gentle near the
+// start (one onboarding answer already lights the first bar) and slower
+// after, same shape as the level thresholds above.
+const STAT_TIER_COUNTS = [0, 1, 3, 7, 14, 25];
+
+function tierFor(count: number): number {
+  let tier = 0;
+  for (let i = 1; i < STAT_TIER_COUNTS.length; i++) {
+    if (count >= STAT_TIER_COUNTS[i]) tier = i;
+  }
+  return Math.min(tier, MAX_TIER);
+}
+
+const HARDER_TRIGGERS = new Set(["stressed", "couldnt-sleep", "alone", "after-her"]);
+
+/** Which of the six onboarding answers are present, read at the raw-field
+ *  level so this has no dependency on lib/behaviour-profile.ts's sentences. */
+export type ProfileSeed = {
+  hasTrigger: boolean;
+  hasTiming: boolean;
+  hasFrequency: boolean;
+  hasInterferes: boolean;
+  hasHistory: boolean;
+  hasGoal: boolean;
+};
+
+export const EMPTY_PROFILE_SEED: ProfileSeed = {
+  hasTrigger: false,
+  hasTiming: false,
+  hasFrequency: false,
+  hasInterferes: false,
+  hasHistory: false,
+  hasGoal: false,
+};
+
+/** Builds a ProfileSeed straight from the onboarding/profile fields
+ *  (lib/profile.ts's Profile shape, loosely typed here to avoid a circular
+ *  import). Used identically at onboarding and in the live app, so a
+ *  stat's starting tier is the same number in both places. */
+export function seedFromProfile(p: {
+  interferesWith?: string[];
+  smokeTime?: string;
+  preferredTriggers?: string[];
+  frequency?: string;
+  triedCuttingDown?: string;
+  goal?: unknown;
+}): ProfileSeed {
+  return {
+    hasTrigger: Boolean(p.preferredTriggers && p.preferredTriggers.length > 0),
+    hasTiming: Boolean(p.smokeTime),
+    hasFrequency: Boolean(p.frequency),
+    hasInterferes: Boolean(p.interferesWith && p.interferesWith.length > 0 && !p.interferesWith.includes("nothing in particular")),
+    hasHistory: Boolean(p.triedCuttingDown),
+    hasGoal: Boolean(p.goal),
+  };
+}
+
+/**
+ * The five attribute meters. `seed` is the one-time credit from the
+ * onboarding answers; everything after that is read live from `entries`,
+ * so the bars keep moving every time a night gets logged.
+ */
+export function statsFor(seed: ProfileSeed, entries: Entries): Stat[] {
+  const days = Object.values(entries);
+  const { longest } = streaksFor(entries);
+
+  const counts: Record<StatKey, number> = {
+    awareness: (seed.hasTrigger ? 1 : 0) + (seed.hasTiming ? 1 : 0) + days.filter((d) => d.triggers.length > 0).length,
+    mindfulness: (seed.hasFrequency ? 1 : 0) + days.length,
+    consistency: longest,
+    resilience:
+      (seed.hasInterferes ? 1 : 0) + (seed.hasHistory ? 1 : 0) + days.filter((d) => d.triggers.some((t) => HARDER_TRIGGERS.has(t))).length,
+    selfUnderstanding: (seed.hasGoal ? 1 : 0) + days.filter((d) => Boolean(d.note) || d.goalDone).length,
+  };
+
+  return STAT_ORDER.map((key) => ({
+    key,
+    label: STAT_LABEL[key],
+    tier: tierFor(counts[key]),
+    maxTier: MAX_TIER,
+    blurb: STAT_BLURB[key],
+  }));
+}
