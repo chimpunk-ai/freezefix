@@ -28,11 +28,13 @@ export type CompanionStage = "seed" | "sprout" | "sapling" | "young tree" | "ful
 export type Companion = {
   name: string;
   level: number; // 1-based
+  levelName: string; // "a sprout, pushing up" — shown next to the number
   stage: CompanionStage;
   totalNightsLogged: number;
   currentStreak: number; // consecutive logged nights ending today or yesterday
   longestStreak: number; // the number to actually show off; never resets downward
   nightsToNextLevel: number | null; // null once maxed out
+  progress: LevelProgress | null; // null once maxed out — same condition as nightsToNextLevel
 };
 
 export const DEFAULT_COMPANION_NAME = "fix";
@@ -56,6 +58,52 @@ export function levelFor(totalNightsLogged: number): number {
 export function nightsToNextLevel(totalNightsLogged: number): number | null {
   const next = LEVEL_THRESHOLDS.find((t) => t > totalNightsLogged);
   return next === undefined ? null : next - totalNightsLogged;
+}
+
+// A name per level, two per growth stage (STAGE_LABEL below), so the
+// number always has a plain-words companion instead of standing alone.
+// These are framing, not a new fact about the person — same rule as
+// STAGE_LABEL and traitFor: nothing here claims anything about how much
+// they smoke, only about how long they've been using the app.
+const LEVEL_NAME: Record<number, string> = {
+  1: "a seed, just planted",
+  2: "a seed, taking root",
+  3: "a sprout, pushing up",
+  4: "a sprout, finding the light",
+  5: "a sapling, standing on its own",
+  6: "a sapling, branching out",
+  7: "a young tree, growing steadily",
+  8: "a young tree, well rooted",
+  9: "in full bloom",
+  10: "in full bloom, still reaching",
+};
+
+export function levelName(level: number): string {
+  return LEVEL_NAME[Math.min(Math.max(1, level), MAX_LEVEL)] ?? LEVEL_NAME[MAX_LEVEL];
+}
+
+export type LevelProgress = {
+  /** Nights logged since the current level was reached. */
+  into: number;
+  /** Nights the current level spans, start to next threshold. */
+  span: number;
+  /** 0-1, for a progress bar. Always <= 1; never negative. */
+  fraction: number;
+};
+
+/**
+ * How far into the current level the person is, in real nights logged —
+ * never a fabricated XP number, just the same count everything else here
+ * is built from. Null once maxed out, same as nightsToNextLevel.
+ */
+export function levelProgress(totalNightsLogged: number): LevelProgress | null {
+  const level = levelFor(totalNightsLogged);
+  if (level >= MAX_LEVEL) return null;
+  const prevThreshold = level === 1 ? 0 : LEVEL_THRESHOLDS[level - 2];
+  const nextThreshold = LEVEL_THRESHOLDS[level - 1];
+  const into = Math.max(0, totalNightsLogged - prevThreshold);
+  const span = Math.max(1, nextThreshold - prevThreshold);
+  return { into, span, fraction: Math.min(1, into / span) };
 }
 
 export function stageFor(level: number): CompanionStage {
@@ -142,11 +190,13 @@ export function companionFor(name: string, entries: Entries, today?: string): Co
   return {
     name: name.trim() || DEFAULT_COMPANION_NAME,
     level,
+    levelName: levelName(level),
     stage: stageFor(level),
     totalNightsLogged,
     currentStreak: current,
     longestStreak: longest,
     nightsToNextLevel: nightsToNextLevel(totalNightsLogged),
+    progress: levelProgress(totalNightsLogged),
   };
 }
 

@@ -11,6 +11,8 @@
 import {
   companionFor,
   levelFor,
+  levelName,
+  levelProgress,
   nightsToNextLevel,
   seedFromProfile,
   stageFor,
@@ -146,6 +148,55 @@ for (const s of ["after work", "the evening", "late night", "weekends only", "va
 for (const f of ["pretty much daily", "most days", "a few times a week", "weekends mostly", "it varies a lot"]) {
   check(`trait-no-crash-frequency-${f.replace(/\s+/g, "-")}`, typeof traitFor({ frequency: f }) === "string");
 }
+
+// --- levelName / levelProgress -------------------------------------------
+// The "Level 03 — The Explorer, 340/500 XP" bar from the product vision,
+// built from real nights logged rather than a separate fabricated XP
+// number. Must never claim progress past 100%, never go negative, and
+// must be null exactly when there's no next level to show a bar toward.
+
+check("level-name-defined-for-every-level-1-through-10", (() => {
+  for (let l = 1; l <= 10; l++) {
+    if (typeof levelName(l) !== "string" || !levelName(l)) return false;
+  }
+  return true;
+})());
+check("level-name-clamps-below-1", levelName(0) === levelName(1));
+check("level-name-clamps-above-max", levelName(999) === levelName(10));
+check("level-name-fresh-user-is-seed", /seed/.test(levelName(levelFor(0))));
+check("level-name-maxed-user-is-bloom", /bloom/.test(levelName(levelFor(100000))));
+
+check("progress-fresh-user-is-zero-fraction", levelProgress(0)?.fraction === 0);
+check("progress-null-once-maxed", levelProgress(100000) === null);
+check("progress-fraction-never-exceeds-one", (() => {
+  for (let n = 0; n <= 200; n++) {
+    const p = levelProgress(n);
+    if (p && p.fraction > 1) return false;
+  }
+  return true;
+})());
+check("progress-fraction-never-negative", (() => {
+  for (let n = 0; n <= 200; n++) {
+    const p = levelProgress(n);
+    if (p && p.fraction < 0) return false;
+  }
+  return true;
+})());
+check("progress-into-matches-nights-at-level-start", (() => {
+  // Right at a threshold (e.g. 3 nights = level 2's start), into should be 0.
+  const p = levelProgress(3);
+  return p?.into === 0;
+})());
+check("progress-monotonic-within-a-level", (() => {
+  // Walking from one level-up to just before the next, `into` only grows.
+  let prevInto = -1;
+  for (let n = 3; n < 7; n++) {
+    const p = levelProgress(n);
+    if (!p || p.into < prevInto) return false;
+    prevInto = p.into;
+  }
+  return true;
+})());
 
 // --- statsFor / seedFromProfile ----------------------------------------
 // The five attribute meters replacing the plain-text onboarding board. The
