@@ -1,5 +1,5 @@
-import { companionFor, seedFromProfile, statsFor, EMPTY_PROFILE_SEED, type ProfileSeed } from "@/lib/companion";
-import { CompanionAvatar } from "@/components/CompanionAvatar";
+import { companionFor, seedFromProfile, statsFor, EMPTY_PROFILE_SEED, type ProfileSeed, type CompanionSpecies } from "@/lib/companion";
+import { CompanionPortrait } from "@/components/CompanionPortrait";
 import { CompanionStats } from "@/components/CompanionStats";
 import type { Entries } from "@/lib/entry";
 
@@ -18,7 +18,20 @@ type SeedInput = Parameters<typeof seedFromProfile>[0];
  * same onboarding-answer credit shown at onboarding — otherwise a bar could
  * look like it fell, which is the one thing this feature isn't allowed to do.
  */
-export function CompanionBadge({ name, entries, profile }: { name: string; entries: Entries; profile?: SeedInput }) {
+export function CompanionBadge({
+  name,
+  entries,
+  profile,
+  species,
+}: {
+  name: string;
+  entries: Entries;
+  profile?: SeedInput;
+  /** Which companion they picked (task 14, 20 Nov 2026). Optional only so
+   *  existing callers/tests don't break — falls back to the plant, same as
+   *  CompanionPortrait itself does for an unset/legacy profile. */
+  species?: CompanionSpecies;
+}) {
   const companion = companionFor(name, entries);
   const { level, levelName: curLevelName, stage, currentStreak, longestStreak, nightsToNextLevel, progress } = companion;
   const seed: ProfileSeed = profile ? seedFromProfile(profile) : EMPTY_PROFILE_SEED;
@@ -27,7 +40,7 @@ export function CompanionBadge({ name, entries, profile }: { name: string; entri
   return (
     <div className="mb-5 rounded-card border border-line bg-card px-4 py-3">
       <div className="flex items-center gap-3">
-        <CompanionAvatar stage={stage} size={40} className="shrink-0 text-ink-soft" animate={false} />
+        <CompanionPortrait species={species} stage={stage} size={40} className="shrink-0 text-ink-soft" animate={false} />
         <div className="min-w-0 flex-1">
           <p className="truncate text-14 text-ink">
             <span className="font-medium">{companion.name}</span>{" "}

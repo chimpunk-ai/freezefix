@@ -18,8 +18,18 @@ import {
 } from "@/lib/profile";
 import { TRIGGERS, TRIGGER_LABEL, todayISO, type TriggerId } from "@/lib/entry";
 import { buildBehaviourProfile } from "@/lib/behaviour-profile";
-import { companionFor, seedFromProfile, statsFor, traitFor, DEFAULT_COMPANION_NAME } from "@/lib/companion";
-import { CompanionAvatar } from "@/components/CompanionAvatar";
+import {
+  companionFor,
+  seedFromProfile,
+  statsFor,
+  traitFor,
+  DEFAULT_COMPANION_NAME,
+  DEFAULT_SPECIES,
+  SPECIES_ORDER,
+  SPECIES_LABEL,
+  type CompanionSpecies,
+} from "@/lib/companion";
+import { CompanionPortrait } from "@/components/CompanionPortrait";
 import { CompanionStats } from "@/components/CompanionStats";
 import { plansFor, TRIAL_DAYS, type PlanId } from "@/lib/plans";
 
@@ -98,6 +108,7 @@ export default function Onboarding({ onDone }: { onDone: (p: Profile) => void })
   const [target, setTarget] = useState(2);
   const [plan, setPlan] = useState<PlanId>("yearly");
   const [companionName, setCompanionName] = useState("");
+  const [companionSpecies, setCompanionSpecies] = useState<CompanionSpecies>(DEFAULT_SPECIES);
   const region = useRegion();
 
   // age → name → interferes → smokeTime → frequency →
@@ -123,6 +134,7 @@ export default function Onboarding({ onDone }: { onDone: (p: Profile) => void })
       frequency: frequency || undefined,
       triedCuttingDown: triedCuttingDown || undefined,
       companionName: companionName.trim().slice(0, 24) || undefined,
+      companionSpecies,
       showCompanion: true,
     });
     void fetch("/api/trial/start", { method: "POST" }).catch(() => {});
@@ -516,14 +528,38 @@ export default function Onboarding({ onDone }: { onDone: (p: Profile) => void })
               Nothing from "before" was deleted; this is the same five
               answers, read differently. */}
           <p className="text-12 uppercase tracking-[0.18em] text-signpost">built from what you just told us</p>
-          <h1 className="mt-2 font-display text-28 text-ink">meet your companion.</h1>
+          <h1 className="mt-2 font-display text-28 text-ink">choose your companion.</h1>
           <p className="mt-2 text-14 text-ink-faint">
             not a diagnosis, not a guess — just your own five answers, given a shape.
           </p>
 
           <div className="mt-5 flex flex-col items-center rounded-sheet border border-line bg-card px-6 py-8 text-center">
-            <CompanionAvatar stage="seed" size={104} className="text-ink" />
-            <p className="mt-3 text-12 uppercase tracking-[0.18em] text-signpost">give it a name</p>
+            <CompanionPortrait species={companionSpecies} stage="seed" size={104} className="text-ink" />
+
+            {/* The picker itself (task 14, 20 Nov 2026) — was a fixed plant
+                before this. Every animal's art is its level-1/base form only
+                (task 15/16 draws the rest), which is fine here: everyone
+                starts at level 1 anyway. */}
+            <div className="mt-5 grid grid-cols-3 gap-2 sm:grid-cols-6" role="radiogroup" aria-label="choose your companion">
+              {SPECIES_ORDER.map((s) => (
+                <button
+                  key={s}
+                  type="button"
+                  role="radio"
+                  aria-checked={companionSpecies === s}
+                  onClick={() => setCompanionSpecies(s)}
+                  className={[
+                    "ff-chip flex flex-col items-center gap-1 rounded-card border px-2 py-2.5",
+                    companionSpecies === s ? chipActive : chipInactive,
+                  ].join(" ")}
+                >
+                  <CompanionPortrait species={s} stage="seed" size={36} animate={false} className="pointer-events-none" />
+                  <span className="text-11 capitalize">{s}</span>
+                </button>
+              ))}
+            </div>
+
+            <p className="mt-3 text-12 uppercase tracking-[0.18em] text-signpost">then name it</p>
             <input
               value={companionName}
               onChange={(e) => setCompanionName(e.target.value.slice(0, 24))}

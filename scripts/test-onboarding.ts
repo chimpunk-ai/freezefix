@@ -18,6 +18,7 @@ import {
   type Profile,
 } from "../lib/profile";
 import { TRIGGERS, orderedTriggers, type TriggerId } from "../lib/entry";
+import { SPECIES_ORDER } from "../lib/companion";
 
 type Result = { id: string; ok: boolean; note?: string };
 const results: Result[] = [];
@@ -71,12 +72,14 @@ check("OB-TRIGGERS-nonempty", TRIGGERS.length >= 6);
     frequency: "most days",
     triedCuttingDown: "tried, and slipped back",
     companionName: "Rex",
+    companionSpecies: "fox",
     showCompanion: false,
   };
   writeProfile(p);
   const back = readProfile();
   check("OB-roundtrip-name", back.name === "nico");
   check("OB-roundtrip-bedtime", back.bedtime === 22);
+  check("OB-roundtrip-companionSpecies", back.companionSpecies === "fox");
   check(
     "OB-roundtrip-interferes",
     Array.isArray(back.interferesWith) &&
@@ -115,6 +118,7 @@ check("OB-TRIGGERS-nonempty", TRIGGERS.length >= 6);
   const back = readProfile();
   check("OB-companion-unset-is-undefined-not-false", back.showCompanion === undefined, String(back.showCompanion));
   check("OB-companionName-unset-is-undefined", back.companionName === undefined);
+  check("OB-companionSpecies-unset-is-undefined", back.companionSpecies === undefined);
   unmountWindow();
 }
 
@@ -131,14 +135,38 @@ check("OB-TRIGGERS-nonempty", TRIGGERS.length >= 6);
       onboarded: true,
       trialStart: "2026-11-10",
       companionName: { nested: "bad" }, // wrong: should be a string
+      companionSpecies: "dragon", // wrong: not a real species
       showCompanion: "yes", // wrong: should be a boolean
     }),
   );
   mountWindow(store);
   const back = readProfile();
   check("OB-malformed-companionName-becomes-undefined", back.companionName === undefined);
+  check("OB-malformed-companionSpecies-becomes-undefined", back.companionSpecies === undefined);
   check("OB-malformed-showCompanion-becomes-undefined", back.showCompanion === undefined);
   unmountWindow();
+}
+
+// Every real species round-trips, and the field is validated against
+// SPECIES_ORDER the same way preferredTriggers is validated against
+// TRIGGERS — not just checked for being a string.
+{
+  for (const s of SPECIES_ORDER) {
+    const store: Store = new Map();
+    mountWindow(store);
+    writeProfile({
+      name: "nico",
+      bedtime: 22,
+      goal: null,
+      ageOk: true,
+      onboarded: true,
+      trialStart: "2026-11-10",
+      companionSpecies: s,
+    });
+    const back = readProfile();
+    check(`OB-species-roundtrip-${s}`, back.companionSpecies === s);
+    unmountWindow();
+  }
 }
 
 // frequency / triedCuttingDown are additive fields — a profile written before
@@ -186,6 +214,7 @@ check("OB-TRIGGERS-nonempty", TRIGGERS.length >= 6);
   check("OB-legacy-no-interferes", back.interferesWith === undefined);
   check("OB-legacy-no-smokeTime", back.smokeTime === undefined);
   check("OB-legacy-no-triggers", back.preferredTriggers === undefined);
+  check("OB-legacy-no-companionSpecies", back.companionSpecies === undefined);
   unmountWindow();
 }
 
