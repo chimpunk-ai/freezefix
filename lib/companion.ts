@@ -526,6 +526,77 @@ export function statsFor(seed: ProfileSeed, entries: Entries): Stat[] {
   }));
 }
 
+// --- total HP (task 17 of the 50-step plan, 20 Nov 2026) -------------------
+//
+// One combined number instead of five separate meters — for two things that
+// need a single value rather than a row of bars: the "Tekken-style" health
+// bar UI (task 18, next) and, later, a stats-only number to compare with a
+// friend (tasks 25-31) — a single HP figure is something to show someone
+// else; five side-by-side meters asking to be read and compared one at a
+// time are not.
+//
+// Deliberately NOT a new, separate counter. It's a pure arithmetic transform
+// of statsFor()'s already-computed, already-tested tiers above — no new
+// counting, nothing a user could do that moves this number without also
+// moving one of the five meters they can already see. That also means the
+// "never decreases" guarantee the five meters already have (a tier only
+// ever goes up) carries over for free: summing numbers that only ever grow
+// can itself only ever grow.
+//
+// 100 is the max HP because it reads instantly as a health/HP bar — "68/100"
+// needs no explanation the way "17/25 arbitrary points" would — and it
+// divides evenly five ways: 20 HP per stat, and since each stat has 5 tiers,
+// exactly 4 HP per tier. The Tekken-style breakdown bar (task 18) is this
+// same one bar, just drawn as five coloured segments end to end instead of
+// a single fill colour, each segment's own length showing that one stat's
+// own tier — nothing here commits to how that bar is drawn, only to the
+// numbers it would be drawn from.
+
+export const HP_PER_STAT = 20; // 5 stats x 20 HP = 100 total
+export const MAX_HP = HP_PER_STAT * STAT_ORDER.length; // 100
+const HP_PER_TIER = HP_PER_STAT / MAX_TIER; // 4 HP per tier, 5 tiers per stat
+
+export type HPSegment = {
+  key: StatKey;
+  label: string;
+  /** This one stat's own contribution to the total, 0..HP_PER_STAT, always
+   *  a multiple of HP_PER_TIER (one step per tier, same tiers statsFor()
+   *  already reports). */
+  hp: number;
+  maxHp: number;
+  /** The same 0-5 tier statsFor() reports for this stat, kept alongside hp
+   *  so a caption ("awareness: tier 3 of 5") doesn't need to re-derive it
+   *  from hp/HP_PER_TIER. */
+  tier: number;
+};
+
+export type HPTotal = {
+  /** 0..maxHp, the sum of every segment. */
+  hp: number;
+  maxHp: number;
+  /** One entry per stat, in STAT_ORDER — the breakdown the Tekken-style bar
+   *  (task 18) draws as its coloured segments. */
+  segments: HPSegment[];
+};
+
+/**
+ * The single combined HP number, plus the per-stat breakdown it's made of.
+ * A pure transform of statsFor()'s output — pass it the same Stat[] that
+ * already feeds the five meters, so the combined number can never say
+ * anything the five meters don't already say.
+ */
+export function hpFor(stats: Stat[]): HPTotal {
+  const segments: HPSegment[] = stats.map((s) => ({
+    key: s.key,
+    label: s.label,
+    hp: s.tier * HP_PER_TIER,
+    maxHp: HP_PER_STAT,
+    tier: s.tier,
+  }));
+  const hp = segments.reduce((sum, s) => sum + s.hp, 0);
+  return { hp, maxHp: MAX_HP, segments };
+}
+
 // --- the "it grew" moment -------------------------------------------------
 //
 // "After saving a journal, trigger a satisfying but subtle character

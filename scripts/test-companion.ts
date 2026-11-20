@@ -13,6 +13,7 @@ import {
   entriesBefore,
   growthMessage,
   growthSince,
+  hpFor,
   levelFor,
   levelName,
   levelProgress,
@@ -24,6 +25,8 @@ import {
   traitFor,
   DEFAULT_COMPANION_NAME,
   EMPTY_PROFILE_SEED,
+  HP_PER_STAT,
+  MAX_HP,
   STAT_ORDER,
 } from "../lib/companion";
 import { addDays, type Entries, type Entry } from "../lib/entry";
@@ -407,6 +410,99 @@ check(
   const before = entriesBefore(full, "2026-11-13");
   const growth = growthSince(EMPTY_PROFILE_SEED, before, full);
   check("entries-before-feeds-a-real-week-growth", growth.leveledUp || growth.grownStat !== null);
+}
+
+// --- hpFor (task 17 of the 50-step plan) ------------------------------------
+// The single combined HP number is a pure transform of statsFor()'s output
+// — not a new counter — so what matters is that the arithmetic is exactly
+// right and that it can never disagree with the five meters it's built from.
+
+{
+  check("hp-max-is-100", MAX_HP === 100, `MAX_HP=${MAX_HP}`);
+  check("hp-per-stat-is-20", HP_PER_STAT === 20, `HP_PER_STAT=${HP_PER_STAT}`);
+
+  const zeroStats = statsFor(EMPTY_PROFILE_SEED, {});
+  const zeroHp = hpFor(zeroStats);
+  check("hp-zero-stats-is-zero-hp", zeroHp.hp === 0, `hp=${zeroHp.hp}`);
+  check("hp-zero-stats-maxHp-is-MAX_HP", zeroHp.maxHp === MAX_HP);
+  check("hp-zero-stats-five-segments", zeroHp.segments.length === STAT_ORDER.length);
+  check(
+    "hp-zero-stats-segments-in-STAT_ORDER",
+    zeroHp.segments.every((s, i) => s.key === STAT_ORDER[i])
+  );
+  check(
+    "hp-zero-stats-every-segment-zero",
+    zeroHp.segments.every((s) => s.hp === 0 && s.tier === 0 && s.maxHp === HP_PER_STAT)
+  );
+
+  // A log big enough to max out every tier of every stat (long streak,
+  // plenty of triggers/notes/goal-ticks on harder nights) must read as a
+  // full 100/100 — the ceiling has to actually be reachable, not just a
+  // theoretical maximum nothing ever hits.
+  const maxedEntries = fill("2026-01-01", 200);
+  for (const day of Object.keys(maxedEntries)) {
+    maxedEntries[day] = {
+      day,
+      smoked: maxedEntries[day].smoked,
+      mood: 3,
+      triggers: ["stressed"],
+      note: "a note",
+      goalDone: true,
+      at: 0,
+    };
+  }
+  const maxedSeed = seedFromProfile({
+    preferredTriggers: ["stressed"],
+    smokeTime: "evening",
+    frequency: "most days",
+    interferesWith: ["sleep"],
+    goal: { text: "run", target: 3, madeAt: "2026-01-01" },
+  });
+  const maxedStats = statsFor(maxedSeed, maxedEntries);
+  const maxedHp = hpFor(maxedStats);
+  check(
+    "hp-fully-maxed-stats-is-100",
+    maxedHp.hp === MAX_HP && maxedStats.every((s) => s.tier === s.maxTier),
+    `hp=${maxedHp.hp}, tiers=${maxedStats.map((s) => s.tier).join(",")}`
+  );
+  check(
+    "hp-fully-maxed-every-segment-is-20",
+    maxedHp.segments.every((s) => s.hp === HP_PER_STAT)
+  );
+
+  // Exactly 4 HP per tier (20 HP / 5 tiers), and the total is always the
+  // sum of its own segments — not a separately-derived number that could
+  // drift from the breakdown shown beside it.
+  for (const s of maxedHp.segments) {
+    check(`hp-segment-${s.key}-is-tier-times-4`, s.hp === s.tier * 4, `hp=${s.hp}, tier=${s.tier}`);
+  }
+  check(
+    "hp-total-equals-sum-of-segments",
+    maxedHp.hp === maxedHp.segments.reduce((sum, s) => sum + s.hp, 0)
+  );
+
+  // A partially-grown log (early onboarding credit only, nothing logged
+  // yet) must land strictly between the two extremes, and must match what
+  // hand-adding the five tiers' own HP gives — no hidden second formula.
+  const partialStats = statsFor(
+    seedFromProfile({ preferredTriggers: ["bored"], smokeTime: "evening" }),
+    {}
+  );
+  const partialHp = hpFor(partialStats);
+  const expectedPartial = partialStats.reduce((sum, s) => sum + s.tier * 4, 0);
+  check(
+    "hp-partial-log-between-extremes",
+    partialHp.hp > 0 && partialHp.hp < MAX_HP,
+    `hp=${partialHp.hp}`
+  );
+  check("hp-partial-matches-hand-sum", partialHp.hp === expectedPartial);
+
+  // Never decreases: growing any one stat's tier can only ever raise the
+  // total, the same guarantee the five meters already have, carried over
+  // by construction (sum of non-decreasing terms is non-decreasing).
+  const before = statsFor(EMPTY_PROFILE_SEED, fill("2026-02-01", 5));
+  const after = statsFor(EMPTY_PROFILE_SEED, fill("2026-02-01", 20));
+  check("hp-grows-with-more-logged-nights", hpFor(after).hp >= hpFor(before).hp);
 }
 
 const pass = results.filter((r) => r.ok).length;
