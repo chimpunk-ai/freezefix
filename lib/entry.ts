@@ -153,6 +153,14 @@ export function writeEntries(entries: Entries) {
 export function saveEntry(entry: Omit<Entry, "day" | "at"> & { day?: string; at?: number }): Entries {
   const entries = readEntries();
   const day = entry.day || todayISO();
+  // `at` marks when a night was FIRST logged, not when it was last touched.
+  // Editing an already-logged day (the "change it" button) must not bump
+  // this forward — lib/growth-reveal.ts's 5-hour delayed reveal (task 19 of
+  // the 50-step plan) anchors its countdown to this timestamp, and the
+  // once-a-day cap it depends on (task 17) only holds if that anchor can't
+  // be pushed later by re-saving the same night over and over. An explicit
+  // `at` (tests, or a future import/restore feature) still overrides this.
+  const firstLoggedAt = entries[day]?.at;
   entries[day] = {
     day,
     smoked: entry.smoked,
@@ -160,7 +168,7 @@ export function saveEntry(entry: Omit<Entry, "day" | "at"> & { day?: string; at?
     triggers: cleanTriggers(entry.triggers),
     note: entry.note ? entry.note.trim().slice(0, NOTE_MAX) : undefined,
     goalDone: typeof entry.goalDone === "boolean" ? entry.goalDone : undefined,
-    at: entry.at ?? Date.now(),
+    at: entry.at ?? firstLoggedAt ?? Date.now(),
   };
   writeEntries(entries);
   return entries;
