@@ -61,6 +61,32 @@ check("level-caps-at-max", levelFor(100000) === levelFor(99999) && levelFor(1000
 check("next-level-hp-positive-when-not-maxed", (hpToNextLevel(0) ?? 0) > 0);
 check("next-level-null-once-maxed", hpToNextLevel(100000) === null);
 
+// Task 40 (step 24): only the FIRST threshold was boundary-tested above —
+// everything from level 3 up was only ever exercised incidentally, through
+// companionFor's higher-level scenarios. LEVEL_THRESHOLDS itself isn't
+// exported (it's deliberately private to this module, task 70), so this
+// pins the full ladder by its one public face, levelFor, the same way the
+// existing first-threshold test above already does: a hardcoded value
+// matching the whole array, not an implementation import.
+{
+  const thresholds = [10, 25, 50, 90, 140, 210, 300, 400, 525];
+  for (let i = 0; i < thresholds.length; i++) {
+    const t = thresholds[i];
+    const level = i + 2;
+    check(`level-at-threshold-${t}-is-level-${level}`, levelFor(t) === level, `levelFor(${t}) = ${levelFor(t)}`);
+    check(
+      `level-just-below-threshold-${t}-is-level-${level - 1}`,
+      levelFor(t - 1) === level - 1,
+      `levelFor(${t - 1}) = ${levelFor(t - 1)}`
+    );
+  }
+  // One past the last threshold is still the max level, not a level 11 that
+  // doesn't exist — the other half of "level-caps-at-max" above, pinned to
+  // the actual boundary rather than an arbitrarily large number.
+  const maxLevel = thresholds.length + 1;
+  check("level-one-past-last-threshold-is-still-max", levelFor(thresholds[thresholds.length - 1] + 1) === maxLevel);
+}
+
 // Leveling must never depend on whether the nights logged were smoke
 // nights or not — only on what actually happened on each one (same stats
 // inputs either way: fill()'s entries carry no triggers/notes, so smoked
@@ -103,6 +129,30 @@ check("next-level-null-once-maxed", hpToNextLevel(100000) === null);
 
 check("stage-level-1-is-seed", stageFor(1) === "seed");
 check("stage-rises-monotonically", stageFor(9) !== stageFor(1));
+
+// Task 40 (step 24): the two checks above only ever sampled level 1 and
+// level 9 — every stage boundary in between (where the portrait actually
+// changes) was untested. Full matrix, matching stageFor's own level <= N
+// boundaries exactly (seed <=2, sprout <=4, sapling <=6, young tree <=8,
+// full bloom above that) across every level the HP ladder has (1-10).
+{
+  const expected: Record<number, string> = {
+    1: "seed",
+    2: "seed",
+    3: "sprout",
+    4: "sprout",
+    5: "sapling",
+    6: "sapling",
+    7: "young tree",
+    8: "young tree",
+    9: "full bloom",
+    10: "full bloom",
+  };
+  for (const [levelStr, stage] of Object.entries(expected)) {
+    const level = Number(levelStr);
+    check(`stage-at-level-${level}-is-${stage.replace(/\s+/g, "-")}`, stageFor(level) === stage, `stageFor(${level}) = ${stageFor(level)}`);
+  }
+}
 
 // --- streaksFor ----------------------------------------------------------------
 
@@ -422,6 +472,33 @@ check(
   growthMessage("fix", { leveledUp: true, grownStat: "awareness" }).includes("level")
 );
 
+// Task 40 (step 24): growthSince reports at most ONE grownStat per save (it
+// `break`s on the first STAT_ORDER match), but nothing pinned which one wins
+// when a single save crosses a tier boundary for more than one stat at
+// once -- a real case, not a contrived one: logging a night always adds 1
+// to mindfulness's raw count (every logged night counts) AND, when that
+// night extends the streak, 1 to consistency's count too, so the two can
+// cross a tier together on an ordinary save. 6 -> 7 consecutive nights
+// crosses both from tier 2 to tier 3 (STAT_TIER_COUNTS' 7-point boundary)
+// on the same night. STAT_ORDER puts mindfulness before consistency, so
+// that -- not consistency -- is the one growthSince should report.
+{
+  const before = fill("2026-01-01", 6);
+  const after = fill("2026-01-01", 7);
+  const beforeStats = statsFor(EMPTY_PROFILE_SEED, before);
+  const afterStats = statsFor(EMPTY_PROFILE_SEED, after);
+  const mindfulnessCrossed =
+    afterStats.find((s) => s.key === "mindfulness")!.tier > beforeStats.find((s) => s.key === "mindfulness")!.tier;
+  const consistencyCrossed =
+    afterStats.find((s) => s.key === "consistency")!.tier > beforeStats.find((s) => s.key === "consistency")!.tier;
+  check("growth-two-stats-cross-a-tier-on-the-same-save-setup", mindfulnessCrossed && consistencyCrossed);
+  check(
+    "growth-tie-break-is-the-earlier-stat-in-STAT_ORDER",
+    growthSince(EMPTY_PROFILE_SEED, before, after).grownStat === "mindfulness",
+    `grownStat = ${growthSince(EMPTY_PROFILE_SEED, before, after).grownStat}, STAT_ORDER = ${STAT_ORDER.join(",")}`
+  );
+}
+
 // --- entriesBefore ---------------------------------------------------------
 // Reconstructs "the log as it stood before day X", for the Sunday card's
 // whole-week growth line. Cutoff day itself must be excluded.
@@ -490,6 +567,29 @@ check(
 check(
   "hp-gained-empty-to-empty-is-all-zero",
   hpGainedSince(EMPTY_PROFILE_SEED, {}, {}).every((g) => g.gained === 0)
+);
+
+// Task 40 (step 24): the "never negative" claim above only holds when
+// `after`'s log is a superset of `before`'s -- see hpGainedSince's own
+// updated doc comment in lib/companion.ts. This pins the other half of that
+// contract: called the other way round (here, simulating a deleted night --
+// `before` has a day `after` lacks), a segment's count CAN drop, and the
+// function reports that honestly as a negative `gained` rather than
+// clamping it to zero. Not a bug to fix -- the one real call site
+// (AppClient's Sunday card) can never hit this, because its `before` is
+// always entriesBefore() filtering the very same `entries` object `after`
+// is, so `before` can never hold a day `after` doesn't. This test exists so
+// that guarantee stays true on purpose, not by accident: if a future call
+// site ever passes an unrelated `before`, this is what it gets, in writing.
+check(
+  "hp-gained-can-go-negative-if-before-has-a-day-after-lacks",
+  (() => {
+    const before = fill("2026-01-01", 10);
+    const after: Entries = { ...before };
+    delete after[addDays("2026-01-01", 5)]; // simulate a deleted middle night
+    const gains = hpGainedSince(EMPTY_PROFILE_SEED, before, after);
+    return gains.some((g) => g.gained < 0);
+  })()
 );
 
 // --- hpFor (task 17 of the 50-step plan; rescaled open-ended, task 68) -----
