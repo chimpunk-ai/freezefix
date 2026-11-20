@@ -23,6 +23,7 @@ import {
   seedFromProfile,
   statsFor,
   traitFor,
+  displayLevelName,
   DEFAULT_COMPANION_NAME,
   DEFAULT_SPECIES,
   SPECIES_ORDER,
@@ -570,7 +571,7 @@ export default function Onboarding({ onDone }: { onDone: (p: Profile) => void })
             <p className="mt-3 text-12 text-ink-faint">
               {(() => {
                 const c = companionFor(DEFAULT_COMPANION_NAME, {});
-                return `${c.name} starts at level ${c.level} — ${c.levelName}. you can name it or turn it off any time in settings.`;
+                return `${c.name} starts at level ${c.level} — ${displayLevelName(companionSpecies, c.level, c.levelName)}. you can name it or turn it off any time in settings.`;
               })()}
             </p>
 

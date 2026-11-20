@@ -6,7 +6,7 @@ import Link from "next/link";
 import { CompanionPortrait } from "@/components/CompanionPortrait";
 import { MoodFace } from "@/components/MoodFace";
 import { WeekCurve, WeekCurveKey } from "@/components/WeekCurve";
-import type { Companion, CompanionSpecies } from "@/lib/companion";
+import { displayLevelName, type Companion, type CompanionSpecies } from "@/lib/companion";
 // Temporarily disabled 19 Nov 2026 after a landing-page render error was
 // reported. WeekInsights (and its MomentsThisWeek child) are removed from
 // the render tree below while I diagnose; the Sunday card falls back to the
@@ -184,7 +184,7 @@ export function PatternCard({
       </div>
       {!dimmed && companion ? (
         <p className="mt-1 text-12 text-ink-faint">
-          {companion.name} is at level {companion.level}, {companion.levelName}
+          {companion.name} is at level {companion.level}, {displayLevelName(species, companion.level, companion.levelName)}
         </p>
       ) : null}
 

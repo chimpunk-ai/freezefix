@@ -157,17 +157,18 @@ export const STAGE_LABEL: Record<CompanionStage, string> = {
 // young fox, finding its legs" instead of the plant's "a sapling,
 // branching out" when the companion isn't a plant.
 //
-// IMPORTANT — not wired into the live UI yet, on purpose. CompanionPortrait
-// (components/CompanionPortrait.tsx) still draws every animal's single
-// base form at every level until task 16 exists; showing one of these
-// labels today, before the art changes with it, would read as a bug — the
-// text claiming growth the picture doesn't show. This file is the
-// reviewed, written brief task 16 draws against (and whatever later wires
-// the label into companionFor/CompanionBadge/etc.), so neither has to
-// invent tier concepts under time pressure once the art work starts. Kept
-// here, in code, rather than in a separate design doc, so it can't drift
-// out of sync with CompanionStage/CompanionSpecies and is covered by a test
-// (scripts/test-companion-species.ts) the moment it's wrong or incomplete.
+// UPDATE, task 16 (20 Nov 2026): now wired into the live UI, via
+// displayLevelName() below — CompanionPortrait draws every species' real
+// stage, so showing the matching label no longer claims growth the picture
+// doesn't back up. (This comment originally said the opposite — "not wired
+// in yet, would read as a bug" — while only the art was missing; kept this
+// note rather than deleting it so the reasoning for *why* it waited isn't
+// lost, now that it's true again in the other direction.)
+//
+// Kept here, in code, rather than in a separate design doc, so it can't
+// drift out of sync with CompanionStage/CompanionSpecies and is covered by
+// a test (scripts/test-companion-species.ts) the moment it's wrong or
+// incomplete.
 //
 // Visual brief per tier, for whoever draws task 16 — same "one warm ink
 // line, no gradients, never performs happiness it hasn't earned" rules
@@ -266,11 +267,24 @@ export const SPECIES_STAGE_LABEL: Record<CompanionSpecies, Record<CompanionStage
 /**
  * The species-flavoured stage label for a level — e.g. "a young fox,
  * finding its legs" for a fox at level 6, vs. the plant's "a sapling,
- * branching out" (from LEVEL_NAME) at the same level. Not called from
- * anywhere in the live UI yet; see the "not wired in" note above.
+ * branching out" (from LEVEL_NAME) at the same level.
  */
 export function speciesStageLabel(species: CompanionSpecies, level: number): string {
   return SPECIES_STAGE_LABEL[species][stageFor(level)];
+}
+
+/**
+ * What to actually show next to a level number, for whichever species the
+ * person has (task 16, 20 Nov 2026): the plant keeps its existing, finer
+ * two-names-per-stage LEVEL_NAME text (passed in as `plantLevelName` — e.g.
+ * companion.levelName from companionFor()); every animal gets its
+ * speciesStageLabel() instead. The one place every display site
+ * (CompanionBadge, PatternCard, the onboarding reveal) should go through,
+ * so "which text for which species" is decided once, not three times.
+ */
+export function displayLevelName(species: CompanionSpecies | undefined, level: number, plantLevelName: string): string {
+  if (!species || species === "plant") return plantLevelName;
+  return speciesStageLabel(species, level);
 }
 
 /**
