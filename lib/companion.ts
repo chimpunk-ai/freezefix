@@ -25,6 +25,30 @@ import { addDays, todayISO, type Entries } from "./entry";
 
 export type CompanionStage = "seed" | "sprout" | "sapling" | "young tree" | "full bloom";
 
+// The companion picker (task 13 of the 50-step plan, 20 Nov 2026): the
+// plant was the only companion anyone could have. These are drawn as
+// components/CompanionSpecies.tsx's base forms, in the same one-line,
+// never-grading visual language as the plant and MoodFace — picked for
+// having genuinely distinct silhouettes at icon size (ear shape, tail vs.
+// no tail, a dome instead of a round body), not because they're the "most
+// popular" pets. The plant stays available too — switching species never
+// deletes anyone's progress, since a species is a skin on the same level
+// number, not a separate save file.
+export type CompanionSpecies = "plant" | "fox" | "cat" | "rabbit" | "owl" | "turtle";
+
+export const DEFAULT_SPECIES: CompanionSpecies = "plant";
+
+export const SPECIES_ORDER: readonly CompanionSpecies[] = ["plant", "fox", "cat", "rabbit", "owl", "turtle"];
+
+export const SPECIES_LABEL: Record<CompanionSpecies, string> = {
+  plant: "a plant",
+  fox: "a fox",
+  cat: "a cat",
+  rabbit: "a rabbit",
+  owl: "an owl",
+  turtle: "a turtle",
+};
+
 export type Companion = {
   name: string;
   level: number; // 1-based

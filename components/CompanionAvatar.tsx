@@ -12,9 +12,12 @@ import type { CompanionStage } from "@/lib/companion";
 // lib/companion.ts and CompanionBadge.tsx already, but both were text only.
 // This is the part that was missing: something to actually look at.
 
-const FACE_Y = 18; // shared eye/mouth baseline for every stage, drawn on top of its stem
+export const FACE_Y = 18; // shared eye/mouth baseline for every stage, drawn on top of its stem
 
-function Face({ tone, warmth }: { tone: string; warmth: 0 | 1 | 2 }) {
+// Exported so components/CompanionSpecies.tsx (the animal character set, Nov
+// 2026) can draw the exact same calm, never-grading face on top of its own
+// bodies — one visual language for every companion, plant or animal.
+export function Face({ tone, warmth }: { tone: string; warmth: 0 | 1 | 2 }) {
   // warmth 0 = seed (closed, resting), 1 = sprout/sapling (content), 2 = young tree/full bloom (pleased).
   const mouth =
     warmth === 0
@@ -40,7 +43,7 @@ function Face({ tone, warmth }: { tone: string; warmth: 0 | 1 | 2 }) {
   );
 }
 
-const GROUND = "M4 50h40"; // the soil line every stage sits on
+export const GROUND = "M4 50h40"; // the soil/ground line every stage sits on
 
 function Seed({ tone }: { tone: string }) {
   return (

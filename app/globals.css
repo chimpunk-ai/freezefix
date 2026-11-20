@@ -349,6 +349,77 @@ a {
   to { opacity: 1; transform: none; }
 }
 
+/* The animal companions' idle motion (components/CompanionSpecies.tsx, 20
+   Nov 2026) — the founder's ask for the character to feel genuinely alive,
+   not just a static icon, answered without a new vendor: plain CSS on the
+   same hand-drawn line art. Two layers, both continuous loops (unlike every
+   other animation on this page, which plays once) so they need no trigger
+   from JS — just these classes, applied once, in the markup:
+
+   - ff-species-breathe: the whole body, a barely-there scale pulse anchored
+     at the ground-contact point (24px 50px, matching GROUND's "M4 50h40")
+     so it reads as the body rising, never as the icon floating.
+   - one small per-species detail — a tail flick, an ear tip, a tuft
+     settling, a shy head-tuck — each resting for most of its cycle and
+     moving once, slowly: a twitch, not a wiggle, and each on its own
+     (slightly prime-ish, deliberately uneven) duration so a set of several
+     companions shown together — the later friends list, task 29 — would
+     never move in lockstep.
+
+   Both collapse under prefers-reduced-motion exactly like every other
+   animation here: that rule forces animation-iteration-count to 1, so an
+   infinite loop just settles at its rest state instead of looping, with no
+   special-casing needed in this file or the component. */
+.ff-species-breathe {
+  transform-origin: 24px 50px;
+  animation: ff-species-breathe 3.6s ease-in-out infinite;
+}
+@keyframes ff-species-breathe {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.016); }
+}
+
+.ff-species-tail-flick {
+  transform-origin: 32px 48px;
+  animation: ff-species-tail-flick 7.3s ease-in-out infinite;
+}
+@keyframes ff-species-tail-flick {
+  0%, 82% { transform: rotate(0deg); }
+  89% { transform: rotate(-4deg); }
+  96% { transform: rotate(1.5deg); }
+  100% { transform: rotate(0deg); }
+}
+
+.ff-species-tuft-settle {
+  transform-origin: 24px 33px;
+  animation: ff-species-tuft-settle 8.7s ease-in-out infinite;
+}
+@keyframes ff-species-tuft-settle {
+  0%, 85% { transform: rotate(0deg); }
+  92% { transform: rotate(-3deg); }
+  100% { transform: rotate(0deg); }
+}
+
+.ff-species-ear-tip {
+  transform-origin: 30px 30px;
+  animation: ff-species-ear-tip 7.9s ease-in-out infinite;
+}
+@keyframes ff-species-ear-tip {
+  0%, 80% { transform: rotate(0deg); }
+  88% { transform: rotate(3deg); }
+  100% { transform: rotate(0deg); }
+}
+
+.ff-species-head-retreat {
+  transform-origin: 9.5px 45.5px;
+  animation: ff-species-head-retreat 9.4s ease-in-out infinite;
+}
+@keyframes ff-species-head-retreat {
+  0%, 80% { transform: translateX(0); }
+  90% { transform: translateX(1.2px); }
+  100% { transform: translateX(0); }
+}
+
 .ff-chip {
   transition: transform 140ms cubic-bezier(0.2, 0.8, 0.3, 1), background-color 140ms ease, border-color 140ms ease;
 }
