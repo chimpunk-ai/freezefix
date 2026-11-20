@@ -49,6 +49,18 @@ export const SPECIES_LABEL: Record<CompanionSpecies, string> = {
   turtle: "a turtle",
 };
 
+/** Short, capitalized noun for the stat card's type badge (task 67, 20 Nov
+ *  2026) — "Fox", "Owl" — rather than re-parsing SPECIES_LABEL's "a fox" /
+ *  "an owl" sentences every call site that wants just the word. */
+export const SPECIES_TYPE_LABEL: Record<CompanionSpecies, string> = {
+  plant: "Plant",
+  fox: "Fox",
+  cat: "Cat",
+  rabbit: "Rabbit",
+  owl: "Owl",
+  turtle: "Turtle",
+};
+
 export type Companion = {
   name: string;
   level: number; // 1-based
@@ -419,6 +431,21 @@ const STAT_BLURB: Record<StatKey, string> = {
 };
 
 const MAX_TIER = 5;
+
+/** Five distinct colors, one per stat, for the bold game-card stat display
+ *  (task 67, 20 Nov 2026 — a founder-requested, explicit one-component
+ *  exception to the rest of the app's "one accent, nowhere else" rule; see
+ *  app/globals.css's comment on --color-stat-mind / --color-stat-self for
+ *  the two new tokens this needed). Classes, not hex, so every call site
+ *  just applies a className — Tailwind's own color-mixing (hover, opacity
+ *  modifiers) keeps working, which a raw inline hex wouldn't give for free. */
+export const STAT_COLOR: Record<StatKey, { bg: string; text: string }> = {
+  awareness: { bg: "bg-signpost", text: "text-signpost" },
+  mindfulness: { bg: "bg-stat-mind", text: "text-stat-mind" },
+  consistency: { bg: "bg-accent", text: "text-accent" },
+  resilience: { bg: "bg-frost", text: "text-frost" },
+  selfUnderstanding: { bg: "bg-stat-self", text: "text-stat-self" },
+};
 
 // Counts needed to light each of the 5 bars. Deliberately gentle near the
 // start (one onboarding answer already lights the first bar) and slower
