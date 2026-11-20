@@ -104,6 +104,18 @@ check("isWeekend-wednesday", isWeekend("2026-11-04") === false);
   check("saveEntry-roundtrips-basic-fields", e?.smoked === true && e?.mood === 3);
   check("saveEntry-sets-at-timestamp", typeof e?.at === "number" && e!.at > 0);
 
+  // Re-saving (editing) an already-logged day must keep its ORIGINAL `at`,
+  // not bump it to the edit's own time — lib/growth-reveal.ts's 5-hour
+  // delayed reveal anchors to this timestamp, and the once-a-day cap it
+  // depends on only holds if an edit can't push the clock later.
+  const firstAt = e!.at;
+  saveEntry({ day: "2026-11-01", smoked: false, mood: 4, triggers: [] });
+  check("saveEntry-edit-keeps-original-at", getEntry("2026-11-01")?.at === firstAt);
+  check("saveEntry-edit-still-updates-other-fields", getEntry("2026-11-01")?.smoked === false && getEntry("2026-11-01")?.mood === 4);
+  // An explicit `at` (tests, or a future import/restore feature) still wins.
+  saveEntry({ day: "2026-11-01", smoked: false, mood: 4, triggers: [], at: 12345 });
+  check("saveEntry-explicit-at-overrides", getEntry("2026-11-01")?.at === 12345);
+
   // Dedup + cap triggers at MAX_TRIGGERS, same order preserved.
   saveEntry({ day: "2026-11-02", smoked: false, mood: 4, triggers: ["bored", "bored", "alone", "stressed", "with-friends"] });
   const capped = getEntry("2026-11-02");

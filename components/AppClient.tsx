@@ -21,6 +21,7 @@ import { goalSentence, recentWeeks, weekStats, type WeekStats } from "@/lib/patt
 import { BEDTIMES, GOAL_EXAMPLES, bedtimeLabel, clearProfile, patchProfile, readProfile, type Profile } from "@/lib/profile";
 import { clearChimePref, readChimePref, writeChimePref, type ChimePref } from "@/lib/chime-pref";
 import { clearMoments } from "@/lib/moments";
+import { clearGrowthReveals, takeDueGrowthReveal } from "@/lib/growth-reveal";
 import { trialState } from "@/lib/trial";
 
 // The app shell. No navigation tree, no home screen, no feed: the log is the
@@ -55,6 +56,10 @@ export default function AppClient({ view = "log" }: { view?: View }) {
   const [fixOpen, setFixOpen] = useState(false);
   const [manualSheet, setManualSheet] = useState<WeekStats | null>(null);
   const [dismissed, setDismissed] = useState<string | null>(null);
+  // The delayed growth reveal (task 19 of the 50-step plan) — set at most
+  // once per mount, from takeDueGrowthReveal below, never recomputed on
+  // re-render so a dismiss can't be undone by the next render.
+  const [growthReveal, setGrowthReveal] = useState<string | null>(null);
   const region = useRegion();
 
   useEffect(() => {
@@ -63,9 +68,19 @@ export default function AppClient({ view = "log" }: { view?: View }) {
     // render-driven sync — the compiler's setState-in-effect heuristic does not
     // apply to a mount-only read.
     /* eslint-disable react-hooks/set-state-in-effect */
-    setProfile(readProfile());
-    setEntries(readEntries());
+    const p = readProfile();
+    const e = readEntries();
+    setProfile(p);
+    setEntries(e);
     setReady(true);
+    // Checked once per load, the same "next time you open the app" moment
+    // the design relies on — see lib/growth-reveal.ts. Reads straight from
+    // the just-loaded profile/entries rather than state, since state isn't
+    // set until the lines above re-render.
+    if (p.onboarded && p.showCompanion !== false) {
+      const msg = takeDueGrowthReveal(p.companionName || p.name, seedFromProfile(p), e);
+      if (msg) setGrowthReveal(msg);
+    }
     /* eslint-enable react-hooks/set-state-in-effect */
     fetch("/api/paywall", { cache: "no-store" })
       .then((r) => r.json())
@@ -184,6 +199,19 @@ export default function AppClient({ view = "log" }: { view?: View }) {
       ) : (
         <Container className="grid items-start gap-10 lg:grid-cols-[minmax(0,560px)_minmax(280px,400px)] lg:justify-center lg:gap-16">
           <div className="min-w-0">
+            {growthReveal ? (
+              <div className="mb-4 flex items-start justify-between gap-3 rounded-card border border-accent/25 bg-accent/[0.07] px-4 py-3">
+                <p className="text-14 text-accent">{growthReveal}</p>
+                <button
+                  type="button"
+                  onClick={() => setGrowthReveal(null)}
+                  aria-label="dismiss"
+                  className="shrink-0 text-14 text-ink-faint hover:text-ink-soft"
+                >
+                  ×
+                </button>
+              </div>
+            ) : null}
             {profile.showCompanion !== false ? (
               <CompanionBadge
                 name={profile.companionName || profile.name}
@@ -458,6 +486,7 @@ function SettingsView({
     clearChimePref(); // ff_chime, ff_chime_asked
     clearReframePref(); // ff_reframe, ff_reframe_seen
     clearMoments(); // ff_moments
+    clearGrowthReveals(); // ff_pending_growth
     try {
       window.localStorage.removeItem("ff_region"); // help-page country pick
     } catch {
