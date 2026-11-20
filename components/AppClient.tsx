@@ -502,7 +502,7 @@ function SettingsView({
           </div>
         </div>
 
-        <div>
+        <div id="goal">
           <p className="text-14 text-ink-soft">your thing</p>
           <div className="mt-2 flex flex-wrap gap-2">
             {GOAL_EXAMPLES.map((g) => (

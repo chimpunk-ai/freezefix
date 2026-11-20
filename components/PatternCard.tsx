@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Link from "next/link";
 
 import { CompanionAvatar } from "@/components/CompanionAvatar";
 import { MoodFace } from "@/components/MoodFace";
@@ -202,9 +203,23 @@ export function PatternCard({
       </div>
 
       {line ? (
-        <p className="mt-5 rounded-card border border-accent/25 bg-accent/[0.07] px-4 py-3 text-14 text-ink">
-          {goalSentence(line)}
-        </p>
+        <div className="mt-5 rounded-card border border-accent/25 bg-accent/[0.07] px-4 py-3">
+          <p className="text-14 text-ink">{goalSentence(line)}</p>
+          {/* Only on the real, live sunday sheet — never on the dimmed
+              history/demo cards, where "change it" would read as an offer
+              to edit a week that's already closed. Goes straight to the
+              goal section of settings, which already lets it be swapped
+              any time, not just here — this is just the weekly nudge that
+              it's okay to. */}
+          {!dimmed ? (
+            <Link
+              href="/app/settings#goal"
+              className="ff-chip mt-1.5 inline-block text-12 text-accent underline decoration-accent/40 underline-offset-2 hover:text-ink"
+            >
+              keep it, or change it for next week
+            </Link>
+          ) : null}
+        </div>
       ) : null}
 
       {stats.observation ? <p className="mt-3 text-14 text-ink-faint">{stats.observation}</p> : null}
