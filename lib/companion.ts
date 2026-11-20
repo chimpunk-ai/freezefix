@@ -69,37 +69,71 @@ export const SPECIES_TYPE_LABEL: Record<CompanionSpecies, string> = {
 
 export type Companion = {
   name: string;
-  level: number; // 1-based
+  /** 1-based. Driven by total HP since task 70 (20 Nov 2026) — see the
+   *  comment on LEVEL_THRESHOLDS, below, for why this moved off nights
+   *  logged. */
+  level: number;
   levelName: string; // "a sprout, pushing up" — shown next to the number
   stage: CompanionStage;
+  /** How many nights they've logged, period. No longer drives level/stage
+   *  (task 70) — kept here because it's still a genuine, separate fact
+   *  worth having on hand (and currentStreak/longestStreak are derived from
+   *  the same log, so this sits naturally alongside them). */
   totalNightsLogged: number;
+  /** The total HP (lib/companion.ts's hpFor) that level/stage were computed
+   *  from — kept here so a caller showing "X HP to next level" doesn't have
+   *  to run statsFor/hpFor a second time just to get the number it's
+   *  already implicitly behind `level`. */
+  totalHp: number;
   currentStreak: number; // consecutive logged nights ending today or yesterday
   longestStreak: number; // the number to actually show off; never resets downward
-  nightsToNextLevel: number | null; // null once maxed out
-  progress: LevelProgress | null; // null once maxed out — same condition as nightsToNextLevel
+  /** HP still needed to reach the next level; null once maxed out. Renamed
+   *  from nightsToNextLevel (task 70) — it was always just a threshold
+   *  distance, and the threshold is HP now, not nights. */
+  hpToNextLevel: number | null;
+  progress: LevelProgress | null; // null once maxed out — same condition as hpToNextLevel
 };
 
 export const DEFAULT_COMPANION_NAME = "fix";
 
-// Nights logged (not nights smoke-free) needed to reach each level above 1.
-// Levels 1-5 move fast on purpose — level 5 lands inside most people's free
-// week. No entry for level 1 itself: everyone starts there with zero nights.
-const LEVEL_THRESHOLDS = [3, 7, 14, 25, 40, 60, 85, 115, 150];
+// Total HP (lib/companion.ts's hpFor, below) needed to reach each level
+// above 1. No entry for level 1 itself: everyone starts there at 0 HP.
+//
+// Originally nights-logged (see this file's git history) — replaced with
+// HP as the basis for level/stage itself (task 70, 20 Nov 2026), resolved
+// via an explicit question to the founder rather than guessed: two people
+// logging the same number of nights could have very different HP (one
+// logging deeply, one barely tapping through), and leaving level on nights
+// while the character's actual appearance (task 68/69's HP) told a
+// different story would mean the number and the picture could openly
+// contradict each other. The founder chose to replace level with HP so the
+// number, the label text, and the portrait's growth stage always tell ONE
+// consistent story.
+//
+// Values are a judgment call, not a product spec: chosen to land at roughly
+// the same real-world pace the old nights-based thresholds did (generous
+// early levels, slower later), re-expressed in HP using a rough "a few HP
+// per engaged night" conversion — verified empirically in
+// scripts/test-companion.ts against simulated logs of varying depth, and
+// against a live 95-night heavy-engagement run that reached the final
+// stage ("full bloom") at 432 HP, landing inside the founder's own
+// "3-4 months" framing for when the character should look fully grown.
+const LEVEL_THRESHOLDS = [10, 25, 50, 90, 140, 210, 300, 400, 525];
 
 const MAX_LEVEL = LEVEL_THRESHOLDS.length + 1;
 
-export function levelFor(totalNightsLogged: number): number {
+export function levelFor(totalHp: number): number {
   let level = 1;
   for (const t of LEVEL_THRESHOLDS) {
-    if (totalNightsLogged >= t) level += 1;
+    if (totalHp >= t) level += 1;
     else break;
   }
   return Math.min(level, MAX_LEVEL);
 }
 
-export function nightsToNextLevel(totalNightsLogged: number): number | null {
-  const next = LEVEL_THRESHOLDS.find((t) => t > totalNightsLogged);
-  return next === undefined ? null : next - totalNightsLogged;
+export function hpToNextLevel(totalHp: number): number | null {
+  const next = LEVEL_THRESHOLDS.find((t) => t > totalHp);
+  return next === undefined ? null : next - totalHp;
 }
 
 // A name per level, two per growth stage (STAGE_LABEL below), so the
@@ -125,25 +159,26 @@ export function levelName(level: number): string {
 }
 
 export type LevelProgress = {
-  /** Nights logged since the current level was reached. */
+  /** HP earned since the current level was reached (nights logged, before
+   *  task 70). */
   into: number;
-  /** Nights the current level spans, start to next threshold. */
+  /** HP the current level spans, start to next threshold. */
   span: number;
   /** 0-1, for a progress bar. Always <= 1; never negative. */
   fraction: number;
 };
 
 /**
- * How far into the current level the person is, in real nights logged —
- * never a fabricated XP number, just the same count everything else here
- * is built from. Null once maxed out, same as nightsToNextLevel.
+ * How far into the current level the person is, in total HP (task 70) —
+ * never a fabricated XP number, just the same hpFor() total everything
+ * else here is built from. Null once maxed out, same as hpToNextLevel.
  */
-export function levelProgress(totalNightsLogged: number): LevelProgress | null {
-  const level = levelFor(totalNightsLogged);
+export function levelProgress(totalHp: number): LevelProgress | null {
+  const level = levelFor(totalHp);
   if (level >= MAX_LEVEL) return null;
   const prevThreshold = level === 1 ? 0 : LEVEL_THRESHOLDS[level - 2];
   const nextThreshold = LEVEL_THRESHOLDS[level - 1];
-  const into = Math.max(0, totalNightsLogged - prevThreshold);
+  const into = Math.max(0, totalHp - prevThreshold);
   const span = Math.max(1, nextThreshold - prevThreshold);
   return { into, span, fraction: Math.min(1, into / span) };
 }
@@ -169,11 +204,12 @@ export const STAGE_LABEL: Record<CompanionStage, string> = {
 // Task 15 of the 50-step plan, 20 Nov 2026: define what each animal's five
 // growth tiers ARE, before task 16 draws them. A species doesn't get its
 // own level thresholds — stageFor() above already decides, from the same
-// nights-logged count, which of the five shared stages (seed through full
-// bloom) anyone is at, plant or animal. What a species gets here is its own
-// LOOK and NAME at each of those five stages, so "level 6" reads as "a
-// young fox, finding its legs" instead of the plant's "a sapling,
-// branching out" when the companion isn't a plant.
+// level number (HP-based since task 70 — see LEVEL_THRESHOLDS), which of
+// the five shared stages (seed through full bloom) anyone is at, plant or
+// animal. What a species gets here is its own LOOK and NAME at each of
+// those five stages, so "level 6" reads as "a young fox, finding its legs"
+// instead of the plant's "a sapling, branching out" when the companion
+// isn't a plant.
 //
 // UPDATE, task 16 (20 Nov 2026): now wired into the live UI, via
 // displayLevelName() below — CompanionPortrait draws every species' real
@@ -366,20 +402,29 @@ export function traitFor(input: {
   return "just getting started — the shape comes later.";
 }
 
-export function companionFor(name: string, entries: Entries, today?: string): Companion {
+/**
+ * `seed` is required since task 70 (20 Nov 2026) — level/stage are now
+ * derived from total HP (lib/companion.ts's statsFor/hpFor), which needs
+ * the same onboarding-answer seed every other stat display already uses.
+ * Pass EMPTY_PROFILE_SEED for a seed-less context (e.g. a brand-new
+ * onboarding reveal before any answers exist yet).
+ */
+export function companionFor(name: string, seed: ProfileSeed, entries: Entries, today?: string): Companion {
   const totalNightsLogged = Object.keys(entries).length;
   const { current, longest } = streaksFor(entries, today);
-  const level = levelFor(totalNightsLogged);
+  const totalHp = hpFor(statsFor(seed, entries)).hp;
+  const level = levelFor(totalHp);
   return {
     name: name.trim() || DEFAULT_COMPANION_NAME,
     level,
     levelName: levelName(level),
     stage: stageFor(level),
     totalNightsLogged,
+    totalHp,
     currentStreak: current,
     longestStreak: longest,
-    nightsToNextLevel: nightsToNextLevel(totalNightsLogged),
-    progress: levelProgress(totalNightsLogged),
+    hpToNextLevel: hpToNextLevel(totalHp),
+    progress: levelProgress(totalHp),
   };
 }
 
@@ -693,10 +738,12 @@ export type Growth = { leveledUp: boolean; grownStat: StatKey | null };
 
 /** What changed between one log state and the next, for exactly one save. */
 export function growthSince(seed: ProfileSeed, before: Entries, after: Entries): Growth {
-  const beforeLevel = levelFor(Object.keys(before).length);
-  const afterLevel = levelFor(Object.keys(after).length);
   const beforeStats = statsFor(seed, before);
   const afterStats = statsFor(seed, after);
+  // Level is HP-based since task 70 — reuse the same before/after stats
+  // already computed above rather than a second pass over the log.
+  const beforeLevel = levelFor(hpFor(beforeStats).hp);
+  const afterLevel = levelFor(hpFor(afterStats).hp);
 
   let grownStat: StatKey | null = null;
   for (let i = 0; i < STAT_ORDER.length; i++) {

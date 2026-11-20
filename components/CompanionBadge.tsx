@@ -47,10 +47,12 @@ export function CompanionBadge({
    *  CompanionPortraitFrame itself does for an unset/legacy profile. */
   species?: CompanionSpecies;
 }) {
-  const companion = companionFor(name, entries);
-  const { level, levelName, stage, currentStreak, longestStreak, nightsToNextLevel, progress } = companion;
-  const curLevelName = displayLevelName(species, level, levelName);
+  // Level/stage are HP-based since task 70 (20 Nov 2026), so the seed has
+  // to be computed before companionFor can be called, not after.
   const seed: ProfileSeed = profile ? seedFromProfile(profile) : EMPTY_PROFILE_SEED;
+  const companion = companionFor(name, seed, entries);
+  const { level, levelName, stage, currentStreak, longestStreak, hpToNextLevel, progress } = companion;
+  const curLevelName = displayLevelName(species, level, levelName);
   const stats = statsFor(seed, entries);
   const hp = hpFor(stats);
   // Open-ended since task 68 (20 Nov 2026) -- no fixed per-stat ceiling, so
@@ -85,9 +87,9 @@ export function CompanionBadge({
         </div>
       </div>
 
-      {/* Progress is real nights logged, not a fabricated XP number — see
-          lib/companion.ts's levelProgress. Hidden once maxed out, same as
-          before. */}
+      {/* Progress is real total HP, not a fabricated XP number — see
+          lib/companion.ts's levelProgress (HP-based since task 70). Hidden
+          once maxed out, same as before. */}
       {progress ? (
         <div className="px-3">
           <div
@@ -101,7 +103,7 @@ export function CompanionBadge({
             <div className="h-full rounded-full bg-accent transition-[width]" style={{ width: `${progress.fraction * 100}%` }} />
           </div>
           <p className="mt-1 text-11 text-ink-faint">
-            {progress.into}/{progress.span} nights · {nightsToNextLevel} to the next level
+            {progress.into}/{progress.span} hp · {hpToNextLevel} to the next level
           </p>
         </div>
       ) : (

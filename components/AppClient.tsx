@@ -268,7 +268,7 @@ export default function AppClient({ view = "log" }: { view?: View }) {
               }
               companion={
                 profile.showCompanion !== false
-                  ? companionFor(profile.companionName || profile.name, entries)
+                  ? companionFor(profile.companionName || profile.name, seedFromProfile(profile), entries)
                   : null
               }
               species={profile.companionSpecies}

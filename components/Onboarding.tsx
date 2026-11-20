@@ -570,7 +570,7 @@ export default function Onboarding({ onDone }: { onDone: (p: Profile) => void })
             </p>
             <p className="mt-3 text-12 text-ink-faint">
               {(() => {
-                const c = companionFor(DEFAULT_COMPANION_NAME, {});
+                const c = companionFor(DEFAULT_COMPANION_NAME, statSeed, {});
                 return `${c.name} starts at level ${c.level} — ${displayLevelName(companionSpecies, c.level, c.levelName)}. you can name it or turn it off any time in settings.`;
               })()}
             </p>
