@@ -27,6 +27,7 @@ Next.js on Cloudflare Workers (via OpenNext). The product is "Fix"; the legal en
 | `lib/country.ts` | Device-side region detection from time zone + language list. No GPS. |
 | `lib/chime.ts` · `lib/chime-pref.ts` | The one optional, default-off Sunday chime. Procedurally generated three descending sine notes. |
 | `lib/quota.ts` | Server-side daily limits and the paywall check. Anonymous device cookie + salted IP hash. |
+| `lib/push.ts` · `lib/reminders.ts` · `app/api/push/*` | Optional Web Push reminders: a weekly Sunday nudge and a nightly bedtime-hour nudge, each off until the user turns it on in Settings. `push-tick.yml` (GitHub Actions cron, every 10 min) calls `/api/push/tick` to send what's due. Needs the VAPID secrets below to actually send anything; until then the Settings toggle shows "reminders aren't switched on for this app yet" rather than failing silently. |
 | `lib/legal.ts`, `app/privacy`, `app/terms`, `app/refunds` | Legal pages. Wording owned by Setup & Legal. |
 | `app/api/fix/route.ts` | Fix's API: keyword check → quota → Anthropic (Claude) → post-process. |
 | `app/api/trial/start/route.ts` | Records the start of the seven free days on the server. |
@@ -46,6 +47,7 @@ Added in **Cloudflare dashboard → Workers → freezefix → Settings → Varia
 - `AI_MODEL`: optional, defaults to `claude-haiku-5-5`
 - `SUPABASE_URL` and `SUPABASE_ANON_KEY`: anonymous counts + daily limits (Supabase project is in **EU (Frankfurt)**, as the privacy policy says)
 - `QUOTA_SALT`: any long random text; used to hash the device cookie and IP
+- `VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY`, `NEXT_PUBLIC_VAPID_PUBLIC_KEY` (same public key value, once under each name -- one for the server send, one for the browser bundle): Web Push reminders (see `lib/push.ts` row above). Generate with `npx web-push generate-vapid-keys`. **Not yet set in production as of 21 Nov 2026** -- the Settings UI and server plumbing are both live and tested, but the reminder toggle will show "reminders aren't switched on for this app yet" until these are added.
 - Payments (Paddle): `PADDLE_ENV`, `PADDLE_CLIENT_TOKEN`, `PADDLE_PRICE_YEARLY`, `PADDLE_PRICE_MONTHLY`, `PADDLE_WEBHOOK_SECRET`, `PADDLE_API_KEY`, `SUPABASE_SERVICE_ROLE_KEY`. Webhook URL: `https://getfreezefix.com/api/webhooks/paddle` (subscription events).
 
 ## Commands

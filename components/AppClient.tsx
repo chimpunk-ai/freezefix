@@ -21,6 +21,7 @@ import { recurringTheme } from "@/lib/week-themes";
 import { goalSentence, recentWeeks, weekStats, type WeekStats } from "@/lib/pattern";
 import { BEDTIMES, GOAL_EXAMPLES, bedtimeLabel, clearProfile, patchProfile, readProfile, type Profile } from "@/lib/profile";
 import { clearChimePref, readChimePref, writeChimePref, type ChimePref } from "@/lib/chime-pref";
+import { disable as disableReminder, enable as enableReminder, forgetReminders, getState as getReminderState, onBedtimeChange, type ReminderKind, type RemindersState } from "@/lib/reminders";
 import { clearMoments } from "@/lib/moments";
 import { clearGrowthReveals, takeDueGrowthReveal } from "@/lib/growth-reveal";
 import { trialState } from "@/lib/trial";
@@ -430,6 +431,26 @@ export function WeeksView({ weeks, name, onAsk }: { weeks: WeekStats[]; name: st
   );
 }
 
+// Calm, honest copy for every way enableReminder() can fail -- "never
+// pretend a reminder succeeded when it did not" means the opposite is just
+// as true: never leave the user guessing why a tap did nothing.
+function reminderFailureNote(reason: "unsupported" | "needs-home-screen" | "not-configured" | "denied" | "server" | "failed"): string {
+  switch (reason) {
+    case "unsupported":
+      return "this browser can't do push notifications.";
+    case "needs-home-screen":
+      return "on iphone, add fix to your home screen first (share, then add to home screen), then try again.";
+    case "not-configured":
+      return "reminders aren't switched on for this app yet.";
+    case "denied":
+      return "notifications are blocked for this site -- check your browser or device settings.";
+    case "server":
+      return "couldn't reach the server just now. try again in a moment.";
+    case "failed":
+      return "that didn't go through. try again.";
+  }
+}
+
 function SettingsView({
   profile,
   entries,
@@ -452,6 +473,9 @@ function SettingsView({
   const [saved, setSaved] = useState(false);
   const [confirming, setConfirming] = useState(false);
   const [chime, setChime] = useState<ChimePref>("unset");
+  const [reminders, setReminders] = useState<RemindersState | null>(null);
+  const [reminderBusy, setReminderBusy] = useState<ReminderKind | null>(null);
+  const [reminderNote, setReminderNote] = useState<string | null>(null);
   const router = useRouter();
 
   useEffect(() => {
@@ -460,11 +484,35 @@ function SettingsView({
     // for a value that never changes within the lifetime of a Settings view.
     // eslint-disable-next-line react-hooks/set-state-in-effect
     setChime(readChimePref());
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setReminders(getReminderState());
   }, []);
 
   function setChimeAnd(answer: "yes" | "no") {
     writeChimePref(answer);
     setChime(answer);
+  }
+
+  // Task 32/33 (step 48/49): reminders were fully built server- and
+  // service-worker-side (lib/push.ts, lib/reminders.ts, public/sw.js, the
+  // push-tick cron) but never actually offered anywhere in the UI -- neither
+  // kind, not just nightly. Off by default (getReminderState() starts both
+  // false until a device explicitly subscribes) and each kind toggles
+  // independently, same "no silent default-on" rule the chime/companion
+  // toggles above already follow. Turning one on asks the browser for
+  // notification permission right there -- a second, real consent gate on
+  // top of this toggle, not instead of it.
+  async function toggleReminder(kind: ReminderKind, turnOn: boolean) {
+    setReminderBusy(kind);
+    setReminderNote(null);
+    if (turnOn) {
+      const result = await enableReminder(kind, bedtime);
+      setReminders(result.state);
+      if (!result.ok) setReminderNote(reminderFailureNote(result.reason));
+    } else {
+      setReminders(await disableReminder(kind));
+    }
+    setReminderBusy(null);
   }
 
   const logged = Object.keys(entries).length;
@@ -483,10 +531,18 @@ function SettingsView({
     setSaved(true);
   }
 
-  function forget() {
+  async function forget() {
     // Every ff_* key the app writes, not just the two big ones. The privacy
     // policy (§9) promises this removes "the log, your name, your settings and
     // the help-page country choice"; scripts/test-legal.ts pins the list.
+    //
+    // forgetReminders() isn't just a localStorage wipe like the others: if a
+    // push subscription is live, the server-side row keeps sending Sunday/
+    // nightly notifications forever unless something actually tells the
+    // browser (and through it, the server) to unsubscribe. Awaited first, and
+    // deliberately before the synchronous clears below, so a slow network
+    // can't leave the subscription behind if someone navigates away mid-call.
+    await forgetReminders(); // ff_reminders, and cancels any live push subscription
     clearEntries(); // ff_entries
     clearProfile(); // ff_profile
     clearSeen(); // ff_mirror_seen
@@ -531,7 +587,14 @@ function SettingsView({
               <button
                 key={h}
                 type="button"
-                onClick={() => setBedtime(h)}
+                onClick={() => {
+                  setBedtime(h);
+                  // Keeps a live nightly subscription's hour in sync the moment
+                  // bedtime changes, rather than only on the next explicit
+                  // reminder toggle -- onBedtimeChange() itself no-ops if
+                  // nothing is subscribed yet, so this is always safe to call.
+                  void onBedtimeChange(h);
+                }}
                 aria-pressed={bedtime === h}
                 className={[
                   "ff-chip rounded-pill border px-3.5 py-2 text-14",
@@ -667,6 +730,62 @@ function SettingsView({
               <span className="self-center text-12 text-ink-faint">pick one — default is silence.</span>
             ) : null}
           </div>
+        </div>
+
+        <div>
+          <p className="text-14 text-ink-soft">reminders</p>
+          <p className="mt-1 text-12 text-ink-faint">
+            off until you turn one on here. turn it back off any time — it stops right away, not
+            &ldquo;soon.&rdquo;
+          </p>
+          {!reminders ? null : !reminders.configured || reminders.permission === "unsupported" ? (
+            <p className="mt-3 text-12 text-ink-faint">
+              {!reminders.configured
+                ? "reminders aren't switched on for this app yet."
+                : "this browser can't do push notifications."}
+            </p>
+          ) : (
+            <div className="mt-3 space-y-4">
+              <div>
+                <p className="text-13 text-ink">the sunday card</p>
+                <p className="mt-0.5 text-12 text-ink-faint">
+                  one nudge, sunday evening, when your week is ready to look at.
+                </p>
+                <button
+                  type="button"
+                  onClick={() => toggleReminder("sunday", !reminders.sunday)}
+                  disabled={reminderBusy === "sunday"}
+                  aria-pressed={reminders.sunday}
+                  className={[
+                    "ff-chip mt-2 rounded-pill border px-3.5 py-2 text-14 disabled:opacity-60",
+                    reminders.sunday ? "border-accent/50 bg-accent/15 text-accent" : "border-line bg-card text-ink-soft",
+                  ].join(" ")}
+                >
+                  {reminderBusy === "sunday" ? "…" : reminders.sunday ? "on" : "off"}
+                </button>
+              </div>
+              <div>
+                <p className="text-13 text-ink">tonight&rsquo;s log</p>
+                <p className="mt-0.5 text-12 text-ink-faint">
+                  a small nudge at your bedtime hour ({bedtimeLabel(bedtime)}) if tonight isn&rsquo;t logged yet.
+                  not a streak warning — just the same reminder either way.
+                </p>
+                <button
+                  type="button"
+                  onClick={() => toggleReminder("nightly", !reminders.nightly)}
+                  disabled={reminderBusy === "nightly"}
+                  aria-pressed={reminders.nightly}
+                  className={[
+                    "ff-chip mt-2 rounded-pill border px-3.5 py-2 text-14 disabled:opacity-60",
+                    reminders.nightly ? "border-accent/50 bg-accent/15 text-accent" : "border-line bg-card text-ink-soft",
+                  ].join(" ")}
+                >
+                  {reminderBusy === "nightly" ? "…" : reminders.nightly ? "on" : "off"}
+                </button>
+              </div>
+              {reminderNote ? <p className="text-12 text-frost">{reminderNote}</p> : null}
+            </div>
+          )}
         </div>
 
         <button type="button" onClick={save} className="w-full rounded-pill bg-accent px-6 py-3 text-16 font-medium text-bg">
