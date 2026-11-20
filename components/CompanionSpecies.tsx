@@ -24,16 +24,24 @@ import { Face, GROUND } from "@/components/CompanionAvatar";
 // casing needed here.
 
 function Fox({ tone }: { tone: string }) {
+  // Proportions checked against a reference sheet of simple line-art animal
+  // icons the founder sent (20 Nov 2026): narrower, taller ears and a small
+  // nose tip read as "fox" at a glance in that reference, so both are
+  // sharpened here versus the first draft. The tail keeps its original
+  // single-stroke shape but gains one short inner line near the tip, echoing
+  // that reference's two-tone tail without needing a second fill color.
   return (
     <g stroke={tone} strokeWidth="1.4" fill="none" strokeLinecap="round">
       <path d={GROUND} />
       <ellipse cx="24" cy="42" rx="8.5" ry="9" />
-      <path d="M16.5 36 L14.5 27 L20 35" />
-      <path d="M31.5 36 L33.5 27 L28 35" />
+      <path d="M15.8 37 L12.8 25.5 L19.8 35" />
+      <path d="M32.2 37 L35.2 25.5 L28.2 35" />
       <g className="ff-species-tail-flick">
         <path d="M32 44c5-0.5 8 2 8 6.5-4 .5-7.5-2-8-6.5z" />
+        <path d="M36.3 48.6q1.6 0.9 3.1 0.7" />
       </g>
-      <g transform="translate(24 40)">
+      <circle cx="24" cy="45.5" r="0.9" fill={tone} stroke="none" />
+      <g transform="translate(24 22)">
         <Face tone={tone} warmth={0} />
       </g>
     </g>
@@ -41,12 +49,17 @@ function Fox({ tone }: { tone: string }) {
 }
 
 function Cat({ tone }: { tone: string }) {
+  // The reference sheet's cat reads clearly from its ear notch (the small
+  // inner curve) as much as the ear's outer shape — added below, same
+  // single-stroke rule as everywhere else in this file.
   return (
     <g stroke={tone} strokeWidth="1.4" fill="none" strokeLinecap="round">
       <path d={GROUND} />
       <ellipse cx="24" cy="42.5" rx="8" ry="9.5" />
       <path d="M18.5 34.5 L17.5 28 L21.5 33.5" />
+      <path d="M19.3 32.7q1.1 0.7 2 0.1" />
       <path d="M29.5 34.5 L30.5 28 L26.5 33.5" />
+      <path d="M28.7 32.7q-1.1 0.7 -2 0.1" />
       <g className="ff-species-tail-flick">
         <path d="M32 45c4.5 1 6.5 5 5 9.5-4-.5-6.5-4-5-9.5z" />
       </g>
@@ -54,7 +67,7 @@ function Cat({ tone }: { tone: string }) {
       <path d="M14.8 43.4l-4.3 1.2" />
       <path d="M33.5 41h4.5" />
       <path d="M33.2 43.4l4.3 1.2" />
-      <g transform="translate(24 41)">
+      <g transform="translate(24 23)">
         <Face tone={tone} warmth={0} />
       </g>
     </g>
@@ -70,7 +83,7 @@ function Rabbit({ tone }: { tone: string }) {
       <g className="ff-species-ear-tip">
         <path d="M28.2 37c1.3-6 0.8-11.5-0.6-15.5" />
       </g>
-      <g transform="translate(24 42)">
+      <g transform="translate(24 24)">
         <Face tone={tone} warmth={0} />
       </g>
     </g>
@@ -101,17 +114,22 @@ function Owl({ tone }: { tone: string }) {
 }
 
 function Turtle({ tone }: { tone: string }) {
+  // The reference sheet's turtle reads as a turtle mostly from its shell's
+  // segmented pattern, not its outline — added as two seam lines below,
+  // since a plain dome could otherwise pass for almost any rounded shell.
   return (
     <g stroke={tone} strokeWidth="1.4" fill="none" strokeLinecap="round">
       <path d={GROUND} />
       <path d="M11 48c0-9.5 6-16 15-16s15 6.5 15 16" />
+      <path d="M17.3 38.3c1.8-2 4-3 6.7-3s4.9 1 6.7 3" />
+      <path d="M24 32v16" />
       <path d="M11 48h30" />
       <path d="M16 48v2.2" />
       <path d="M34 48v2.2" />
       <g className="ff-species-head-retreat">
         <path d="M11.5 46.3c-1.2 0.4-2.1 1-2.8 1.9" />
         <circle cx="7.3" cy="45" r="3.6" />
-        <g transform="translate(7.3 45) scale(0.56)">
+        <g transform="translate(7.3 34.92) scale(0.56)">
           <Face tone={tone} warmth={0} />
         </g>
       </g>
