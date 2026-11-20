@@ -11,7 +11,9 @@ import {
   addDays,
   clearEntries,
   dayFromISO,
+  EDIT_WINDOW_MS,
   getEntry,
+  isEditable,
   isWeekend,
   lastDays,
   MAX_TRIGGERS,
@@ -24,6 +26,7 @@ import {
   weekdayShort,
   writeEntries,
   type Entries,
+  type Entry,
 } from "../lib/entry";
 
 type Result = { id: string; ok: boolean; note?: string };
@@ -197,6 +200,29 @@ check("isWeekend-wednesday", isWeekend("2026-11-04") === false);
   store.set("ff_entries", JSON.stringify([1, 2, 3]));
   check("readEntries-non-object-top-level-returns-empty", Object.keys(readEntries()).length === 0);
 
+  unmountWindow();
+}
+
+// -- isEditable (task 21: the 30-minute post-save edit window) ------------------
+
+{
+  const base: Entry = { day: "2026-11-10", smoked: true, mood: 3, triggers: [], at: 1_000_000 };
+  check("isEditable-just-saved-is-editable", isEditable(base, base.at) === true);
+  check("isEditable-well-inside-window", isEditable(base, base.at + EDIT_WINDOW_MS - 1) === true);
+  check("isEditable-exactly-at-boundary-is-locked", isEditable(base, base.at + EDIT_WINDOW_MS) === false, "the window is a strict less-than, so the boundary moment itself is already locked");
+  check("isEditable-well-past-window-is-locked", isEditable(base, base.at + EDIT_WINDOW_MS + 1) === false);
+  check("isEditable-defaults-to-real-clock", isEditable({ ...base, at: Date.now() }) === true, "no `now` passed -- should read the real clock, not treat it as 0");
+
+  // An edit inside the window keeps the ORIGINAL `at` (saveEntry's own
+  // rule, tested above), so re-saving doesn't extend the 30 minutes --
+  // confirming the two features compose the way task 21 needs them to.
+  const store: Store = new Map();
+  mountWindow(store);
+  saveEntry({ day: "2026-11-20", smoked: true, mood: 3, triggers: [], at: 2_000_000 });
+  saveEntry({ day: "2026-11-20", smoked: false, mood: 4, triggers: [] }); // an edit: no explicit `at`, so saveEntry falls back to the original
+  const afterEdit = getEntry("2026-11-20")!;
+  check("isEditable-edit-inside-window-does-not-reset-at", afterEdit.at === 2_000_000);
+  check("isEditable-locked-measured-from-first-save-not-the-edit", isEditable(afterEdit, 2_000_000 + EDIT_WINDOW_MS + 100) === false);
   unmountWindow();
 }
 
