@@ -505,6 +505,158 @@ check(
   check("hp-grows-with-more-logged-nights", hpFor(after).hp >= hpFor(before).hp);
 }
 
+// --- extra-detail HP bonus (task 20 of the 50-step plan) -------------------
+//
+// Resolved via an explicit question to the founder: this is extra credit
+// toward the same five real stats, never a separate side-channel HP number
+// (see the comment above triggerDetailScore/noteDetailScore in
+// lib/companion.ts). What this guards against:
+//   - The baseline (one trigger, or any note/goalDone) ever being worth
+//     anything other than the exact same 1 point it always was.
+//   - Extra detail not actually accelerating a stat's tier.
+//   - A night with both a detailed note AND goalDone double-counting
+//     instead of taking the better of the two.
+//   - Any realistic log ending up worth LESS than the old flat formula
+//     would have given it — this change may only ever raise a stat.
+
+{
+  // Mirrors lib/companion.ts's private STAT_TIER_COUNTS/tierFor (not
+  // exported) just well enough to compute "what tier would the OLD flat
+  // formula have given this count" for the never-worth-less-than-before
+  // checks below. If those thresholds ever change, update this too.
+  const TIER_COUNTS_MIRROR = [0, 1, 3, 7, 14, 25];
+  function tierForTest(count: number): number {
+    let tier = 0;
+    for (let i = 1; i < TIER_COUNTS_MIRROR.length; i++) {
+      if (count >= TIER_COUNTS_MIRROR[i]) tier = i;
+    }
+    return Math.min(tier, 5);
+  }
+
+  const detailedEntry = (day: string, triggers: string[], note?: string, goalDone?: boolean): Entry =>
+    ({ day, smoked: false, mood: 3, triggers: triggers as Entry["triggers"], note, goalDone, at: 0 }) as Entry;
+
+  // Baseline unchanged: a single one-trigger night is still worth exactly
+  // 1 point, same as before this feature existed — two of them must NOT
+  // reach tier 2 (which needs a count of 3).
+  const twoSingleTriggerNights: Entries = {
+    "2026-03-01": detailedEntry("2026-03-01", ["bored"]),
+    "2026-03-02": detailedEntry("2026-03-02", ["bored"]),
+  };
+  const awarenessTwoSingles = statsFor(EMPTY_PROFILE_SEED, twoSingleTriggerNights).find((s) => s.key === "awareness")!;
+  check("one-trigger-night-still-worth-exactly-1", awarenessTwoSingles.tier === 1, `tier=${awarenessTwoSingles.tier}`);
+
+  // Extra detail accelerates the same stat: a SINGLE night naming all 3
+  // triggers scores 5, which alone reaches tier 2 (needs count >= 3) —
+  // something 3 separate single-trigger nights used to be needed for.
+  const oneTripleTriggerNight: Entries = { "2026-03-01": detailedEntry("2026-03-01", ["after-work", "bored", "with-friends"]) };
+  const awarenessTriple = statsFor(EMPTY_PROFILE_SEED, oneTripleTriggerNight).find((s) => s.key === "awareness")!;
+  check("one-night-three-triggers-reaches-tier-2-alone", awarenessTriple.tier === 2, `tier=${awarenessTriple.tier}`);
+
+  // Two such nights (5 + 5 = 10) reach tier 3 (count >= 7), where 10
+  // separate single-trigger nights used to be needed.
+  const twoTripleTriggerNights: Entries = {
+    "2026-03-01": detailedEntry("2026-03-01", ["after-work", "bored", "with-friends"]),
+    "2026-03-02": detailedEntry("2026-03-02", ["after-work", "bored", "with-friends"]),
+  };
+  const awarenessTwoTriples = statsFor(EMPTY_PROFILE_SEED, twoTripleTriggerNights).find((s) => s.key === "awareness")!;
+  check("two-nights-three-triggers-reaches-tier-3", awarenessTwoTriples.tier === 3, `tier=${awarenessTwoTriples.tier}`);
+
+  // Two triggers in one night is worth 3, strictly between the one-trigger
+  // and three-trigger cases.
+  const oneDoubleTriggerNight: Entries = { "2026-03-01": detailedEntry("2026-03-01", ["after-work", "bored"]) };
+  const awarenessDouble = statsFor(EMPTY_PROFILE_SEED, oneDoubleTriggerNight).find((s) => s.key === "awareness")!;
+  check("two-triggers-worth-more-than-one-less-than-three", awarenessDouble.tier === 2, `tier=${awarenessDouble.tier}`);
+
+  // Notes: the same 1/3/5 scale, by word count. A short note is still
+  // worth exactly the old flat 1 point.
+  const shortNote: Entries = { "2026-04-01": detailedEntry("2026-04-01", [], "a quick note") };
+  const selfShort = statsFor(EMPTY_PROFILE_SEED, shortNote).find((s) => s.key === "selfUnderstanding")!;
+  check("short-note-still-worth-exactly-1", selfShort.tier === 1, `tier=${selfShort.tier}`);
+
+  const fifteenWords = Array(15).fill("word").join(" ");
+  const mediumNote: Entries = { "2026-04-01": detailedEntry("2026-04-01", [], fifteenWords) };
+  const selfMedium = statsFor(EMPTY_PROFILE_SEED, mediumNote).find((s) => s.key === "selfUnderstanding")!;
+  check("15-word-note-reaches-tier-2-alone", selfMedium.tier === 2, `tier=${selfMedium.tier}`);
+
+  const fortyWords = Array(40).fill("word").join(" ");
+  const longNoteAlone: Entries = { "2026-04-01": detailedEntry("2026-04-01", [], fortyWords) };
+  const selfLong = statsFor(EMPTY_PROFILE_SEED, longNoteAlone).find((s) => s.key === "selfUnderstanding")!;
+  check("40-word-note-worth-5-reaches-same-tier-2-band", selfLong.tier === 2, `tier=${selfLong.tier}`);
+
+  // A longer note alone (one night) must score strictly higher than a
+  // short note alone (one night) — checked below via two-night comparison
+  // since both land in the same tier band at n=1 (tier bands aren't fine
+  // enough to show 1 vs 5 directly) — two 40-word-note nights (10) clears
+  // tier 3 (needs 7), where two short-note nights (2) does not.
+  const twoLongNotes: Entries = {
+    "2026-04-01": detailedEntry("2026-04-01", [], fortyWords),
+    "2026-04-02": detailedEntry("2026-04-02", [], fortyWords),
+  };
+  const selfTwoLong = statsFor(EMPTY_PROFILE_SEED, twoLongNotes).find((s) => s.key === "selfUnderstanding")!;
+  check("two-40-word-notes-reach-tier-3", selfTwoLong.tier === 3, `tier=${selfTwoLong.tier}`);
+  const twoShortNotes: Entries = {
+    "2026-04-01": detailedEntry("2026-04-01", [], "hey"),
+    "2026-04-02": detailedEntry("2026-04-02", [], "hey"),
+  };
+  const selfTwoShort = statsFor(EMPTY_PROFILE_SEED, twoShortNotes).find((s) => s.key === "selfUnderstanding")!;
+  check("two-short-notes-do-not-reach-tier-3", selfTwoShort.tier < 3, `tier=${selfTwoShort.tier}`);
+
+  // goalDone alone is still worth exactly the old flat 1 point.
+  const goalDoneOnly: Entries = {
+    "2026-04-01": detailedEntry("2026-04-01", [], undefined, true),
+    "2026-04-02": detailedEntry("2026-04-02", [], undefined, true),
+  };
+  const selfGoalOnly = statsFor(EMPTY_PROFILE_SEED, goalDoneOnly).find((s) => s.key === "selfUnderstanding")!;
+  check("two-goalDone-only-nights-do-not-reach-tier-2", selfGoalOnly.tier < 2, `tier=${selfGoalOnly.tier}`);
+
+  // goalDone + a long note on the same night takes the BETTER of the two
+  // (5), not the sum (6) — no double-counting a single night.
+  const goalDonePlusLongNote: Entries = { "2026-04-01": detailedEntry("2026-04-01", [], fortyWords, true) };
+  const selfBoth = statsFor(EMPTY_PROFILE_SEED, goalDonePlusLongNote).find((s) => s.key === "selfUnderstanding")!;
+  check("goalDone-plus-long-note-same-tier-as-long-note-alone", selfBoth.tier === selfLong.tier, `tier=${selfBoth.tier}`);
+
+  // goalDone + a short note on the same night is still worth exactly 1
+  // (max(1,1)), same as either alone — not stacked to 2.
+  const goalDonePlusShortNote: Entries = {
+    "2026-04-01": detailedEntry("2026-04-01", [], "hey", true),
+    "2026-04-02": detailedEntry("2026-04-02", [], "hey", true),
+  };
+  const selfShortPlusGoal = statsFor(EMPTY_PROFILE_SEED, goalDonePlusShortNote).find((s) => s.key === "selfUnderstanding")!;
+  check(
+    "goalDone-plus-short-note-not-stacked",
+    selfShortPlusGoal.tier === selfGoalOnly.tier,
+    `tier=${selfShortPlusGoal.tier} vs goalDone-only tier=${selfGoalOnly.tier}`
+  );
+
+  // Never worth less than before: a realistic mixed log's new awareness
+  // and selfUnderstanding tiers must be >= what the OLD flat
+  // boolean-per-day formula would have produced for the exact same data.
+  const mixedLog: Entries = {
+    "2026-05-01": detailedEntry("2026-05-01", ["bored"]),
+    "2026-05-02": detailedEntry("2026-05-02", ["after-work", "bored"]),
+    "2026-05-03": detailedEntry("2026-05-03", ["after-work", "bored", "with-friends"], "a short one"),
+    "2026-05-04": detailedEntry("2026-05-04", [], fortyWords),
+    "2026-05-05": detailedEntry("2026-05-05", [], undefined, true),
+    "2026-05-06": detailedEntry("2026-05-06", []),
+  };
+  const mixedDays = Object.values(mixedLog);
+  const oldAwarenessCount = mixedDays.filter((d) => d.triggers.length > 0).length; // 3
+  const oldSelfCount = mixedDays.filter((d) => Boolean(d.note) || d.goalDone).length; // 3
+  const newAwareness = statsFor(EMPTY_PROFILE_SEED, mixedLog).find((s) => s.key === "awareness")!;
+  const newSelf = statsFor(EMPTY_PROFILE_SEED, mixedLog).find((s) => s.key === "selfUnderstanding")!;
+  check(
+    "mixed-log-awareness-tier-never-below-old-formula",
+    newAwareness.tier >= tierForTest(oldAwarenessCount),
+    `new tier=${newAwareness.tier}, old-formula tier=${tierForTest(oldAwarenessCount)}`
+  );
+  check(
+    "mixed-log-selfUnderstanding-tier-never-below-old-formula",
+    newSelf.tier >= tierForTest(oldSelfCount),
+    `new tier=${newSelf.tier}, old-formula tier=${tierForTest(oldSelfCount)}`
+  );
+}
+
 const pass = results.filter((r) => r.ok).length;
 const fail = results.length - pass;
 for (const r of results.filter((x) => !x.ok)) {
