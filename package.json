@@ -32,6 +32,7 @@
     "test:entry": "tsx scripts/test-entry.ts",
     "test:moments": "tsx scripts/test-moments.ts",
     "test:growth-reveal": "tsx scripts/test-growth-reveal.ts",
+    "test:week-themes": "tsx scripts/test-week-themes.ts",
     "preview": "opennextjs-cloudflare build && opennextjs-cloudflare preview",
     "deploy": "opennextjs-cloudflare build && opennextjs-cloudflare deploy",
     "upload": "opennextjs-cloudflare build && opennextjs-cloudflare upload",

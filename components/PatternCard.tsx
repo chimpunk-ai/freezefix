@@ -4,9 +4,10 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 
 import { CompanionPortrait } from "@/components/CompanionPortrait";
+import { SHORT_LABEL } from "@/components/CompanionStats";
 import { MoodFace } from "@/components/MoodFace";
 import { WeekCurve, WeekCurveKey } from "@/components/WeekCurve";
-import { displayLevelName, type Companion, type CompanionSpecies } from "@/lib/companion";
+import { displayLevelName, STAT_COLOR, type Companion, type CompanionSpecies, type HPGain } from "@/lib/companion";
 // Temporarily disabled 19 Nov 2026 after a landing-page render error was
 // reported. WeekInsights (and its MomentsThisWeek child) are removed from
 // the render tree below while I diagnose; the Sunday card falls back to the
@@ -15,6 +16,7 @@ import { displayLevelName, type Companion, type CompanionSpecies } from "@/lib/c
 import { MOOD_LABEL, dayFromISO, prettyDay, type Mood } from "@/lib/entry";
 import { goalSentence, type WeekStats } from "@/lib/pattern";
 import { playSundayChime } from "@/lib/chime";
+import type { RecurringTheme } from "@/lib/week-themes";
 import {
   readChimePref,
   writeChimePref,
@@ -98,6 +100,8 @@ export function PatternCard({
   growthLine = null,
   companion = null,
   species,
+  hpGains = null,
+  theme = null,
 }: {
   name: string;
   stats: WeekStats;
@@ -122,6 +126,17 @@ export function PatternCard({
    *  sheet shows the same fox/cat/etc. as Tonight's badge, not always the
    *  plant. Optional; CompanionPortrait falls back to the plant on its own. */
   species?: CompanionSpecies;
+  /** How much each stat grew across exactly this week (lib/companion.ts's
+   *  hpGainedSince, task 39/step 23, 20 Nov 2026) — "here's what grew",
+   *  broken down by stat, not just the level-up line. Stats with zero gain
+   *  are filtered out before display; null/omitted hides the row entirely
+   *  (dimmed/demo cards, or a week where nothing moved at all). */
+  hpGains?: HPGain[] | null;
+  /** A word that showed up in several of this week's notes (lib/week-themes.ts,
+   *  same task) — "a person/topic that keeps coming up," read straight from
+   *  what they wrote, never a guess at why. Null/omitted hides the line;
+   *  most weeks won't clear the bar, and that's the honest, common case. */
+  theme?: RecurringTheme | null;
 }) {
   const who = name.trim() || "you";
   const line = stats.goalLine;
@@ -188,6 +203,22 @@ export function PatternCard({
         </p>
       ) : null}
 
+      {/* What grew THIS week, by stat — task 39/step 23. Only the stats that
+          actually moved get a chip; a week that moved nothing shows nothing,
+          same "no padding" rule the rest of this card already follows. */}
+      {!dimmed && hpGains && hpGains.some((g) => g.gained > 0) ? (
+        <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1" aria-label="hp gained this week, by stat">
+          <span className="text-11 uppercase tracking-wide text-ink-faint">this week</span>
+          {hpGains
+            .filter((g) => g.gained > 0)
+            .map((g) => (
+              <span key={g.key} className={`text-12 font-semibold tabular-nums ${STAT_COLOR[g.key].text}`}>
+                {SHORT_LABEL[g.key]} +{g.gained}
+              </span>
+            ))}
+        </div>
+      ) : null}
+
       <div className="mt-4 space-y-2">
         {stats.sentences.map((s, i) => (
           <p key={i} className={compact ? "text-14 text-ink-soft" : "text-16 text-ink-soft"}>
@@ -228,6 +259,14 @@ export function PatternCard({
       ) : null}
 
       {stats.observation ? <p className="mt-3 text-14 text-ink-faint">{stats.observation}</p> : null}
+
+      {/* "A person/topic that keeps coming up" — task 39/step 23. A plain
+          count of their own words, never a guess at why it keeps coming up. */}
+      {!dimmed && theme ? (
+        <p className="mt-3 text-14 text-ink-faint">
+          &ldquo;{theme.word}&rdquo; came up in {theme.nights} of your notes this week.
+        </p>
+      ) : null}
 
       {!dimmed && growthLine ? <p className="mt-3 text-14 text-accent">{growthLine}</p> : null}
 

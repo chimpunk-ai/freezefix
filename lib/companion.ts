@@ -755,6 +755,26 @@ export function growthSince(seed: ProfileSeed, before: Entries, after: Entries):
   return { leveledUp: afterLevel > beforeLevel, grownStat };
 }
 
+export type HPGain = { key: StatKey; label: string; gained: number };
+
+/** How much each stat's HP grew between one log state and the next — the
+ *  per-stat breakdown behind growthSince's single leveledUp/grownStat
+ *  summary, for a surface (the Sunday card, task 39/step 23) that wants to
+ *  actually show the numbers rather than just "something grew." Every
+ *  entry is >= 0: stats only ever grow (see statsFor's comment above), so
+ *  there's no "lost ground" case to handle. Segments with zero gain are
+ *  still included, in STAT_ORDER, so a caller can choose to show "nothing
+ *  moved here" rather than having it silently disappear. */
+export function hpGainedSince(seed: ProfileSeed, before: Entries, after: Entries): HPGain[] {
+  const beforeHp = hpFor(statsFor(seed, before));
+  const afterHp = hpFor(statsFor(seed, after));
+  return afterHp.segments.map((s, i) => ({
+    key: s.key,
+    label: s.label,
+    gained: s.hp - beforeHp.segments[i].hp,
+  }));
+}
+
 /** One quiet line for the saved screen, or null when nothing moved this
  *  time (most nights, once the easy early bars are full) — never padded
  *  out with a generic "nice job" when nothing actually grew. */

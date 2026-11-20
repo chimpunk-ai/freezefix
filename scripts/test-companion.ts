@@ -14,6 +14,7 @@ import {
   growthMessage,
   growthSince,
   hpFor,
+  hpGainedSince,
   hpToNextLevel,
   levelFor,
   levelName,
@@ -442,6 +443,54 @@ check(
   const growth = growthSince(EMPTY_PROFILE_SEED, before, full);
   check("entries-before-feeds-a-real-week-growth", growth.leveledUp || growth.grownStat !== null);
 }
+
+// --- hpGainedSince (task 39/step 23, 20 Nov 2026) --------------------------
+// The per-stat breakdown behind growthSince's single leveledUp/grownStat
+// summary, for the Sunday card's "here's what grew this week" display.
+
+check(
+  "hp-gained-zero-for-identical-entries",
+  (() => {
+    const e = fill("2026-11-01", 5);
+    return hpGainedSince(EMPTY_PROFILE_SEED, e, e).every((g) => g.gained === 0);
+  })()
+);
+
+check(
+  "hp-gained-never-negative",
+  (() => {
+    // A week's worth of new nights logged, starting fresh.
+    const before = fill("2026-11-01", 5);
+    const after = fill("2026-11-01", 12); // same start, more nights
+    return hpGainedSince(EMPTY_PROFILE_SEED, before, after).every((g) => g.gained >= 0);
+  })()
+);
+
+check(
+  "hp-gained-matches-the-hp-total-delta",
+  (() => {
+    const before = fill("2026-11-01", 5);
+    const after = fill("2026-11-01", 12);
+    const gains = hpGainedSince(EMPTY_PROFILE_SEED, before, after);
+    const totalGained = gains.reduce((sum, g) => sum + g.gained, 0);
+    const beforeHp = hpFor(statsFor(EMPTY_PROFILE_SEED, before)).hp;
+    const afterHp = hpFor(statsFor(EMPTY_PROFILE_SEED, after)).hp;
+    return totalGained === afterHp - beforeHp;
+  })()
+);
+
+check(
+  "hp-gained-covers-every-stat-in-stat-order",
+  (() => {
+    const gains = hpGainedSince(EMPTY_PROFILE_SEED, {}, fill("2026-11-01", 3));
+    return gains.length === STAT_ORDER.length && gains.every((g, i) => g.key === STAT_ORDER[i]);
+  })()
+);
+
+check(
+  "hp-gained-empty-to-empty-is-all-zero",
+  hpGainedSince(EMPTY_PROFILE_SEED, {}, {}).every((g) => g.gained === 0)
+);
 
 // --- hpFor (task 17 of the 50-step plan; rescaled open-ended, task 68) -----
 // The single combined HP number is a pure transform of statsFor()'s output
