@@ -22,7 +22,7 @@ import {
   takeDueGrowthReveal,
   type PendingReveal,
 } from "../lib/growth-reveal";
-import { EMPTY_PROFILE_SEED } from "../lib/companion";
+import { EMPTY_PROFILE_SEED, growthSince } from "../lib/companion";
 import { addDays, type Entries, type Entry } from "../lib/entry";
 
 type Result = { id: string; ok: boolean; note?: string };
@@ -80,25 +80,36 @@ check("no-window-nothing-due", takeDueGrowthReveal("fix", EMPTY_PROFILE_SEED, {}
   const store: Store = new Map();
   mountWindow(store);
 
-  const loggedAt = Date.parse("2026-11-10T20:00:00Z");
+  // Build however many primer nights it takes to guarantee the night being
+  // added crosses a level line under today's HP-based thresholds (task 70,
+  // 20 Nov 2026) -- found here via the real growthSince rather than a
+  // nights count tied to the old LEVEL_THRESHOLDS, so this keeps testing
+  // something real even if the thresholds change again. The added night
+  // goes right after the primer run (not on a gap) so it isn't shorted a
+  // streak-consistency bonus and the crossing is reliable; growthMessage()
+  // always has something to say once leveledUp is true, so a null result
+  // below can only mean "not due yet", never "nothing grew".
+  let before: Entries = {};
+  let addedDay = "";
+  let loggedAt = 0;
+  for (let n = 0; n <= 80; n++) {
+    before = {};
+    for (let i = 0; i < n; i++) {
+      const d = addDays("2026-10-01", i);
+      before[d] = entry(d, Date.parse(`${d}T20:00:00Z`));
+    }
+    addedDay = addDays("2026-10-01", n);
+    loggedAt = Date.parse(`${addedDay}T20:00:00Z`);
+    const candidate: Entries = { ...before, [addedDay]: entry(addedDay, loggedAt) };
+    if (growthSince(EMPTY_PROFILE_SEED, before, candidate).leveledUp) break;
+  }
+  const after: Entries = { ...before, [addedDay]: entry(addedDay, loggedAt) };
+  check("setup-found-a-guaranteed-level-up", growthSince(EMPTY_PROFILE_SEED, before, after).leveledUp);
+
   const notYet = loggedAt + GROWTH_REVEAL_DELAY_MS - 1;
   const justDue = loggedAt + GROWTH_REVEAL_DELAY_MS;
 
-  queueGrowthReveal("2026-11-10", loggedAt);
-
-  // 24 nights logged before this one, with no onboarding-seed credit — one
-  // below LEVEL_THRESHOLDS' 25-night level-5 line. Adding the 25th night
-  // (this one, 2026-11-10, deliberately on a gap so the streak itself
-  // doesn't also need to line up) crosses that line, so growthSince is
-  // GUARANTEED to report leveledUp — growthMessage() always has something
-  // to say for that case — and a null result below can only mean "not due
-  // yet", never "nothing grew".
-  const before: Entries = {};
-  for (let i = 0; i < 24; i++) {
-    const d = addDays("2026-10-01", i);
-    before[d] = entry(d, Date.parse(`${d}T20:00:00Z`));
-  }
-  const after: Entries = { ...before, "2026-11-10": entry("2026-11-10", loggedAt) };
+  queueGrowthReveal(addedDay, loggedAt);
 
   check("not-due-yet-returns-null", takeDueGrowthReveal("fix", EMPTY_PROFILE_SEED, after, notYet) === null);
 

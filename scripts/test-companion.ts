@@ -14,10 +14,10 @@ import {
   growthMessage,
   growthSince,
   hpFor,
+  hpToNextLevel,
   levelFor,
   levelName,
   levelProgress,
-  nightsToNextLevel,
   seedFromProfile,
   stageFor,
   statsFor,
@@ -47,16 +47,23 @@ function fill(from: string, days: number, skip: Set<number> = new Set()): Entrie
   return out;
 }
 
-// --- levelFor / nightsToNextLevel -------------------------------------------
+// --- levelFor / hpToNextLevel (HP-based since task 70) ----------------------
+// Level/stage moved from nights-logged to total HP (task 70, 20 Nov 2026) so
+// the number, the label text, and the portrait's growth stage can never
+// quietly disagree with each other the way they could when level was on
+// nights but the art (task 68/69) was going to be on HP.
 
-check("level-zero-nights-is-level-1", levelFor(0) === 1);
-check("level-three-nights-is-level-2", levelFor(3) === 2);
+check("level-zero-hp-is-level-1", levelFor(0) === 1);
+check("level-at-first-threshold-is-level-2", levelFor(10) === 2);
+check("level-just-below-first-threshold-is-still-level-1", levelFor(9) === 1);
 check("level-caps-at-max", levelFor(100000) === levelFor(99999) && levelFor(100000) > 1);
-check("next-level-nights-positive-when-not-maxed", (nightsToNextLevel(0) ?? 0) > 0);
-check("next-level-null-once-maxed", nightsToNextLevel(100000) === null);
+check("next-level-hp-positive-when-not-maxed", (hpToNextLevel(0) ?? 0) > 0);
+check("next-level-null-once-maxed", hpToNextLevel(100000) === null);
 
 // Leveling must never depend on whether the nights logged were smoke
-// nights or not — only that a night was logged at all.
+// nights or not — only on what actually happened on each one (same stats
+// inputs either way: fill()'s entries carry no triggers/notes, so smoked
+// true vs false produces identical stats and therefore identical HP).
 {
   const allSmoked = fill("2026-10-01", 10); // every other night smoked by fill()'s pattern, but let's force all true
   const forced: Entries = {};
@@ -65,7 +72,29 @@ check("next-level-null-once-maxed", nightsToNextLevel(100000) === null);
   for (const [day, e] of Object.entries(allSmoked)) allSober[day] = { ...e, smoked: false };
   check(
     "level-identical-regardless-of-smoked-flag",
-    companionFor("x", forced, "2026-10-20").level === companionFor("x", allSober, "2026-10-20").level
+    companionFor("x", EMPTY_PROFILE_SEED, forced, "2026-10-20").level ===
+      companionFor("x", EMPTY_PROFILE_SEED, allSober, "2026-10-20").level
+  );
+}
+
+// Two people logging the same NUMBER of nights can still land at different
+// levels if one logged with real depth and the other barely tapped through
+// -- this is the whole point of task 70 (level no longer just counts days
+// opened). totalNightsLogged itself, though, stays identical either way --
+// it's still a genuine, separate fact (see the Companion type).
+{
+  const shallow = fill("2026-01-01", 20); // fill() entries carry no triggers/notes/goalDone
+  const deep: Entries = {};
+  for (const [day, e] of Object.entries(shallow)) {
+    deep[day] = { ...e, triggers: ["stressed"], note: "a longer reflection about the day and what led up to it, written out in full", goalDone: true };
+  }
+  const shallowSeed = seedFromProfile({ preferredTriggers: ["stressed"] });
+  const shallowC = companionFor("x", shallowSeed, shallow, "2026-01-21");
+  const deepC = companionFor("x", shallowSeed, deep, "2026-01-21");
+  check(
+    "same-nights-logged-can-differ-in-level-by-depth",
+    shallowC.totalNightsLogged === deepC.totalNightsLogged && deepC.level >= shallowC.level,
+    `shallow: nights=${shallowC.totalNightsLogged} level=${shallowC.level} hp=${shallowC.totalHp}; deep: nights=${deepC.totalNightsLogged} level=${deepC.level} hp=${deepC.totalHp}`
   );
 }
 
@@ -117,12 +146,12 @@ check("streaks-empty-log", streaksFor({}, "2026-11-19").current === 0 && streaks
 // --- companionFor ----------------------------------------------------------------
 
 {
-  const c = companionFor("", {}, "2026-11-19");
+  const c = companionFor("", EMPTY_PROFILE_SEED, {}, "2026-11-19");
   check("companion-empty-name-falls-back", c.name === DEFAULT_COMPANION_NAME);
   check("companion-fresh-is-level-1", c.level === 1);
 }
 {
-  const c = companionFor("  Rex  ", {}, "2026-11-19");
+  const c = companionFor("  Rex  ", EMPTY_PROFILE_SEED, {}, "2026-11-19");
   check("companion-name-trimmed", c.name === "Rex");
 }
 
@@ -155,9 +184,11 @@ for (const f of ["pretty much daily", "most days", "a few times a week", "weeken
 
 // --- levelName / levelProgress -------------------------------------------
 // The "Level 03 — The Explorer, 340/500 XP" bar from the product vision,
-// built from real nights logged rather than a separate fabricated XP
-// number. Must never claim progress past 100%, never go negative, and
-// must be null exactly when there's no next level to show a bar toward.
+// built from real total HP (task 70, 20 Nov 2026) rather than a separate
+// fabricated XP number -- same HP that drives the five stat bars and the
+// portrait's growth stage, so none of the three can ever disagree. Must
+// never claim progress past 100%, never go negative, and must be null
+// exactly when there's no next level to show a bar toward.
 
 check("level-name-defined-for-every-level-1-through-10", (() => {
   for (let l = 1; l <= 10; l++) {
@@ -186,15 +217,17 @@ check("progress-fraction-never-negative", (() => {
   }
   return true;
 })());
-check("progress-into-matches-nights-at-level-start", (() => {
-  // Right at a threshold (e.g. 3 nights = level 2's start), into should be 0.
-  const p = levelProgress(3);
+check("progress-into-matches-hp-at-level-start", (() => {
+  // Right at a threshold (10 hp = level 2's start, see LEVEL_THRESHOLDS),
+  // into should be 0.
+  const p = levelProgress(10);
   return p?.into === 0;
 })());
 check("progress-monotonic-within-a-level", (() => {
-  // Walking from one level-up to just before the next, `into` only grows.
+  // Walking from one level-up to just before the next (level 2 spans
+  // [10, 25) hp), `into` only grows.
   let prevInto = -1;
-  for (let n = 3; n < 7; n++) {
+  for (let n = 10; n < 25; n++) {
     const p = levelProgress(n);
     if (!p || p.into < prevInto) return false;
     prevInto = p.into;
