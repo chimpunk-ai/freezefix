@@ -1,4 +1,4 @@
-import { companionFor, seedFromProfile, statsFor, EMPTY_PROFILE_SEED, type ProfileSeed, type CompanionSpecies } from "@/lib/companion";
+import { companionFor, seedFromProfile, statsFor, displayLevelName, EMPTY_PROFILE_SEED, type ProfileSeed, type CompanionSpecies } from "@/lib/companion";
 import { CompanionPortrait } from "@/components/CompanionPortrait";
 import { CompanionStats } from "@/components/CompanionStats";
 import type { Entries } from "@/lib/entry";
@@ -33,7 +33,8 @@ export function CompanionBadge({
   species?: CompanionSpecies;
 }) {
   const companion = companionFor(name, entries);
-  const { level, levelName: curLevelName, stage, currentStreak, longestStreak, nightsToNextLevel, progress } = companion;
+  const { level, levelName, stage, currentStreak, longestStreak, nightsToNextLevel, progress } = companion;
+  const curLevelName = displayLevelName(species, level, levelName);
   const seed: ProfileSeed = profile ? seedFromProfile(profile) : EMPTY_PROFILE_SEED;
   const stats = statsFor(seed, entries);
 
