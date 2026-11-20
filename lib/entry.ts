@@ -178,6 +178,27 @@ export function getEntry(day: string): Entry | undefined {
   return readEntries()[day];
 }
 
+// The 30-minute post-save edit window (task 21 of the 50-step plan, 20 Nov
+// 2026). An entry's `.at` is the FIRST time it was saved (saveEntry, above,
+// never lets an edit push it later), so this is always measured from that
+// first save, not from whichever edit happened most recently — someone
+// can't extend their own window by nudging the note twice. After this
+// closes, LogScreen stops offering "change it": the night is locked in
+// before lib/growth-reveal.ts's 5-hour delayed reveal can fire for it, so
+// nobody can wait to see how a number's about to move and then go back and
+// tune the inputs that produced it.
+//
+// This governs editability only — it has no effect on when stats/HP are
+// visible. Those stay exactly as live as they've always been (see
+// growth-reveal.ts's own notes); only the celebratory message is delayed.
+export const EDIT_WINDOW_MS = 30 * 60 * 1000; // 30 minutes
+
+/** True while `entry` can still be changed via "change it" — i.e. less than
+ *  EDIT_WINDOW_MS has passed since it was first saved. */
+export function isEditable(entry: Entry, now: number = Date.now()): boolean {
+  return now - entry.at < EDIT_WINDOW_MS;
+}
+
 export function removeEntry(day: string): Entries {
   const entries = readEntries();
   delete entries[day];

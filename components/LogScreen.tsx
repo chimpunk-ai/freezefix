@@ -11,6 +11,7 @@ import {
   MOOD_LABEL,
   TRIGGER_LABEL,
   addDays,
+  isEditable,
   orderedTriggers,
   prettyDay,
   saveEntry,
@@ -78,6 +79,20 @@ export default function LogScreen({
   const [note, setNote] = useState(existing?.note ?? "");
   const [goalDone, setGoalDone] = useState<boolean | undefined>(demo ? demo.goalDone : existing?.goalDone);
   const [saved, setSaved] = useState(demo ? demo.saved : Boolean(existing));
+
+  // Task 21 of the 50-step plan: "change it" only works for 30 minutes after
+  // a night is first saved (lib/entry.ts's isEditable). The saved screen can
+  // sit open past that moment without any click to react to, so this ticks
+  // once a minute — plenty for a 30-minute window — purely to re-check the
+  // clock and let the button quietly disappear on its own, never a prompt
+  // that catches someone mid-edit.
+  const [now, setNow] = useState(() => Date.now());
+  useEffect(() => {
+    if (demo || !saved || !existing) return;
+    const id = window.setInterval(() => setNow(Date.now()), 60_000);
+    return () => window.clearInterval(id);
+  }, [demo, saved, existing]);
+  const editable = demo ? true : !existing || isEditable(existing, now);
 
   // Demo mode: follow the script whenever it moves on.
   useEffect(() => {
@@ -335,16 +350,20 @@ export default function LogScreen({
           <p className="mt-2 text-14 text-ink-faint">
             {smoked ? "logged as a night you smoked." : "logged as a night you didn't."}
           </p>
-          <div className="mt-6 flex flex-wrap gap-3">
-            <button
-              type="button"
-              onClick={() => {
-                setSaved(false);
-              }}
-              className="ff-chip rounded-pill border border-line px-4 py-2 text-14 text-ink-soft hover:border-accent/40"
-            >
-              change it
-            </button>
+          <div className="mt-6 flex flex-wrap items-center gap-3">
+            {editable ? (
+              <button
+                type="button"
+                onClick={() => {
+                  setSaved(false);
+                }}
+                className="ff-chip rounded-pill border border-line px-4 py-2 text-14 text-ink-soft hover:border-accent/40"
+              >
+                change it
+              </button>
+            ) : (
+              <p className="text-12 text-ink-faint">locked in for the night now.</p>
+            )}
             {mirrorReady ? (
               <button
                 type="button"
