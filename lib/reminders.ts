@@ -179,3 +179,17 @@ export async function onBedtimeChange(hour: number): Promise<void> {
   if (!prev.subscribed) return;
   await askSW({ type: "update", kinds: { sunday: prev.sunday, nightly: prev.nightly }, hour: h });
 }
+
+// Privacy §9's "forget everything" has to actually cancel any live push
+// subscription, not just wipe the local preference -- otherwise a device that
+// "forgot everything" keeps getting Sunday/nightly notifications forever,
+// because the subscription row in Supabase (push_subscriptions) is still
+// there and nothing told the browser or the server to stop. Unconditional
+// (doesn't check `subscribed` first) because forget() has to be safe to call
+// even if local storage is already in a weird/partial state -- better to ask
+// the service worker to unsubscribe one extra, harmless time than to skip it
+// because a flag didn't match what's actually true.
+export async function forgetReminders(): Promise<void> {
+  await askSW({ type: "unsubscribe" });
+  clearReminderPref();
+}
