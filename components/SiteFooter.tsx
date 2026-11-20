@@ -7,9 +7,14 @@ import Link from "next/link";
 // too. Both stay fully reachable (myths & reality is still in the top nav;
 // worried-about-someone is still front and center inside /help itself) — this
 // list is just no longer duplicating them as a second shortcut.
+//
+// "install" was dropped from here Nov 2026 along with the header button and
+// the pricing-page card: the founder's call ahead of launch was to stop
+// inviting it anywhere, not just outside the header. Installing via the
+// browser's own menu still works for anyone who looks for it on their own.
 const LINKS = [
   { href: "/plans", label: "what it costs" },
-  { href: "/install", label: "install" },
+  { href: "/faq", label: "faq" },
   { href: "/privacy", label: "privacy" },
   { href: "/terms", label: "terms" },
   { href: "/refunds", label: "refunds" },
