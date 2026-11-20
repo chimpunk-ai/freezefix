@@ -4,7 +4,6 @@ import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { Container, Main, SiteHeader } from "@/components/Shell";
 import SiteFooter from "@/components/SiteFooter";
-import InstallPrompt from "@/components/InstallPrompt";
 import { TrustBadge } from "@/components/TrustBadge";
 import { useRegion } from "@/components/useRegion";
 import { plansFor, TRIAL_DAYS, trialDates, type PlanId } from "@/lib/plans";
@@ -253,7 +252,6 @@ export default function PlansPage() {
 
           <aside aria-label="what's included" className="mt-10 lg:mt-2">
             <TrustBadge />
-            <InstallPrompt className="mt-6" />
             <div className="mt-6 space-y-4 text-14 text-ink-soft">
               <p>
                 <span className="text-ink">what you get:</span> the nightly log, the Sunday mirror, the shelf

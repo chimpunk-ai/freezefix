@@ -1,7 +1,6 @@
 import Link from "next/link";
 import type { ReactNode } from "react";
 import { HelpChip, Wordmark } from "@/components/Brand";
-import HeaderInstallButton from "@/components/HeaderInstallButton";
 import NavLink from "@/components/NavLink";
 import ThemeToggle from "@/components/ThemeToggle";
 
@@ -101,7 +100,6 @@ export function SiteHeader({
               {cta.label}
             </Link>
           ) : null}
-          <HeaderInstallButton />
           <HelpChip compact />
         </nav>
       </Container>
