@@ -14,9 +14,10 @@ import { ShelfTrend, ShelfTrendKey } from "@/components/ShelfTrend";
 import { Container, Main } from "@/components/Shell";
 import { useRegion } from "@/components/useRegion";
 import { clearEntries, readEntries, todayISO, type Entries } from "@/lib/entry";
-import { companionFor, DEFAULT_COMPANION_NAME, entriesBefore, growthMessage, growthSince, seedFromProfile } from "@/lib/companion";
+import { companionFor, DEFAULT_COMPANION_NAME, entriesBefore, growthMessage, growthSince, hpGainedSince, seedFromProfile } from "@/lib/companion";
 import { CompanionBadge } from "@/components/CompanionBadge";
 import { clearSeen, dueMirror, latestMirror, markSeen } from "@/lib/mirror";
+import { recurringTheme } from "@/lib/week-themes";
 import { goalSentence, recentWeeks, weekStats, type WeekStats } from "@/lib/pattern";
 import { BEDTIMES, GOAL_EXAMPLES, bedtimeLabel, clearProfile, patchProfile, readProfile, type Profile } from "@/lib/profile";
 import { clearChimePref, readChimePref, writeChimePref, type ChimePref } from "@/lib/chime-pref";
@@ -271,6 +272,12 @@ export default function AppClient({ view = "log" }: { view?: View }) {
                   ? companionFor(profile.companionName || profile.name, seedFromProfile(profile), entries)
                   : null
               }
+              hpGains={
+                profile.showCompanion !== false
+                  ? hpGainedSince(seedFromProfile(profile), entriesBefore(entries, sheet.start), entries)
+                  : null
+              }
+              theme={recurringTheme(entries, sheet.start, sheet.end)}
               species={profile.companionSpecies}
             />
           </div>
