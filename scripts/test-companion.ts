@@ -25,8 +25,6 @@ import {
   traitFor,
   DEFAULT_COMPANION_NAME,
   EMPTY_PROFILE_SEED,
-  HP_PER_STAT,
-  MAX_HP,
   STAT_ORDER,
 } from "../lib/companion";
 import { addDays, type Entries, type Entry } from "../lib/entry";
@@ -412,19 +410,22 @@ check(
   check("entries-before-feeds-a-real-week-growth", growth.leveledUp || growth.grownStat !== null);
 }
 
-// --- hpFor (task 17 of the 50-step plan) ------------------------------------
+// --- hpFor (task 17 of the 50-step plan; rescaled open-ended, task 68) -----
 // The single combined HP number is a pure transform of statsFor()'s output
 // — not a new counter — so what matters is that the arithmetic is exactly
-// right and that it can never disagree with the five meters it's built from.
+// right and that it can never disagree with the five meters it's built
+// from. Since task 68 (20 Nov 2026) there is deliberately no fixed ceiling
+// — the founder asked for a number that keeps climbing for months, not one
+// that's effectively capped the moment someone's engaged with the app for a
+// while. tier/maxTier are UNCHANGED by this rescale (still 0-5, still drive
+// the onboarding reveal and the "it grew" message), so those are covered by
+// the tier-specific checks elsewhere in this file; what's new here is that
+// hp is now exactly the raw `points` behind each tier, uncapped.
 
 {
-  check("hp-max-is-100", MAX_HP === 100, `MAX_HP=${MAX_HP}`);
-  check("hp-per-stat-is-20", HP_PER_STAT === 20, `HP_PER_STAT=${HP_PER_STAT}`);
-
   const zeroStats = statsFor(EMPTY_PROFILE_SEED, {});
   const zeroHp = hpFor(zeroStats);
   check("hp-zero-stats-is-zero-hp", zeroHp.hp === 0, `hp=${zeroHp.hp}`);
-  check("hp-zero-stats-maxHp-is-MAX_HP", zeroHp.maxHp === MAX_HP);
   check("hp-zero-stats-five-segments", zeroHp.segments.length === STAT_ORDER.length);
   check(
     "hp-zero-stats-segments-in-STAT_ORDER",
@@ -432,13 +433,15 @@ check(
   );
   check(
     "hp-zero-stats-every-segment-zero",
-    zeroHp.segments.every((s) => s.hp === 0 && s.tier === 0 && s.maxHp === HP_PER_STAT)
+    zeroHp.segments.every((s) => s.hp === 0 && s.tier === 0)
   );
 
-  // A log big enough to max out every tier of every stat (long streak,
-  // plenty of triggers/notes/goal-ticks on harder nights) must read as a
-  // full 100/100 — the ceiling has to actually be reachable, not just a
-  // theoretical maximum nothing ever hits.
+  // A heavily-logged, long-running log (long streak, plenty of
+  // triggers/notes/goal-ticks on harder nights, ~7 months of nights) must
+  // read well past the OLD 100-point ceiling — proving this is actually
+  // open-ended now, not just a bigger fixed number. 200 nights all maxing
+  // out every tier would have landed at exactly 100 under the old formula;
+  // here it has to land well above that.
   const maxedEntries = fill("2026-01-01", 200);
   for (const day of Object.keys(maxedEntries)) {
     maxedEntries[day] = {
@@ -461,20 +464,24 @@ check(
   const maxedStats = statsFor(maxedSeed, maxedEntries);
   const maxedHp = hpFor(maxedStats);
   check(
-    "hp-fully-maxed-stats-is-100",
-    maxedHp.hp === MAX_HP && maxedStats.every((s) => s.tier === s.maxTier),
+    "hp-heavy-log-exceeds-old-100-ceiling",
+    maxedHp.hp > 100 && maxedStats.every((s) => s.tier === s.maxTier),
     `hp=${maxedHp.hp}, tiers=${maxedStats.map((s) => s.tier).join(",")}`
   );
+  // Roughly matches the founder's own illustration (a few hundred HP after
+  // months of real use) -- a sanity range, not a literal target: the exact
+  // number depends on the scoring formula's own judgment calls, which can
+  // keep evolving without this test needing to track a specific figure.
   check(
-    "hp-fully-maxed-every-segment-is-20",
-    maxedHp.segments.every((s) => s.hp === HP_PER_STAT)
+    "hp-heavy-log-lands-in-hundreds-not-thousands",
+    maxedHp.hp >= 150 && maxedHp.hp <= 3000,
+    `hp=${maxedHp.hp}`
   );
 
-  // Exactly 4 HP per tier (20 HP / 5 tiers), and the total is always the
-  // sum of its own segments — not a separately-derived number that could
-  // drift from the breakdown shown beside it.
-  for (const s of maxedHp.segments) {
-    check(`hp-segment-${s.key}-is-tier-times-4`, s.hp === s.tier * 4, `hp=${s.hp}, tier=${s.tier}`);
+  // Each segment's hp is EXACTLY that stat's own raw points -- no hidden
+  // second formula, no re-derivation from tier.
+  for (let i = 0; i < maxedStats.length; i++) {
+    check(`hp-segment-${maxedStats[i].key}-equals-its-own-points`, maxedHp.segments[i].hp === maxedStats[i].points, `hp=${maxedHp.segments[i].hp}, points=${maxedStats[i].points}`);
   }
   check(
     "hp-total-equals-sum-of-segments",
@@ -482,24 +489,26 @@ check(
   );
 
   // A partially-grown log (early onboarding credit only, nothing logged
-  // yet) must land strictly between the two extremes, and must match what
-  // hand-adding the five tiers' own HP gives — no hidden second formula.
+  // yet) must land strictly between zero and the heavy-log total above, and
+  // must match hand-summing the five stats' own points -- no hidden second
+  // formula.
   const partialStats = statsFor(
     seedFromProfile({ preferredTriggers: ["bored"], smokeTime: "evening" }),
     {}
   );
   const partialHp = hpFor(partialStats);
-  const expectedPartial = partialStats.reduce((sum, s) => sum + s.tier * 4, 0);
+  const expectedPartial = partialStats.reduce((sum, s) => sum + s.points, 0);
   check(
-    "hp-partial-log-between-extremes",
-    partialHp.hp > 0 && partialHp.hp < MAX_HP,
+    "hp-partial-log-between-zero-and-heavy",
+    partialHp.hp > 0 && partialHp.hp < maxedHp.hp,
     `hp=${partialHp.hp}`
   );
-  check("hp-partial-matches-hand-sum", partialHp.hp === expectedPartial);
+  check("hp-partial-matches-hand-sum-of-points", partialHp.hp === expectedPartial);
 
-  // Never decreases: growing any one stat's tier can only ever raise the
-  // total, the same guarantee the five meters already have, carried over
-  // by construction (sum of non-decreasing terms is non-decreasing).
+  // Never decreases: growing the log can only ever raise the total, the
+  // same guarantee the five meters already have, carried over by
+  // construction (sum of non-decreasing terms is non-decreasing) -- holds
+  // just as much for an uncapped sum as it did for the old bucketed one.
   const before = statsFor(EMPTY_PROFILE_SEED, fill("2026-02-01", 5));
   const after = statsFor(EMPTY_PROFILE_SEED, fill("2026-02-01", 20));
   check("hp-grows-with-more-logged-nights", hpFor(after).hp >= hpFor(before).hp);

@@ -53,6 +53,11 @@ export function CompanionBadge({
   const seed: ProfileSeed = profile ? seedFromProfile(profile) : EMPTY_PROFILE_SEED;
   const stats = statsFor(seed, entries);
   const hp = hpFor(stats);
+  // Open-ended since task 68 (20 Nov 2026) -- no fixed per-stat ceiling, so
+  // each bar's fill is relative to whichever stat currently leads, not a
+  // made-up max. Math.max(1, ...) keeps a brand-new profile's all-zero bars
+  // from dividing by zero instead of just showing empty.
+  const maxSegmentHp = Math.max(1, ...hp.segments.map((s) => s.hp));
   const typeLabel = SPECIES_TYPE_LABEL[species ?? "plant"];
 
   return (
@@ -103,25 +108,33 @@ export function CompanionBadge({
         <p className="px-3 text-11 text-ink-faint">maxed out, in the best way</p>
       )}
 
-      {/* The five real stats, bold and colorful (task 67) — each bar is
-          still exactly one of hpFor()'s segments, the same tiers behind
-          every other stat display in the app, just drawn with real color
-          and weight instead of a single muted fill. */}
-      <div className="mt-3 space-y-1.5 border-t border-line px-3 py-3" aria-label={`companion stats: hp ${hp.hp} of ${hp.maxHp}`}>
+      {/* The five real stats, bold and colorful (task 67), open-ended since
+          task 68 — each bar is still exactly one of hpFor()'s segments, the
+          same counts behind every other stat display in the app. There's no
+          fixed ceiling any more (the founder explicitly asked these not to
+          read as capped), so each bar fills RELATIVE to the current leading
+          stat rather than toward an invented per-stat max — the breakdown
+          shows which stat is carrying the most weight right now, the same
+          way the founder described reading it ("340 total: consistency 80,
+          mindfulness 70..."), and it keeps looking right at any scale,
+          day one or month four. */}
+      <div className="mt-3 space-y-1.5 border-t border-line px-3 py-3" aria-label={`companion hp: ${hp.hp} total`}>
+        <p className="text-13 font-bold text-ink">
+          {hp.hp} <span className="text-11 font-normal uppercase tracking-wide text-ink-faint">total hp</span>
+        </p>
         {hp.segments.map((s) => {
           const color = STAT_COLOR[s.key];
+          const widthPct = (s.hp / maxSegmentHp) * 100;
           return (
-            <div key={s.key} title={`${s.label}: ${s.tier}/5`}>
+            <div key={s.key} title={`${s.label}: ${s.hp} (tier ${s.tier}/5)`}>
               <div className="flex items-baseline justify-between gap-2">
                 <span className={`text-11 font-bold uppercase tracking-wide ${color.text}`}>{SHORT_LABEL[s.key]}</span>
-                <span className="text-11 tabular-nums text-ink-faint">
-                  {s.hp}/{s.maxHp}
-                </span>
+                <span className="text-11 tabular-nums text-ink-faint">{s.hp}</span>
               </div>
               <div className="mt-0.5 h-2.5 w-full overflow-hidden rounded-full border border-line/60 bg-chip">
                 <div
                   className={`h-full rounded-full transition-[width] duration-300 ${color.bg}`}
-                  style={{ width: `${(s.hp / s.maxHp) * 100}%` }}
+                  style={{ width: `${widthPct}%` }}
                 />
               </div>
             </div>

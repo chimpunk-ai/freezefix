@@ -411,9 +411,18 @@ export type StatKey = "awareness" | "mindfulness" | "consistency" | "resilience"
 export type Stat = {
   key: StatKey;
   label: string;
-  /** 0-5 bars filled. */
+  /** 0-5 bars filled. Drives the discrete onboarding-reveal meters and the
+   *  "did a whole tier move" signal behind the "it grew" message — see
+   *  growthSince, below. Unaffected by the open-ended HP rescale (task 68,
+   *  20 Nov 2026): that only changes what the big HP number is made of, not
+   *  this ladder. */
   tier: number;
   maxTier: number;
+  /** The raw, uncapped count behind this tier (task 68, 20 Nov 2026) — the
+   *  same count tierFor() buckets into `tier` above, exposed directly so
+   *  hpFor() can total real, ever-growing numbers instead of a 0-5 bucket.
+   *  Only ever grows, same as the count it comes from. */
+  points: number;
   /** Why this one grows — shown as a small caption under the meter. */
   blurb: string;
 };
@@ -594,60 +603,64 @@ export function statsFor(seed: ProfileSeed, entries: Entries): Stat[] {
     label: STAT_LABEL[key],
     tier: tierFor(counts[key]),
     maxTier: MAX_TIER,
+    points: counts[key],
     blurb: STAT_BLURB[key],
   }));
 }
 
-// --- total HP (task 17 of the 50-step plan, 20 Nov 2026) -------------------
+// --- total HP (task 17 of the 50-step plan, 20 Nov 2026; rescaled task 68,
+// 20 Nov 2026) --------------------------------------------------------------
 //
 // One combined number instead of five separate meters — for two things that
 // need a single value rather than a row of bars: the "Tekken-style" health
-// bar UI (task 18, next) and, later, a stats-only number to compare with a
-// friend (tasks 25-31) — a single HP figure is something to show someone
-// else; five side-by-side meters asking to be read and compared one at a
-// time are not.
+// bar UI (task 18) and, later, a stats-only number to compare with a friend
+// (tasks 25-31) — a single HP figure is something to show someone else; five
+// side-by-side meters asking to be read and compared one at a time are not.
 //
-// Deliberately NOT a new, separate counter. It's a pure arithmetic transform
-// of statsFor()'s already-computed, already-tested tiers above — no new
-// counting, nothing a user could do that moves this number without also
-// moving one of the five meters they can already see. That also means the
-// "never decreases" guarantee the five meters already have (a tier only
-// ever goes up) carries over for free: summing numbers that only ever grow
-// can itself only ever grow.
+// Originally a bucketed 0-100 scale (5 stats x 20 HP, 4 HP per tier) — see
+// this file's git history for that version. The founder asked for an
+// open-ended number instead (20 Nov 2026, 22:15 IST): "stats should not be
+// limited to 8/20" — something that keeps climbing for months, broken down
+// into real per-stat numbers ("consistency 80, mindfulness 70...") rather
+// than a total that's effectively capped the moment someone's actually used
+// the app for a while. Confirmed via an explicit question to the founder
+// rather than guessed: bars/HP stay exactly as live as before (only the
+// celebratory message stays delayed 5 hours, unchanged by this), and the
+// scale itself should be open-ended, not a bigger fixed cap.
 //
-// 100 is the max HP because it reads instantly as a health/HP bar — "68/100"
-// needs no explanation the way "17/25 arbitrary points" would — and it
-// divides evenly five ways: 20 HP per stat, and since each stat has 5 tiers,
-// exactly 4 HP per tier. The Tekken-style breakdown bar (task 18) is this
-// same one bar, just drawn as five coloured segments end to end instead of
-// a single fill colour, each segment's own length showing that one stat's
-// own tier — nothing here commits to how that bar is drawn, only to the
-// numbers it would be drawn from.
-
-export const HP_PER_STAT = 20; // 5 stats x 20 HP = 100 total
-export const MAX_HP = HP_PER_STAT * STAT_ORDER.length; // 100
-const HP_PER_TIER = HP_PER_STAT / MAX_TIER; // 4 HP per tier, 5 tiers per stat
+// Still deliberately NOT a new, separate counter. Each segment's `hp` is
+// exactly that stat's own raw `points` from statsFor() above — the same
+// counts already feeding the discrete 0-5 tier bars, including task 20's
+// extra-detail credit — no new counting, no cap, nothing a user could do
+// that moves this number without also moving a count they can already see
+// reflected in their tier. Total HP is the sum of the five, so "HP can
+// never say anything the five meters don't already say" (the invariant
+// committed to in task 17) still holds exactly, and the "never decreases"
+// guarantee carries over for free: summing numbers that only ever grow can
+// itself only ever grow.
+//
+// tier/maxTier on Stat are UNCHANGED by this rescale — they still drive the
+// discrete onboarding-reveal meters (CompanionStats.tsx) and the "did a
+// whole tier move" signal behind the "it grew" celebration message
+// (growthSince, below). This only changes what the big HP number itself is
+// made of.
 
 export type HPSegment = {
   key: StatKey;
   label: string;
-  /** This one stat's own contribution to the total, 0..HP_PER_STAT, always
-   *  a multiple of HP_PER_TIER (one step per tier, same tiers statsFor()
-   *  already reports). */
+  /** This stat's own raw point count — the same number statsFor() already
+   *  computed for it, uncapped. */
   hp: number;
-  maxHp: number;
   /** The same 0-5 tier statsFor() reports for this stat, kept alongside hp
-   *  so a caption ("awareness: tier 3 of 5") doesn't need to re-derive it
-   *  from hp/HP_PER_TIER. */
+   *  so a caption ("awareness: tier 3 of 5") doesn't need a second lookup. */
   tier: number;
 };
 
 export type HPTotal = {
-  /** 0..maxHp, the sum of every segment. */
+  /** Sum of every segment's hp. No fixed ceiling — see the comment above. */
   hp: number;
-  maxHp: number;
-  /** One entry per stat, in STAT_ORDER — the breakdown the Tekken-style bar
-   *  (task 18) draws as its coloured segments. */
+  /** One entry per stat, in STAT_ORDER — the breakdown the stat card draws
+   *  as its coloured segments. */
   segments: HPSegment[];
 };
 
@@ -661,12 +674,11 @@ export function hpFor(stats: Stat[]): HPTotal {
   const segments: HPSegment[] = stats.map((s) => ({
     key: s.key,
     label: s.label,
-    hp: s.tier * HP_PER_TIER,
-    maxHp: HP_PER_STAT,
+    hp: s.points,
     tier: s.tier,
   }));
   const hp = segments.reduce((sum, s) => sum + s.hp, 0);
-  return { hp, maxHp: MAX_HP, segments };
+  return { hp, segments };
 }
 
 // --- the "it grew" moment -------------------------------------------------

@@ -34,6 +34,13 @@ import { SHORT_LABEL } from "@/components/CompanionStats";
 // Shipping this component on its own first, the same way task 17 shipped
 // the formula before this UI and task 15 shipped the tier labels before
 // task 16's art, keeps each PR small enough to actually look at.
+//
+// hp.hp is open-ended since task 68 (20 Nov 2026) — no fixed ceiling, no
+// hp.maxHp any more. The per-segment fill below still uses that stat's 0-5
+// tier (unchanged by the rescale), not the raw hp number, so this bar reads
+// fine either way; whoever wires this in at task 22 should decide then
+// whether segment fill should move to the same "relative to the leader"
+// treatment CompanionBadge.tsx uses.
 
 export function CompanionHPBar({
   hp,
@@ -48,12 +55,10 @@ export function CompanionHPBar({
   const hpTextSize = size === "compact" ? "text-11" : "text-13";
 
   return (
-    <div aria-label={`total HP: ${hp.hp} of ${hp.maxHp}`}>
+    <div aria-label={`total HP: ${hp.hp}`}>
       <div className="flex items-baseline justify-between gap-2">
         <span className={`${hpTextSize} font-medium uppercase tracking-wide text-ink-soft`}>hp</span>
-        <span className={`${hpTextSize} text-ink-faint`}>
-          {hp.hp}/{hp.maxHp}
-        </span>
+        <span className={`${hpTextSize} text-ink-faint`}>{hp.hp}</span>
       </div>
       <div className={`mt-1 flex gap-[3px] ${barHeight}`} role="img" aria-hidden>
         {hp.segments.map((s) => (
