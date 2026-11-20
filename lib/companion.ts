@@ -270,14 +270,27 @@ function tierFor(count: number): number {
 
 const HARDER_TRIGGERS = new Set(["stressed", "couldnt-sleep", "alone", "after-her"]);
 
-/** Which of the six onboarding answers are present, read at the raw-field
- *  level so this has no dependency on lib/behaviour-profile.ts's sentences. */
+/** Which of the onboarding answers are present, read at the raw-field
+ *  level so this has no dependency on lib/behaviour-profile.ts's sentences.
+ *
+ *  hasHistory (from "have you tried cutting down before?") stopped being
+ *  askable 20 Nov 2026 — the question was dropped from onboarding, so it's
+ *  always false for anyone who onboards from here on. It stays in the type
+ *  rather than being deleted, because it still reads real, previously-saved
+ *  data for existing users who already answered it: nothing here takes that
+ *  credit away from them. hasHarderTrigger replaces it as resilience's
+ *  second seed point for everyone new — picking one of the four harder
+ *  trigger chips up front (stressed, couldn't sleep, alone, after her) is
+ *  the same signal the live stat already rewards from logged nights
+ *  (statsFor's resilience line, below), just asked once at the start
+ *  instead of only read back afterwards. */
 export type ProfileSeed = {
   hasTrigger: boolean;
   hasTiming: boolean;
   hasFrequency: boolean;
   hasInterferes: boolean;
   hasHistory: boolean;
+  hasHarderTrigger: boolean;
   hasGoal: boolean;
 };
 
@@ -287,6 +300,7 @@ export const EMPTY_PROFILE_SEED: ProfileSeed = {
   hasFrequency: false,
   hasInterferes: false,
   hasHistory: false,
+  hasHarderTrigger: false,
   hasGoal: false,
 };
 
@@ -308,6 +322,7 @@ export function seedFromProfile(p: {
     hasFrequency: Boolean(p.frequency),
     hasInterferes: Boolean(p.interferesWith && p.interferesWith.length > 0 && !p.interferesWith.includes("nothing in particular")),
     hasHistory: Boolean(p.triedCuttingDown),
+    hasHarderTrigger: Boolean(p.preferredTriggers && p.preferredTriggers.some((t) => HARDER_TRIGGERS.has(t))),
     hasGoal: Boolean(p.goal),
   };
 }
@@ -325,8 +340,15 @@ export function statsFor(seed: ProfileSeed, entries: Entries): Stat[] {
     awareness: (seed.hasTrigger ? 1 : 0) + (seed.hasTiming ? 1 : 0) + days.filter((d) => d.triggers.length > 0).length,
     mindfulness: (seed.hasFrequency ? 1 : 0) + days.length,
     consistency: longest,
+    // The second point used to come only from hasHistory ("tried cutting
+    // down before?"); that question is gone from onboarding, so
+    // hasHarderTrigger now covers it too — either one is worth the same
+    // single point, never both at once, so this stays the same 0-2 seed
+    // range it always was for a user with just one of the two signals.
     resilience:
-      (seed.hasInterferes ? 1 : 0) + (seed.hasHistory ? 1 : 0) + days.filter((d) => d.triggers.some((t) => HARDER_TRIGGERS.has(t))).length,
+      (seed.hasInterferes ? 1 : 0) +
+      (seed.hasHistory || seed.hasHarderTrigger ? 1 : 0) +
+      days.filter((d) => d.triggers.some((t) => HARDER_TRIGGERS.has(t))).length,
     selfUnderstanding: (seed.hasGoal ? 1 : 0) + days.filter((d) => Boolean(d.note) || d.goalDone).length,
   };
 
