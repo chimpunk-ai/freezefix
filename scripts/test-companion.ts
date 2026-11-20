@@ -239,6 +239,51 @@ check(
   })()
 );
 
+// 20 Nov 2026: onboarding dropped "have you tried cutting down before?",
+// so hasHistory can never be set by a new user again. hasHarderTrigger
+// (picking one of the four harder trigger chips up front) now covers
+// resilience's second seed point instead — same weight, never double-counted
+// with hasHistory, and existing users who already answered the old question
+// keep their credit from it untouched.
+check(
+  "stats-harder-trigger-chip-seeds-resilience-like-history-used-to",
+  (() => {
+    const seed = seedFromProfile({ preferredTriggers: ["stressed"] });
+    return seed.hasHarderTrigger === true && statsFor(seed, {})[STAT_ORDER.indexOf("resilience")].tier > 0;
+  })()
+);
+
+check(
+  "stats-non-harder-trigger-chip-does-not-seed-resilience",
+  (() => {
+    const seed = seedFromProfile({ preferredTriggers: ["bored", "with-friends"] });
+    return seed.hasHarderTrigger === false;
+  })()
+);
+
+check(
+  "stats-history-alone-still-seeds-resilience-for-existing-users",
+  (() => {
+    // No onboarding screen sets triedCuttingDown anymore, but a user who
+    // answered it before 20 Nov 2026 still has it stored — this must keep
+    // working exactly as it always did.
+    const seed = seedFromProfile({ triedCuttingDown: "tried, and slipped back" });
+    return seed.hasHistory === true && seed.hasHarderTrigger === false;
+  })()
+);
+
+check(
+  "stats-history-and-harder-trigger-together-dont-double-seed-resilience",
+  (() => {
+    const both = seedFromProfile({ triedCuttingDown: "tried, and slipped back", preferredTriggers: ["alone"] });
+    const historyOnly = seedFromProfile({ triedCuttingDown: "tried, and slipped back" });
+    const r = STAT_ORDER.indexOf("resilience");
+    // Same tier either way: the second resilience point is one point,
+    // never two, whichever of the two signals (or both) is present.
+    return statsFor(both, {})[r].tier === statsFor(historyOnly, {})[r].tier;
+  })()
+);
+
 check("stats-empty-profile-fields-seed-nothing", (() => {
   const seed = seedFromProfile({});
   return Object.values(seed).every((v) => v === false);
