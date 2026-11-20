@@ -107,7 +107,12 @@ export default function Onboarding({ onDone }: { onDone: (p: Profile) => void })
   const [goalText, setGoalText] = useState("");
   const [target, setTarget] = useState(2);
   const [plan, setPlan] = useState<PlanId>("yearly");
-  const [companionName, setCompanionName] = useState("");
+  // No screen sets this anymore either (the naming field was dropped from
+  // this same step 20 Nov 2026 at the founder's call — "no need to name
+  // it"): companionName simply stays unset from onboarding now, same as
+  // triedCuttingDown above. finish() no longer writes it; it still exists
+  // on Profile and is still settable later, in Settings, for anyone who
+  // wants to rename their companion after the fact.
   const [companionSpecies, setCompanionSpecies] = useState<CompanionSpecies>(DEFAULT_SPECIES);
   const region = useRegion();
 
@@ -133,7 +138,6 @@ export default function Onboarding({ onDone }: { onDone: (p: Profile) => void })
       preferredTriggers: preferredTriggers.length ? preferredTriggers : undefined,
       frequency: frequency || undefined,
       triedCuttingDown: triedCuttingDown || undefined,
-      companionName: companionName.trim().slice(0, 24) || undefined,
       companionSpecies,
       showCompanion: true,
     });
@@ -559,27 +563,14 @@ export default function Onboarding({ onDone }: { onDone: (p: Profile) => void })
               ))}
             </div>
 
-            <p className="mt-3 text-12 uppercase tracking-[0.18em] text-signpost">then name it</p>
-            <input
-              value={companionName}
-              onChange={(e) => setCompanionName(e.target.value.slice(0, 24))}
-              placeholder={DEFAULT_COMPANION_NAME}
-              autoComplete="off"
-              autoCapitalize="none"
-              autoCorrect="off"
-              spellCheck={false}
-              enterKeyHint="done"
-              aria-label="give your companion a name"
-              className="mt-3 w-full max-w-[22ch] rounded-card border border-line bg-bg px-4 py-3 text-center font-display text-16 text-ink placeholder:text-ink-faint focus:border-accent/50 focus:outline-none"
-            />
             <p className="mt-3 max-w-[34ch] text-13 text-ink-soft">
               it grows when you log a night — never when you do or don&rsquo;t smoke, and never backwards. a gap
               never costs you anything you&rsquo;ve already earned. ({traitFor({ smokeTime, frequency, triedCuttingDown })})
             </p>
             <p className="mt-3 text-12 text-ink-faint">
               {(() => {
-                const c = companionFor(companionName, {});
-                return `${c.name} starts at level ${c.level} — ${c.levelName}. you can rename it or turn it off any time in settings.`;
+                const c = companionFor(DEFAULT_COMPANION_NAME, {});
+                return `${c.name} starts at level ${c.level} — ${c.levelName}. you can name it or turn it off any time in settings.`;
               })()}
             </p>
 
