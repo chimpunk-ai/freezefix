@@ -49,16 +49,22 @@ export const SPECIES_LABEL: Record<CompanionSpecies, string> = {
   turtle: "a turtle",
 };
 
-/** Short, capitalized noun for the stat card's type badge (task 67, 20 Nov
- *  2026) — "Fox", "Owl" — rather than re-parsing SPECIES_LABEL's "a fox" /
- *  "an owl" sentences every call site that wants just the word. */
+/** The stat card's type badge (task 67, 20 Nov 2026) — a one-word flavor
+ *  trait ("Clever", "Wise"), not the species' own name: the portrait right
+ *  next to it already says "this is a fox", so repeating "Fox" there would
+ *  be dead space where a reference (the founder's own follow-up examples —
+ *  "Mind", "Strength", "Wisdom" — none of them just restate the animal)
+ *  shows something that adds a little character instead. Each word is
+ *  pulled from that species' own existing personality language in
+ *  SPECIES_STAGE_LABEL above, not invented fresh, so it can't drift out of
+ *  sync with how that species is already described everywhere else. */
 export const SPECIES_TYPE_LABEL: Record<CompanionSpecies, string> = {
-  plant: "Plant",
-  fox: "Fox",
-  cat: "Cat",
-  rabbit: "Rabbit",
-  owl: "Owl",
-  turtle: "Turtle",
+  plant: "Patient",
+  fox: "Clever",
+  cat: "Watchful",
+  rabbit: "Swift",
+  owl: "Wise",
+  turtle: "Steady",
 };
 
 export type Companion = {
