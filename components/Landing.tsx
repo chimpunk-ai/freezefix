@@ -3,6 +3,7 @@ import { PatternCard } from "@/components/PatternCard";
 import Reveal from "@/components/Reveal";
 import RitualDemo from "@/components/RitualDemo";
 import AppScreens from "@/components/AppScreens";
+import StartButton from "@/components/StartButton";
 import { Container, Kicker, Main, SiteHeader } from "@/components/Shell";
 import SiteFooter from "@/components/SiteFooter";
 import { TrustBadge } from "@/components/TrustBadge";
@@ -72,9 +73,9 @@ export default function Landing({ paymentsOn }: { paymentsOn: boolean }) {
                 three taps a night. one card on sunday. nobody telling you off.
               </p>
               <div className="mt-7 flex flex-wrap items-center gap-3">
-                <Link href="/app" className={cta}>
+                <StartButton href="/app" className={cta}>
                   {paymentsOn ? `start ${TRIAL_DAYS} days free` : "start, it's free"}
-                </Link>
+                </StartButton>
               </div>
               {!paymentsOn && (
                 <p className="mt-3 max-w-[42ch] text-13 text-ink-faint">
@@ -132,9 +133,9 @@ export default function Landing({ paymentsOn }: { paymentsOn: boolean }) {
               <p className="max-w-[42ch] text-14 text-ink-soft lg:text-16">
                 no account, no email, no card. a name you make up is the whole sign-in.
               </p>
-              <Link href="/app" className={cta}>
+              <StartButton href="/app" className={cta}>
                 {paymentsOn ? `start ${TRIAL_DAYS} days free` : "start, it's free"}
-              </Link>
+              </StartButton>
               <p className="text-12 text-ink-faint">
                 questions first? <Link href="/faq" className="underline decoration-line underline-offset-4 hover:text-ink-soft">faq</Link>
                 {" · "}
