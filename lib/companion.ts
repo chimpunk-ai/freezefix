@@ -468,6 +468,43 @@ function tierFor(count: number): number {
 
 const HARDER_TRIGGERS = new Set(["stressed", "couldnt-sleep", "alone", "after-her"]);
 
+// Extra-detail credit (task 20 of the 50-step plan, 20 Nov 2026). Resolved
+// via an explicit question to the founder: this is extra credit toward the
+// same five real stats statsFor() already computes, never a separate
+// side-channel HP number — "HP only ever reflects the five real meters" is
+// a rule already committed to in task 17 (PR #120), and this keeps it.
+// Both helpers share the same 1 / 3 / 5 scale: a bare minimum still earns
+// the same single point a night always did (so no existing log is ever
+// worth less after this ships); real extra detail earns 3; real depth
+// earns 5. Only ever an increase for data that already existed — nothing
+// here can make a stat's count go down.
+
+/** A night naming more of what's going on deserves more credit than naming
+ *  one thing. Triggers are capped at MAX_TRIGGERS (lib/entry.ts) = 3, so
+ *  this maps directly onto the three possible counts rather than needing
+ *  its own arbitrary thresholds. */
+function triggerDetailScore(count: number): number {
+  if (count <= 0) return 0;
+  if (count >= 3) return 5;
+  if (count === 2) return 3;
+  return 1;
+}
+
+/** A longer written or spoken reflection deserves more credit than a quick
+ *  tap. Word count, not character count, so a voice transcript counts the
+ *  same way a typed note does (lib/entry.ts's Entry.note doesn't record
+ *  which one it was). The exact thresholds are a judgment call, not a
+ *  product spec: a couple of words is still the same baseline 1 point a
+ *  bare note always earned; 15+ words is real detail; 40+ is real depth. */
+function noteDetailScore(note: string | undefined): number {
+  if (!note) return 0;
+  const words = note.trim().split(/\s+/).filter(Boolean).length;
+  if (words === 0) return 0;
+  if (words >= 40) return 5;
+  if (words >= 15) return 3;
+  return 1;
+}
+
 /** Which of the onboarding answers are present, read at the raw-field
  *  level so this has no dependency on lib/behaviour-profile.ts's sentences.
  *
@@ -535,7 +572,8 @@ export function statsFor(seed: ProfileSeed, entries: Entries): Stat[] {
   const { longest } = streaksFor(entries);
 
   const counts: Record<StatKey, number> = {
-    awareness: (seed.hasTrigger ? 1 : 0) + (seed.hasTiming ? 1 : 0) + days.filter((d) => d.triggers.length > 0).length,
+    awareness:
+      (seed.hasTrigger ? 1 : 0) + (seed.hasTiming ? 1 : 0) + days.reduce((sum, d) => sum + triggerDetailScore(d.triggers.length), 0),
     mindfulness: (seed.hasFrequency ? 1 : 0) + days.length,
     consistency: longest,
     // The second point used to come only from hasHistory ("tried cutting
@@ -547,7 +585,8 @@ export function statsFor(seed: ProfileSeed, entries: Entries): Stat[] {
       (seed.hasInterferes ? 1 : 0) +
       (seed.hasHistory || seed.hasHarderTrigger ? 1 : 0) +
       days.filter((d) => d.triggers.some((t) => HARDER_TRIGGERS.has(t))).length,
-    selfUnderstanding: (seed.hasGoal ? 1 : 0) + days.filter((d) => Boolean(d.note) || d.goalDone).length,
+    selfUnderstanding:
+      (seed.hasGoal ? 1 : 0) + days.reduce((sum, d) => sum + Math.max(noteDetailScore(d.note), d.goalDone ? 1 : 0), 0),
   };
 
   return STAT_ORDER.map((key) => ({
