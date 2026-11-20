@@ -4,6 +4,7 @@
 // no account, no password. Everything here stays on the device.
 
 import { TRIGGERS, type TriggerId } from "./entry";
+import { SPECIES_ORDER, type CompanionSpecies } from "./companion";
 
 export type Goal = {
   /** Their words, e.g. "go for a run". */
@@ -48,6 +49,13 @@ export type Profile = {
    *  DEFAULT_COMPANION_NAME (lib/companion.ts) when empty/unset — this
    *  field only needs to exist when they actually typed something. */
   companionName?: string;
+  /** Which companion they picked during onboarding (task 14 of the 50-step
+   *  plan, 20 Nov 2026). Falls back to DEFAULT_SPECIES ("plant",
+   *  lib/companion.ts) when unset, so every profile saved before this field
+   *  existed keeps showing exactly the plant it always has. Switching
+   *  species later (settings) never resets level/stats — it's a skin on
+   *  the same save, not a separate one. */
+  companionSpecies?: CompanionSpecies;
   /** Whether the companion/level/streak UI shows at all. Defaults to true
    *  (set during onboarding) but always overridable — same "clear control
    *  to turn it off" the app already gives for the Sunday ping. */
@@ -148,6 +156,10 @@ export function readProfile(): Profile {
     const frequency = typeof p.frequency === "string" ? p.frequency.slice(0, 40) : undefined;
     const triedCuttingDown = typeof p.triedCuttingDown === "string" ? p.triedCuttingDown.slice(0, 60) : undefined;
     const companionName = typeof p.companionName === "string" ? p.companionName.slice(0, 24) : undefined;
+    const companionSpecies =
+      typeof p.companionSpecies === "string" && (SPECIES_ORDER as readonly string[]).includes(p.companionSpecies)
+        ? (p.companionSpecies as CompanionSpecies)
+        : undefined;
     const showCompanion = typeof p.showCompanion === "boolean" ? p.showCompanion : undefined;
     return {
       name: typeof p.name === "string" ? p.name.slice(0, 24) : "",
@@ -169,6 +181,7 @@ export function readProfile(): Profile {
       frequency,
       triedCuttingDown,
       companionName,
+      companionSpecies,
       showCompanion,
     };
   } catch {

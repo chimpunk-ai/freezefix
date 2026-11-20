@@ -18,8 +18,18 @@ import {
 } from "@/lib/profile";
 import { TRIGGERS, TRIGGER_LABEL, todayISO, type TriggerId } from "@/lib/entry";
 import { buildBehaviourProfile } from "@/lib/behaviour-profile";
-import { companionFor, seedFromProfile, statsFor, traitFor, DEFAULT_COMPANION_NAME } from "@/lib/companion";
-import { CompanionAvatar } from "@/components/CompanionAvatar";
+import {
+  companionFor,
+  seedFromProfile,
+  statsFor,
+  traitFor,
+  DEFAULT_COMPANION_NAME,
+  DEFAULT_SPECIES,
+  SPECIES_ORDER,
+  SPECIES_LABEL,
+  type CompanionSpecies,
+} from "@/lib/companion";
+import { CompanionPortrait } from "@/components/CompanionPortrait";
 import { CompanionStats } from "@/components/CompanionStats";
 import { plansFor, TRIAL_DAYS, type PlanId } from "@/lib/plans";
 
@@ -97,7 +107,13 @@ export default function Onboarding({ onDone }: { onDone: (p: Profile) => void })
   const [goalText, setGoalText] = useState("");
   const [target, setTarget] = useState(2);
   const [plan, setPlan] = useState<PlanId>("yearly");
-  const [companionName, setCompanionName] = useState("");
+  // No screen sets this anymore either (the naming field was dropped from
+  // this same step 20 Nov 2026 at the founder's call — "no need to name
+  // it"): companionName simply stays unset from onboarding now, same as
+  // triedCuttingDown above. finish() no longer writes it; it still exists
+  // on Profile and is still settable later, in Settings, for anyone who
+  // wants to rename their companion after the fact.
+  const [companionSpecies, setCompanionSpecies] = useState<CompanionSpecies>(DEFAULT_SPECIES);
   const region = useRegion();
 
   // age → name → interferes → smokeTime → frequency →
@@ -122,7 +138,7 @@ export default function Onboarding({ onDone }: { onDone: (p: Profile) => void })
       preferredTriggers: preferredTriggers.length ? preferredTriggers : undefined,
       frequency: frequency || undefined,
       triedCuttingDown: triedCuttingDown || undefined,
-      companionName: companionName.trim().slice(0, 24) || undefined,
+      companionSpecies,
       showCompanion: true,
     });
     void fetch("/api/trial/start", { method: "POST" }).catch(() => {});
@@ -516,34 +532,45 @@ export default function Onboarding({ onDone }: { onDone: (p: Profile) => void })
               Nothing from "before" was deleted; this is the same five
               answers, read differently. */}
           <p className="text-12 uppercase tracking-[0.18em] text-signpost">built from what you just told us</p>
-          <h1 className="mt-2 font-display text-28 text-ink">meet your companion.</h1>
+          <h1 className="mt-2 font-display text-28 text-ink">choose your companion.</h1>
           <p className="mt-2 text-14 text-ink-faint">
             not a diagnosis, not a guess — just your own five answers, given a shape.
           </p>
 
           <div className="mt-5 flex flex-col items-center rounded-sheet border border-line bg-card px-6 py-8 text-center">
-            <CompanionAvatar stage="seed" size={104} className="text-ink" />
-            <p className="mt-3 text-12 uppercase tracking-[0.18em] text-signpost">give it a name</p>
-            <input
-              value={companionName}
-              onChange={(e) => setCompanionName(e.target.value.slice(0, 24))}
-              placeholder={DEFAULT_COMPANION_NAME}
-              autoComplete="off"
-              autoCapitalize="none"
-              autoCorrect="off"
-              spellCheck={false}
-              enterKeyHint="done"
-              aria-label="give your companion a name"
-              className="mt-3 w-full max-w-[22ch] rounded-card border border-line bg-bg px-4 py-3 text-center font-display text-16 text-ink placeholder:text-ink-faint focus:border-accent/50 focus:outline-none"
-            />
+            <CompanionPortrait species={companionSpecies} stage="seed" size={104} className="text-ink" />
+
+            {/* The picker itself (task 14, 20 Nov 2026) — was a fixed plant
+                before this. Every animal's art is its level-1/base form only
+                (task 15/16 draws the rest), which is fine here: everyone
+                starts at level 1 anyway. */}
+            <div className="mt-5 grid grid-cols-3 gap-2 sm:grid-cols-6" role="radiogroup" aria-label="choose your companion">
+              {SPECIES_ORDER.map((s) => (
+                <button
+                  key={s}
+                  type="button"
+                  role="radio"
+                  aria-checked={companionSpecies === s}
+                  onClick={() => setCompanionSpecies(s)}
+                  className={[
+                    "ff-chip flex flex-col items-center gap-1 rounded-card border px-2 py-2.5",
+                    companionSpecies === s ? chipActive : chipInactive,
+                  ].join(" ")}
+                >
+                  <CompanionPortrait species={s} stage="seed" size={36} animate={false} className="pointer-events-none" />
+                  <span className="text-11 capitalize">{s}</span>
+                </button>
+              ))}
+            </div>
+
             <p className="mt-3 max-w-[34ch] text-13 text-ink-soft">
               it grows when you log a night — never when you do or don&rsquo;t smoke, and never backwards. a gap
               never costs you anything you&rsquo;ve already earned. ({traitFor({ smokeTime, frequency, triedCuttingDown })})
             </p>
             <p className="mt-3 text-12 text-ink-faint">
               {(() => {
-                const c = companionFor(companionName, {});
-                return `${c.name} starts at level ${c.level} — ${c.levelName}. you can rename it or turn it off any time in settings.`;
+                const c = companionFor(DEFAULT_COMPANION_NAME, {});
+                return `${c.name} starts at level ${c.level} — ${c.levelName}. you can name it or turn it off any time in settings.`;
               })()}
             </p>
 

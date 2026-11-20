@@ -185,7 +185,12 @@ export default function AppClient({ view = "log" }: { view?: View }) {
         <Container className="grid items-start gap-10 lg:grid-cols-[minmax(0,560px)_minmax(280px,400px)] lg:justify-center lg:gap-16">
           <div className="min-w-0">
             {profile.showCompanion !== false ? (
-              <CompanionBadge name={profile.companionName || profile.name} entries={entries} profile={profile} />
+              <CompanionBadge
+                name={profile.companionName || profile.name}
+                entries={entries}
+                profile={profile}
+                species={profile.companionSpecies}
+              />
             ) : null}
             <DailyReframe />
             <LogScreen
@@ -238,6 +243,7 @@ export default function AppClient({ view = "log" }: { view?: View }) {
                   ? companionFor(profile.companionName || profile.name, entries)
                   : null
               }
+              species={profile.companionSpecies}
             />
           </div>
         </div>
