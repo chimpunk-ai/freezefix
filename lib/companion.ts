@@ -146,6 +146,133 @@ export const STAGE_LABEL: Record<CompanionStage, string> = {
   "full bloom": "in full bloom",
 };
 
+// --- per-species evolution tiers (design only) ---------------------------
+//
+// Task 15 of the 50-step plan, 20 Nov 2026: define what each animal's five
+// growth tiers ARE, before task 16 draws them. A species doesn't get its
+// own level thresholds — stageFor() above already decides, from the same
+// nights-logged count, which of the five shared stages (seed through full
+// bloom) anyone is at, plant or animal. What a species gets here is its own
+// LOOK and NAME at each of those five stages, so "level 6" reads as "a
+// young fox, finding its legs" instead of the plant's "a sapling,
+// branching out" when the companion isn't a plant.
+//
+// IMPORTANT — not wired into the live UI yet, on purpose. CompanionPortrait
+// (components/CompanionPortrait.tsx) still draws every animal's single
+// base form at every level until task 16 exists; showing one of these
+// labels today, before the art changes with it, would read as a bug — the
+// text claiming growth the picture doesn't show. This file is the
+// reviewed, written brief task 16 draws against (and whatever later wires
+// the label into companionFor/CompanionBadge/etc.), so neither has to
+// invent tier concepts under time pressure once the art work starts. Kept
+// here, in code, rather than in a separate design doc, so it can't drift
+// out of sync with CompanionStage/CompanionSpecies and is covered by a test
+// (scripts/test-companion-species.ts) the moment it's wrong or incomplete.
+//
+// Visual brief per tier, for whoever draws task 16 — same "one warm ink
+// line, no gradients, never performs happiness it hasn't earned" rules
+// components/CompanionSpecies.tsx already states. Only the full-bloom tier
+// gets a single accent-coloured fleck, mirroring the plant's one blossom
+// mark (components/CompanionAvatar.tsx's FullBloom) — every earlier tier
+// stays monochrome.
+//
+//   fox    seed        a curled, sleeping kit — ears already pointed but
+//                       tucked down, tail small and close to the body.
+//          sprout       ears up, eyes still closed — rounder-faced than
+//                       what it'll grow into, tail a little fuller.
+//          sapling      leaner face, legs reading longer, tail visibly
+//                       bushier.
+//          young tree   alert posture, sharper features, tail held in a
+//                       confident curl.
+//          full bloom   the adult brush tail with a single accent-coloured
+//                       tip; poised rather than resting.
+//
+//   cat    seed        curled tight, eyes closed, ears small and close to
+//                       the head.
+//          sprout       sitting up, whiskers drawn in, ears perked.
+//          sapling      longer body line, tail now visibly curled.
+//          young tree   poised sit, tail raised.
+//          full bloom   the full adult cat, tail wrapped neatly, one
+//                       accent-coloured marking (a small chest patch).
+//
+//   rabbit seed        ears low, folded close against a small round body.
+//          sprout       one ear starting to lift.
+//          sapling      both ears up, body reading a little longer.
+//          young tree   ears tall, weight forward as if about to hop.
+//          full bloom   full height, ears at their tallest, one
+//                       accent-coloured tuft at the chest.
+//
+//   owl    seed        eyes closed, small and round, tufts flat.
+//          sprout       eyes still closed, tufts just starting to show.
+//          sapling      a more defined facial disc, the suggestion of
+//                       folded wings at the sides.
+//          young tree   fuller body, wing/feather lines more defined.
+//          full bloom   the full adult owl, one accent-coloured chest
+//                       marking — eyes stay closed even here; calm, not
+//                       sleepy-because-it's-young.
+//
+//   turtle seed        a tiny shell, head mostly tucked in.
+//          sprout       shell a little larger, head peeking out more.
+//          sapling      the shell's pattern lines more defined, legs more
+//                       visible.
+//          young tree   a fuller shell, a steadier stance.
+//          full bloom   the full adult shell with its complete seam
+//                       pattern, one accent-coloured marking on the shell.
+//
+// Flavor labels, parallel to LEVEL_NAME above but one per STAGE rather than
+// per level (an animal doesn't need the plant's finer two-per-stage split
+// to read as "growing" — the art itself, once task 16 draws it, carries
+// most of that). plant's own column is STAGE_LABEL verbatim, not
+// retyped, so the two can never quietly drift apart.
+export const SPECIES_STAGE_LABEL: Record<CompanionSpecies, Record<CompanionStage, string>> = {
+  plant: STAGE_LABEL,
+  fox: {
+    seed: "a kit, just curled up",
+    sprout: "a kit, ears up",
+    sapling: "a young fox, finding its legs",
+    "young tree": "a fox, quick and sure",
+    "full bloom": "a fox, full and clever",
+  },
+  cat: {
+    seed: "a kitten, barely stirring",
+    sprout: "a kitten, taking notice",
+    sapling: "a young cat, finding its feet",
+    "young tree": "a cat, watchful",
+    "full bloom": "a cat, entirely its own",
+  },
+  rabbit: {
+    seed: "a kit, ears still down",
+    sprout: "a kit, one ear up",
+    sapling: "a young rabbit, alert",
+    "young tree": "a rabbit, ready to go",
+    "full bloom": "a rabbit, fully grown",
+  },
+  owl: {
+    seed: "an owlet, eyes shut",
+    sprout: "an owlet, tufts coming in",
+    sapling: "a young owl, filling out",
+    "young tree": "an owl, watchful even with its eyes closed",
+    "full bloom": "an owl, fully fledged",
+  },
+  turtle: {
+    seed: "a hatchling, shell still soft-looking",
+    sprout: "a hatchling, head out",
+    sapling: "a young turtle, settling into its shell",
+    "young tree": "a turtle, steady",
+    "full bloom": "a turtle, unhurried and whole",
+  },
+};
+
+/**
+ * The species-flavoured stage label for a level — e.g. "a young fox,
+ * finding its legs" for a fox at level 6, vs. the plant's "a sapling,
+ * branching out" (from LEVEL_NAME) at the same level. Not called from
+ * anywhere in the live UI yet; see the "not wired in" note above.
+ */
+export function speciesStageLabel(species: CompanionSpecies, level: number): string {
+  return SPECIES_STAGE_LABEL[species][stageFor(level)];
+}
+
 /**
  * Current streak (consecutive logged nights, counting back from today — a
  * gap "ends" the current streak but today or yesterday being unlogged yet
