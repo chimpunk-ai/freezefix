@@ -100,6 +100,8 @@ export function PatternCard({
   growthLine = null,
   companion = null,
   species,
+  hpGains = null,
+  theme = null,
 }: {
   name: string;
   stats: WeekStats;
