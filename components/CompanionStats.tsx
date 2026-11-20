@@ -16,7 +16,11 @@ import type { Stat, StatKey } from "@/lib/companion";
 // and wrapping into a two-line overflow. Fixed four-letter codes fit every
 // column without truncation or wrapping; the full word is still one tap/
 // hover away via the wrapper's `title`.
-const SHORT_LABEL: Record<StatKey, string> = {
+//
+// Exported so CompanionHPBar.tsx (task 18 of the 50-step plan) can label
+// its five segments with the exact same codes — one set of short labels,
+// never two that could drift apart.
+export const SHORT_LABEL: Record<StatKey, string> = {
   awareness: "awar",
   mindfulness: "mind",
   consistency: "cons",
