@@ -17,9 +17,12 @@ import type { Stat, StatKey } from "@/lib/companion";
 // column without truncation or wrapping; the full word is still one tap/
 // hover away via the wrapper's `title`.
 //
-// Exported so CompanionHPBar.tsx (task 18 of the 50-step plan) can label
-// its five segments with the exact same codes — one set of short labels,
-// never two that could drift apart.
+// Exported so CompanionBadge.tsx's stat bars use the exact same codes —
+// one set of short labels, never two that could drift apart. (A separate
+// CompanionHPBar component was drafted for this at task 18 of the 50-step
+// plan, but task 67's reference-RPG-style rebuild of CompanionBadge drew
+// its own bars directly instead; CompanionHPBar was never wired into any
+// page and was removed at task 22/#38 as dead code.)
 export const SHORT_LABEL: Record<StatKey, string> = {
   awareness: "awar",
   mindfulness: "mind",
