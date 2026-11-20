@@ -760,11 +760,21 @@ export type HPGain = { key: StatKey; label: string; gained: number };
 /** How much each stat's HP grew between one log state and the next — the
  *  per-stat breakdown behind growthSince's single leveledUp/grownStat
  *  summary, for a surface (the Sunday card, task 39/step 23) that wants to
- *  actually show the numbers rather than just "something grew." Every
- *  entry is >= 0: stats only ever grow (see statsFor's comment above), so
- *  there's no "lost ground" case to handle. Segments with zero gain are
- *  still included, in STAT_ORDER, so a caller can choose to show "nothing
- *  moved here" rather than having it silently disappear. */
+ *  actually show the numbers rather than just "something grew." Segments
+ *  with zero gain are still included, in STAT_ORDER, so a caller can
+ *  choose to show "nothing moved here" rather than having it silently
+ *  disappear.
+ *
+ *  Every entry is >= 0 ONLY when `after`'s log is a superset of `before`'s
+ *  (the normal case: statsFor's own counts never decrease as entries are
+ *  added — see its comment above, which is where that guarantee actually
+ *  lives). Call it with `before` containing a day `after` lacks — most
+ *  directly, a deleted night — and a segment's count can drop, producing
+ *  a negative `gained`. The one real call site (AppClient's Sunday card)
+ *  is always safe: its `before` comes from entriesBefore() filtering the
+ *  SAME `entries` object `after` is, so `before` can never hold a day
+ *  `after` doesn't. See hp-gained-can-go-negative-... in
+ *  scripts/test-companion.ts for this documented either way. */
 export function hpGainedSince(seed: ProfileSeed, before: Entries, after: Entries): HPGain[] {
   const beforeHp = hpFor(statsFor(seed, before));
   const afterHp = hpFor(statsFor(seed, after));
