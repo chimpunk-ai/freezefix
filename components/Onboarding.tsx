@@ -7,7 +7,6 @@ import { TrustBadge } from "@/components/TrustBadge";
 import { useRegion } from "@/components/useRegion";
 import {
   BEDTIMES,
-  CUT_DOWN_HISTORY,
   FREQUENCIES,
   GOAL_EXAMPLES,
   INTERFERES,
@@ -24,13 +23,13 @@ import { CompanionAvatar } from "@/components/CompanionAvatar";
 import { CompanionStats } from "@/components/CompanionStats";
 import { plansFor, TRIAL_DAYS, type PlanId } from "@/lib/plans";
 
-// Twelve small screens. No email, no password, no phone number: a pet-name,
+// Eleven small screens. No email, no password, no phone number: a pet-name,
 // what weed is quietly interfering with, when they usually smoke, how often,
-// what they've tried before, the trigger chips they want pre-filled in their
-// log, a bedtime, a small goal, a plain explanation of what the product
-// actually is, a real behaviour profile built from their own five answers
-// (the wow moment — see lib/behaviour-profile.ts), and then the price. The
-// seven free days start when they tap through the price screen.
+// the trigger chips they want pre-filled in their log, a bedtime, a small
+// goal, a plain explanation of what the product actually is, a real
+// behaviour profile built from their own answers (the wow moment — see
+// lib/behaviour-profile.ts), and then the price. The seven free days start
+// when they tap through the price screen.
 //
 // This is the commitment onboarding the research doc asked for
 // (claude/Competitor_Research_Reframe_CalAI_2026-11.md): long enough that
@@ -43,6 +42,16 @@ import { plansFor, TRIAL_DAYS, type PlanId } from "@/lib/plans";
 // (finish(), unchanged) rather than charging anything — payments are
 // frozen and off, so this is the pricing screen's placement changing, not
 // the billing behaviour.
+//
+// Updated 20 Nov 2026: dropped "have you tried cutting down before?" (the
+// founder's call — it read as a quit-app question in a product that isn't
+// one). triedCuttingDown stays in lib/profile.ts and everywhere downstream
+// as an optional field no screen sets anymore, rather than ripped out, so
+// nothing has to special-case its absence. Every consumer already treats it
+// as optional; the one place it carried real weight — the resilience stat's
+// starting seed, which used to get a point of credit from it — is being
+// re-seeded from a different source as its own follow-up, tracked
+// separately so this change stays just "remove the question."
 
 // Spoken by the progress bar. Required steps gate "next"; optional ones don't.
 const STEP_NAMES = [
@@ -51,7 +60,6 @@ const STEP_NAMES = [
   "what weed is in the way of",
   "when you usually smoke",
   "how often",
-  "what you've tried",
   "your trigger chips",
   "your bedtime",
   "one small thing",
@@ -59,7 +67,7 @@ const STEP_NAMES = [
   "your profile & companion",
   "what it costs",
 ] as const;
-const STEP_OPTIONAL = new Set([7, 8]);
+const STEP_OPTIONAL = new Set([6, 7]);
 
 const SMOKE_TIME_LABEL: Record<string, string> = {
   "after work": "evenings, mostly after work",
@@ -78,7 +86,12 @@ export default function Onboarding({ onDone }: { onDone: (p: Profile) => void })
   const [interferesWith, setInterferesWith] = useState<string[]>([]);
   const [smokeTime, setSmokeTime] = useState<string>("");
   const [frequency, setFrequency] = useState<string>("");
-  const [triedCuttingDown, setTriedCuttingDown] = useState<string>("");
+  // No screen sets this anymore (the "tried cutting down?" question was
+  // dropped 20 Nov 2026) — kept as a permanently-empty value, not deleted,
+  // so every downstream reader (finish(), buildBehaviourProfile,
+  // seedFromProfile, traitFor) stays exactly as it already handles a user
+  // who skipped an optional answer, with nothing to special-case.
+  const triedCuttingDown = "";
   const [preferredTriggers, setPreferredTriggers] = useState<TriggerId[]>([]);
   const [bedtime, setBedtime] = useState<number>(23);
   const [goalText, setGoalText] = useState("");
@@ -87,9 +100,9 @@ export default function Onboarding({ onDone }: { onDone: (p: Profile) => void })
   const [companionName, setCompanionName] = useState("");
   const region = useRegion();
 
-  // age → name → interferes → smokeTime → frequency → cut-down history →
+  // age → name → interferes → smokeTime → frequency →
   // triggers → bedtime → goal → what-this-is → behaviour profile → pricing
-  const steps = 12;
+  const steps = 11;
 
   const goal: Goal | null = useMemo(
     () => (goalText.trim() ? { text: goalText.trim().slice(0, 80), target, madeAt: todayISO() } : null),
@@ -354,32 +367,6 @@ export default function Onboarding({ onDone }: { onDone: (p: Profile) => void })
 
       {step === 5 ? (
         <section className="ff-rise">
-          <h1 className="font-display text-28 text-ink">have you tried cutting down before?</h1>
-          <p className="mt-2 text-14 text-ink-faint">whatever happened, it&rsquo;s not held against you here.</p>
-          <div className="mt-5 flex flex-wrap gap-2">
-            {CUT_DOWN_HISTORY.map((h) => (
-              <button
-                key={h}
-                type="button"
-                onClick={() => setTriedCuttingDown(h)}
-                aria-pressed={triedCuttingDown === h}
-                className={[
-                  "ff-chip rounded-pill border px-3 py-2 text-14",
-                  triedCuttingDown === h ? chipActive : chipInactive,
-                ].join(" ")}
-              >
-                {h}
-              </button>
-            ))}
-          </div>
-          <button type="button" onClick={() => setStep(6)} className={`mt-7 ${primaryBtn}`} disabled={!triedCuttingDown}>
-            {triedCuttingDown ? "next" : "pick one"}
-          </button>
-        </section>
-      ) : null}
-
-      {step === 6 ? (
-        <section className="ff-rise">
           <h1 className="font-display text-28 text-ink">which chips should the log have for you?</h1>
           <p className="mt-2 text-14 text-ink-faint">up to five. these appear as one-tap triggers on the nightly log.</p>
           <div className="mt-5 flex flex-wrap gap-2">
@@ -398,13 +385,13 @@ export default function Onboarding({ onDone }: { onDone: (p: Profile) => void })
               </button>
             ))}
           </div>
-          <button type="button" onClick={() => setStep(7)} className={`mt-7 ${primaryBtn}`} disabled={preferredTriggers.length === 0}>
+          <button type="button" onClick={() => setStep(6)} className={`mt-7 ${primaryBtn}`} disabled={preferredTriggers.length === 0}>
             {preferredTriggers.length === 0 ? "pick at least one" : "next"}
           </button>
         </section>
       ) : null}
 
-      {step === 7 ? (
+      {step === 6 ? (
         <section className="ff-rise">
           <h1 className="font-display text-28 text-ink">when do you usually go to bed?</h1>
           <p className="mt-2 text-14 text-ink-faint">one quiet ping on sunday, around then. that&rsquo;s the only one. optional.</p>
@@ -424,13 +411,13 @@ export default function Onboarding({ onDone }: { onDone: (p: Profile) => void })
               </button>
             ))}
           </div>
-          <button type="button" onClick={() => setStep(8)} className={`mt-7 ${primaryBtn}`}>
+          <button type="button" onClick={() => setStep(7)} className={`mt-7 ${primaryBtn}`}>
             next
           </button>
         </section>
       ) : null}
 
-      {step === 8 ? (
+      {step === 7 ? (
         <section className="ff-rise">
           <h1 className="font-display text-28 text-ink">one small thing you&rsquo;d like to do more of?</h1>
           <p className="mt-2 text-14 text-ink-faint">
@@ -475,13 +462,13 @@ export default function Onboarding({ onDone }: { onDone: (p: Profile) => void })
               </button>
             ))}
           </div>
-          <button type="button" onClick={() => setStep(9)} className={`mt-7 ${primaryBtn}`}>
+          <button type="button" onClick={() => setStep(8)} className={`mt-7 ${primaryBtn}`}>
             next
           </button>
         </section>
       ) : null}
 
-      {step === 9 ? (
+      {step === 8 ? (
         <section className="ff-rise">
           <h1 className="font-display text-28 text-ink">before you start.</h1>
           <p className="mt-4 text-16 text-ink">
@@ -515,13 +502,13 @@ export default function Onboarding({ onDone }: { onDone: (p: Profile) => void })
             </Link>
             .
           </p>
-          <button type="button" onClick={() => setStep(10)} className={`mt-8 ${primaryBtn}`}>
+          <button type="button" onClick={() => setStep(9)} className={`mt-8 ${primaryBtn}`}>
             see your profile
           </button>
         </section>
       ) : null}
 
-      {step === 10 ? (
+      {step === 9 ? (
         <section className="ff-rise">
           {/* The avatar leads now, right as the onboarding answers finish —
               but every one of those six answers is still here, just as the
@@ -570,13 +557,13 @@ export default function Onboarding({ onDone }: { onDone: (p: Profile) => void })
             with it from here.
           </p>
 
-          <button type="button" onClick={() => setStep(11)} className={`mt-6 ${primaryBtn}`}>
+          <button type="button" onClick={() => setStep(10)} className={`mt-6 ${primaryBtn}`}>
             see what it costs
           </button>
         </section>
       ) : null}
 
-      {step === 11 ? (
+      {step === 10 ? (
         <section className="ff-rise">
           <h1 className="font-display text-28 text-ink">one price. seven days free first.</h1>
           <p className="mt-2 text-14 text-ink-soft">
