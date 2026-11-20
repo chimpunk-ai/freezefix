@@ -16,6 +16,7 @@
     "test:resources": "tsx scripts/test-resources.ts",
     "test:plans": "tsx scripts/test-plans.ts",
     "test:pwa": "tsx scripts/test-pwa.ts",
+    "test:sw-reload": "tsx scripts/test-sw-reload.ts",
     "test:offtopic": "tsx scripts/test-offtopic.ts",
     "test:mirror": "tsx scripts/test-mirror.ts",
     "test:fix": "tsx scripts/test-fix.ts",
