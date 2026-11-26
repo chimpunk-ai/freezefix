@@ -72,6 +72,13 @@ const REQUIRED_RULES: Array<[string, string]> = [
   ["no-doses-strains", /strains, doses/i],
   ["no-diagnosis", /never give medical advice or a diagnosis/i],
   ["not-the-problem", /not the problem/i],
+  // Task 43: goal-related how-to answering is allowed, but must stay scoped
+  // to the user's own non-smoking goal and must not become a backdoor around
+  // the quitting/cutting-down ban just because the goal itself is phrased
+  // as smoking less (Goal.text is free text -- nothing stops a user typing
+  // that as their goal).
+  ["goal-howto-allowed", /how do i actually do x.*question about the goal/i],
+  ["goal-howto-excludes-smoking-goal", /a goal\s+that is itself about smoking less, cutting down, or quitting does not get this/i],
 ];
 for (const [id, re] of REQUIRED_RULES) {
   check(`FIX-rule-${id}`, re.test(sys), `rule phrase missing: ${re}`);
@@ -152,6 +159,35 @@ replies.forEach((r, i) => {
     `last char is "${last}" — reply: "${r.slice(0, 60)}…"`,
   );
 });
+
+// -- goal how-to answering stays out of the quitting/cutting-down ban (task 43) --
+//
+// Goal.text is free text (lib/profile.ts's GOAL_EXAMPLES are suggestions,
+// not a closed list), so nothing stops a user typing a goal that's itself
+// about smoking less. The new "how do I actually do X" allowance must not
+// become a backdoor around "never recommend quitting, cutting down,
+// tapering" for that case. Example 43 is the worked case that proves it;
+// this check pins its reply to the same "should I quit" shape as Examples
+// 3/23 (decline, point at a doctor), not an actual how-to answer.
+const example43 = exampleBlocks[42]; // Example 43, 0-indexed into exampleBlocks
+check(
+  "FIX-example-43-exists",
+  Boolean(example43 && /smoke less on weeknights/i.test(example43)),
+  "Example 43 (goal-is-about-smoking edge case) is missing or moved",
+);
+if (example43) {
+  check(
+    "FIX-example-43-declines-to-coach",
+    /not a chart's job to coach|same place as "should i quit"|stay out of both/i.test(example43),
+    'Example 43 must decline to coach on a smoking-reduction goal, the same way Examples 3/23 decline "should I quit"',
+  );
+  const reply43 = (example43.match(/Fix:\s*([\s\S]*?)(?=\n\s*Example \d+|\nEnd of examples|$)/)?.[1] ?? "").toLowerCase();
+  check(
+    "FIX-example-43-no-cutting-down-plan",
+    !/\b(try cutting|start by|cut down by|taper off|switch to|here's how to cut)\b/.test(reply43),
+    "Example 43's reply must not actually hand over a cutting-down plan",
+  );
+}
 
 // -- endWithStatement post-processor -------------------------------------
 
