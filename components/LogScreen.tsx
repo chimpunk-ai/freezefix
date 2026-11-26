@@ -22,6 +22,7 @@ import {
 } from "@/lib/entry";
 import type { Profile } from "@/lib/profile";
 import { MODEL_SIZE_LABEL, VoiceError, cancel as cancelModel, isSupported as voiceSupported, languageName, preload, transcribe } from "@/lib/transcribe";
+import { hasAgreedToVoice, markAgreedToVoice } from "@/lib/voice-pref";
 
 // The log. The whole app for the two minutes it is used.
 //
@@ -114,6 +115,18 @@ export default function LogScreen({
   //   any → trouble (a calm message and "type instead")
   type VoicePhase = "idle" | "explain" | "ready" | "recording" | "transcribing" | "review" | "trouble";
   const [phase, setPhase] = useState<VoicePhase>("idle");
+
+  // Task 37 of the 50-step plan: a device that has already tapped "ok" on
+  // the explain card once skips straight to a recordable state on later
+  // visits, instead of seeing that card (and needing two extra taps) every
+  // single session. Set in an effect, not as the initial useState value, so
+  // the server render and the first client render both still show "idle" --
+  // same hydration-safe shape as AppClient's chime/profile prefs, which read
+  // localStorage in a mount effect rather than at initial state.
+  useEffect(() => {
+    if (!demo && hasAgreedToVoice()) setPhase("ready");
+  }, [demo]);
+
   const [seconds, setSeconds] = useState(0);
   const [download, setDownload] = useState<number | null>(null); // percent while the model loads
   const [voiceMsg, setVoiceMsg] = useState<string | null>(null);
@@ -184,6 +197,7 @@ export default function LogScreen({
   function agreeToVoice() {
     setVoiceMsg(null);
     setPhase("ready");
+    markAgreedToVoice(); // so this device skips the explain card next time
     setDownload(0);
     preload((p) => setDownload(p.percent))
       .then(() => setDownload(null))
