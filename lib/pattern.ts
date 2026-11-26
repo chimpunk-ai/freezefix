@@ -13,6 +13,7 @@ import {
   todayISO,
   weekdayShort,
   TRIGGER_LABEL,
+  NOTE_MAX,
   type Entries,
   type Entry,
   type Mood,
@@ -344,7 +345,13 @@ export function buildFixContext(
     if (c.triggers.length) bits.push(`triggers: ${c.triggers.map((t) => TRIGGER_LABEL[t]).join(", ")}`);
     if (e?.goalDone === true) bits.push("did their thing");
     lines.push(`${c.initial} ${c.day}: ${bits.join(" · ")}`);
-    if (e?.note) lines.push(`  in their words: "${e.note.slice(0, 160)}"`);
+    // Was slice(0, 160) -- cut well under half of what a note can actually
+    // hold (lib/entry.ts's NOTE_MAX), so a real note was silently missing
+    // its back half before Fix ever saw it. Use the real cap instead: a
+    // note already fits within NOTE_MAX by the time it's saved, so this is
+    // mostly defensive now, and the overall buildFixContext maxChars budget
+    // below is still the real backstop (task 41 audit, task 42 fix).
+    if (e?.note) lines.push(`  in their words: "${e.note.slice(0, NOTE_MAX)}"`);
   }
   lines.push("");
   lines.push(

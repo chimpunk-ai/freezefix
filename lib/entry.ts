@@ -78,7 +78,10 @@ export type Entry = {
 };
 
 const KEY = "ff_entries";
-const NOTE_MAX = 500;
+/** The longest a note (typed or voice-transcribed) can be, end to end. Also
+ *  used by lib/pattern.ts so the Fix context never re-truncates a note that
+ *  already fits within this cap. */
+export const NOTE_MAX = 500;
 
 export type Entries = Record<string, Entry>;
 

@@ -1,6 +1,6 @@
 // Checks the weekly mirror: the statistics behind the one card a week, when that
 // card is due, and the seven-day trial clock. Run: npm run test:mirror
-import { addDays, type Entries, type Entry } from "../lib/entry";
+import { addDays, NOTE_MAX, type Entries, type Entry } from "../lib/entry";
 import { dueMirror, MIRROR_HOUR, weekEndFor } from "../lib/mirror";
 import { buildFixContext, goalSentence, numberWord, recentWeeks, weekStats } from "../lib/pattern";
 import type { Goal } from "../lib/profile";
@@ -419,4 +419,32 @@ if (ctxEmptySelfReport.includes("WHAT THEY TOLD US AT THE START")) {
   throw new Error("an all-empty self-report must not produce a section");
 }
 
-console.log("mirror ok: week stats, after-moods, goal line, Sunday timing, shelf, trial, Fix context self-report");
+// --- buildFixContext: a note past the old 160-char cut reaches Fix whole (task 42) ---
+const LONG_NOTE =
+  "stressful day at work, missed the bus twice, argued with my brother about money again and just wanted to numb it all out instead of dealing with any of it, which is the same pattern as last tuesday honestly";
+if (LONG_NOTE.length <= 160) throw new Error("test note must be longer than the old 160-char cut to be meaningful");
+if (LONG_NOTE.length >= NOTE_MAX) throw new Error("test note must still fit under NOTE_MAX to prove it isn't cut");
+const weekWithNote: Entries = { ...week, [SUNDAY]: { ...week[SUNDAY], note: LONG_NOTE } };
+const statsWithNote = weekStats(weekWithNote, GOAL, SUNDAY);
+const ctxWithNote = buildFixContext(statsWithNote, weekWithNote, GOAL);
+if (!ctxWithNote.includes(LONG_NOTE)) {
+  throw new Error("a note under NOTE_MAX must reach Fix whole, not cut at the old 160-char limit");
+}
+
+// A note past NOTE_MAX shouldn't happen in practice -- lib/entry.ts caps it on
+// save -- but buildFixContext's own slice must still bound it defensively
+// rather than passing an unbounded string into the model context.
+const OVERLONG_NOTE = "x".repeat(NOTE_MAX + 100);
+const weekWithOverlongNote: Entries = { ...week, [SUNDAY]: { ...week[SUNDAY], note: OVERLONG_NOTE } };
+const statsOverlong = weekStats(weekWithOverlongNote, GOAL, SUNDAY);
+const ctxOverlong = buildFixContext(statsOverlong, weekWithOverlongNote, GOAL);
+if (ctxOverlong.includes("x".repeat(NOTE_MAX + 1))) {
+  throw new Error("buildFixContext must still cap a note at NOTE_MAX defensively");
+}
+if (!ctxOverlong.includes("x".repeat(NOTE_MAX))) {
+  throw new Error("buildFixContext should keep a note up to NOTE_MAX, not cut it short of that");
+}
+
+console.log(
+  "mirror ok: week stats, after-moods, goal line, Sunday timing, shelf, trial, Fix context self-report, note truncation"
+);
