@@ -16,17 +16,31 @@
 //
 // Why base, why WASM: base-q8 still transcribes a chunk of 30 seconds in a
 // handful of seconds on a mid-range phone, well inside the LogScreen's
-// 2-minute cap chunked at 30s. WASM works everywhere MediaRecorder does;
-// WebGPU would be faster on some devices but adds a path that differs per
-// browser.
+// 60-second recording cap (at most 2 chunks). WASM works everywhere
+// MediaRecorder does; WebGPU would be faster on some devices but adds a path
+// that differs per browser.
 //
 // Bumped from whisper-tiny to whisper-base on 19 Nov 2026 after users
 // reported real transcripts dropping words — tiny is the least accurate
-// Whisper size, and this was the documented next step. Also added a 5s
-// stride between chunks: with chunk_length_s alone, a word spoken right at
-// a 30s boundary can land half in one chunk and half in the next and get
-// dropped entirely; the overlap gives the model enough context on both
-// sides of the seam to transcribe it once instead of losing it.
+// Whisper size, and this was the documented next step. Also added a stride
+// between chunks: with chunk_length_s alone, a word spoken right at a 30s
+// boundary can land half in one chunk and half in the next and get dropped
+// entirely; the overlap gives the model enough context on both sides of the
+// seam to transcribe it once instead of losing it.
+//
+// Stride widened from 5s to 10s on 27 Nov 2026 (task 39 of the 50-step
+// plan) after the 19 Nov fix didn't fully resolve it -- transcripts were
+// still reported dropping words or whole phrases. More overlap per
+// boundary is the one further knob here that's low-risk (a 60s recording
+// is still only two chunks, so the extra compute is small) and can't make
+// things worse the way changing the model or quantization could. INFERRED,
+// NOT VERIFIED: this environment has no microphone and no way to run the
+// model against real audio, so this is reasoned from how Whisper's chunk
+// stitching works, not measured. If real transcripts still drop whole
+// phrases (not just at a chunk seam) after this, the cause is probably
+// something else -- the model silently giving up on a quiet or unclear
+// segment, not a boundary effect -- and widening the stride further won't
+// help with that.
 
 const LIB_URL = "https://cdn.jsdelivr.net/npm/@huggingface/transformers@3.8.1";
 const MODEL_ID = "onnx-community/whisper-base";
@@ -225,7 +239,7 @@ export async function transcribe(blob: Blob, onProgress?: (p: Progress) => void)
   ]);
   let out: AsrOutput;
   try {
-    out = await pipe(audio, { task: "transcribe", chunk_length_s: 30, stride_length_s: 5, return_timestamps: false });
+    out = await pipe(audio, { task: "transcribe", chunk_length_s: 30, stride_length_s: 10, return_timestamps: false });
   } catch (err) {
     throw new VoiceError("decode-failed", err instanceof Error ? err.message : "model");
   } finally {
