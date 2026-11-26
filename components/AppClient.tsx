@@ -23,6 +23,7 @@ import { BEDTIMES, GOAL_EXAMPLES, bedtimeLabel, clearProfile, patchProfile, read
 import { clearChimePref, readChimePref, writeChimePref, type ChimePref } from "@/lib/chime-pref";
 import { disable as disableReminder, enable as enableReminder, forgetReminders, getState as getReminderState, onBedtimeChange, type ReminderKind, type RemindersState } from "@/lib/reminders";
 import { clearMoments } from "@/lib/moments";
+import { clearVoiceAgreement } from "@/lib/voice-pref";
 import { clearGrowthReveals, takeDueGrowthReveal } from "@/lib/growth-reveal";
 import { trialState } from "@/lib/trial";
 
@@ -550,6 +551,7 @@ function SettingsView({
     clearReframePref(); // ff_reframe, ff_reframe_seen
     clearMoments(); // ff_moments
     clearGrowthReveals(); // ff_pending_growth
+    clearVoiceAgreement(); // ff_voice_agreed -- the explain card shows again next time
     try {
       window.localStorage.removeItem("ff_region"); // help-page country pick
     } catch {

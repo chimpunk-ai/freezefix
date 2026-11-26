@@ -127,6 +127,7 @@ check("CODE-age-gate-matches-terms", /adult where you live|age of adulthood/i.te
     "lib/moments.ts",
     "lib/growth-reveal.ts",
     "lib/reminders.ts",
+    "lib/voice-pref.ts",
     "components/DailyReframe.tsx",
     "components/HelpPage.tsx",
   ];
@@ -146,6 +147,7 @@ check("CODE-age-gate-matches-terms", /adult where you live|age of adulthood/i.te
     ff_moments: /clearMoments\(\)/,
     ff_pending_growth: /clearGrowthReveals\(\)/,
     ff_reminders: /forgetReminders\(\)/,
+    ff_voice_agreed: /clearVoiceAgreement\(\)/,
   } as Record<string, RegExp>;
   for (const k of keys) {
     check(`CODE-forget-clears-${k}`, Boolean(clears[k]) && clears[k].test(forgetBody), `forget() must clear ${k}`);
