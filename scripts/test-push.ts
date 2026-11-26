@@ -17,8 +17,11 @@ import {
   importVapidPrivateKey,
   localNow,
   parseSubscribeBody,
+  runTick,
   vapidJwt,
+  type SendResult,
   type Subscription,
+  type TickDeps,
 } from "../lib/push";
 
 // Node's webcrypto isn't global in every tsx invocation; lib/push.ts calls
@@ -166,6 +169,140 @@ function sub(over: Partial<Subscription> = {}): Pick<Subscription, "sunday" | "n
   );
 }
 
+// -- runTick (the cron pass, end to end) ---------------------------------------
+//
+// dueKinds above answers "is this sub due right now" in isolation. These
+// checks cover the part that used to live only, untested, inside the route:
+// turning a list of subs into actual send/mark/remove calls, handling a dead
+// endpoint or a transient failure, and -- the one thing that actually
+// matters if it's wrong -- never sending the same reminder twice.
+
+function fakeSub(endpoint: string, over: Partial<Omit<Subscription, "endpoint">> = {}): Subscription {
+  return {
+    endpoint,
+    p256dh: "unused",
+    auth: "unused",
+    sunday: false,
+    nightly: false,
+    hour: 23,
+    tz: "UTC",
+    last_sent_sunday: null,
+    last_sent_nightly: null,
+    ...over,
+  };
+}
+
+function fakeDeps(sendResults: Record<string, SendResult> = {}) {
+  const sent: string[] = [];
+  const marked: Array<{ endpoint: string; kind: string; date: string }> = [];
+  const removed: string[] = [];
+  const deps: TickDeps = {
+    send: async (endpoint) => {
+      sent.push(endpoint);
+      return sendResults[endpoint] ?? "sent";
+    },
+    mark: async (endpoint, kind, date) => {
+      marked.push({ endpoint, kind, date });
+    },
+    remove: async (endpoint) => {
+      removed.push(endpoint);
+    },
+  };
+  return { deps, sent, marked, removed };
+}
+
+async function tickChecks() {
+  const at = new Date("2026-11-15T20:18:00Z"); // Sunday 20:18 UTC -- inside the sunday window
+
+  {
+    const { deps, sent, marked } = fakeDeps();
+    const counts = await runTick([fakeSub("e1", { sunday: true })], deps, at);
+    check("tick-due-sub-gets-sent", sent.length === 1 && sent[0] === "e1");
+    check(
+      "tick-due-sub-marked-correct-kind-and-date",
+      marked.length === 1 && marked[0].kind === "sunday" && marked[0].date === "2026-11-15",
+      JSON.stringify(marked),
+    );
+    check("tick-counts-match", counts.checked === 1 && counts.sent === 1 && counts.gone === 0 && counts.failed === 0);
+  }
+
+  {
+    // Not due at all (already sent today) -- must never even attempt a send.
+    const { deps, sent, marked } = fakeDeps();
+    const counts = await runTick([fakeSub("e2", { sunday: true, last_sent_sunday: "2026-11-15" })], deps, at);
+    check("tick-not-due-sub-never-sent", sent.length === 0 && marked.length === 0 && counts.sent === 0);
+  }
+
+  {
+    // Opted into both kinds, but this tick's window only satisfies sunday --
+    // must mark sunday only, never nightly, even though nightly=true too.
+    const { deps, marked } = fakeDeps();
+    await runTick([fakeSub("e3", { sunday: true, nightly: true, hour: 20 })], deps, at);
+    check("tick-marks-only-the-kind-actually-due", marked.length === 1 && marked[0].kind === "sunday", JSON.stringify(marked));
+  }
+
+  {
+    // A dead endpoint (404/410) must be removed and never marked sent.
+    const { deps, removed, marked } = fakeDeps({ "gone-one": "gone" });
+    const counts = await runTick([fakeSub("gone-one", { sunday: true })], deps, at);
+    check("tick-gone-endpoint-removed", removed.length === 1 && removed[0] === "gone-one");
+    check("tick-gone-endpoint-not-marked-sent", marked.length === 0);
+    check("tick-counts-gone", counts.gone === 1 && counts.sent === 0);
+  }
+
+  {
+    // A transient failure must not be marked sent, so the next tick (ten
+    // minutes later, same window) retries it instead of losing the reminder.
+    const { deps, marked, removed } = fakeDeps({ flaky: "failed" });
+    const counts = await runTick([fakeSub("flaky", { sunday: true })], deps, at);
+    check("tick-failed-send-not-marked", marked.length === 0);
+    check("tick-failed-send-not-removed", removed.length === 0, "a transient failure should not drop the subscription");
+    check("tick-counts-failed", counts.failed === 1 && counts.sent === 0);
+  }
+
+  {
+    // The actual promise, end to end: run the tick twice ten minutes apart
+    // against a store that really persists what runTick marks -- the way the
+    // route + Supabase do together in production -- and confirm the second
+    // pass sends nothing.
+    let sub = fakeSub("real-flow", { sunday: true });
+    const sentCalls: string[] = [];
+    const deps: TickDeps = {
+      send: async (endpoint) => {
+        sentCalls.push(endpoint);
+        return "sent";
+      },
+      mark: async (_endpoint, kind, date) => {
+        sub = kind === "sunday" ? { ...sub, last_sent_sunday: date } : { ...sub, last_sent_nightly: date };
+      },
+      remove: async () => {},
+    };
+    const first = await runTick([sub], deps, new Date("2026-11-15T20:16:00Z"));
+    const second = await runTick([sub], deps, new Date("2026-11-15T20:21:00Z")); // same local date, 5 min later
+    check("tick-double-send-guard-first-pass-sends", first.sent === 1);
+    check(
+      "tick-double-send-guard-second-pass-skips",
+      second.sent === 0 && sentCalls.length === 1,
+      `send() was called ${sentCalls.length} time(s), expected 1`,
+    );
+  }
+
+  {
+    // Concurrency batching must not drop anyone at a batch boundary.
+    const subs = Array.from({ length: 7 }, (_, i) => fakeSub(`e${i}`, { sunday: true }));
+    const { deps, sent } = fakeDeps();
+    const counts = await runTick(subs, deps, at, 2); // force batches of 2 against 7 subs
+    check("tick-concurrency-batching-sends-everyone", sent.length === 7 && counts.sent === 7, `sent ${sent.length} of 7`);
+  }
+
+  {
+    // An unknown timezone must never fire, and must never even reach send().
+    const { deps, sent } = fakeDeps();
+    const counts = await runTick([fakeSub("bad-tz", { sunday: true, tz: "Not/AZone" })], deps, at);
+    check("tick-unknown-tz-never-sent", sent.length === 0 && counts.sent === 0 && counts.checked === 1);
+  }
+}
+
 // -- VAPID sign / verify round trip -------------------------------------------
 // (async, so it's wrapped in main() below rather than run at the top level —
 // tsx's cjs transform doesn't support top-level await.)
@@ -252,6 +389,7 @@ async function vapidChecks() {
 }
 
 async function main() {
+  await tickChecks();
   await vapidChecks();
 
   const pass = results.filter((r) => r.ok).length;
