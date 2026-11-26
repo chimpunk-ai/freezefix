@@ -171,6 +171,67 @@ export async function sendEmptyPush(endpoint: string, key: CryptoKey, publicKeyB
   }
 }
 
+// --- one cron pass -----------------------------------------------------------
+
+export type TickDeps = {
+  send: (endpoint: string) => Promise<SendResult>;
+  mark: (endpoint: string, kind: keyof Kinds, date: string) => Promise<void>;
+  remove: (endpoint: string) => Promise<void>;
+};
+
+export type TickCounts = { checked: number; sent: number; gone: number; failed: number };
+
+/**
+ * One cron pass: finds whichever subscriptions are due right now, sends each
+ * at most once, and marks only the kind(s) that were actually due -- so a sub
+ * that happens to be due for both kinds in the same tick (impossible today
+ * since the two windows never overlap, see test-push.ts, but not something
+ * this function should assume) gets exactly one push and both marks, never
+ * two pushes or a mark for a kind it wasn't its turn for yet.
+ *
+ * The real network/DB work (send a push, record it, drop a dead endpoint) is
+ * injected as `deps` rather than imported directly, so this -- the part that
+ * decides who gets sent to and what gets marked -- can run against a fake
+ * push service and a fake store in scripts/test-push.ts, and against the
+ * real lib/push.ts functions from app/api/push/tick/route.ts. Was previously
+ * inlined in the route and untested: dueKinds' own window math had full
+ * coverage, but nothing exercised the part that turns "who's due" into
+ * "who actually got sent to and marked" -- including the one real risk,
+ * double-sending -- end to end.
+ */
+export async function runTick(subs: Subscription[], deps: TickDeps, at: Date = new Date(), concurrency = 25): Promise<TickCounts> {
+  const counts: TickCounts = { checked: subs.length, sent: 0, gone: 0, failed: 0 };
+  const queue = subs.filter((s) => {
+    const d = dueKinds(s, at);
+    return d.sunday || d.nightly;
+  });
+
+  for (let i = 0; i < queue.length; i += concurrency) {
+    const slice = queue.slice(i, i + concurrency);
+    await Promise.allSettled(
+      slice.map(async (s) => {
+        const due = dueKinds(s, at);
+        const local = localNow(s.tz, at);
+        if (!local) return;
+        const result = await deps.send(s.endpoint);
+        if (result === "gone") {
+          counts.gone++;
+          await deps.remove(s.endpoint).catch(() => {});
+          return;
+        }
+        if (result === "failed") {
+          counts.failed++;
+          return;
+        }
+        counts.sent++;
+        if (due.sunday) await deps.mark(s.endpoint, "sunday", local.date).catch(() => {});
+        if (due.nightly) await deps.mark(s.endpoint, "nightly", local.date).catch(() => {});
+      }),
+    );
+  }
+  return counts;
+}
+
 // --- storage (through security-definer functions, like the rest of the schema) ---
 
 export function pushConfigured(): boolean {

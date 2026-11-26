@@ -1,12 +1,11 @@
 import { NextResponse } from "next/server";
 import {
-  dueKinds,
   importVapidPrivateKey,
   listActiveSubscriptions,
-  localNow,
   markSent,
   pushConfigured,
   removeSubscriptionService,
+  runTick,
   sendEmptyPush,
 } from "@/lib/push";
 
@@ -46,38 +45,15 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "unavailable" }, { status: 503 });
   }
 
-  const now = new Date();
-  const counts = { checked: subs.length, sent: 0, gone: 0, failed: 0 };
-  const queue = subs.filter((s) => {
-    const d = dueKinds(s, now);
-    return d.sunday || d.nightly;
+  // The who's-due / what-gets-sent / what-gets-marked decisions live in
+  // lib/push.ts's runTick so they can run under test; this just wires in the
+  // real push service and the real store. One push covers both kinds if they
+  // ever coincide; the worker shows the Sunday text then.
+  const counts = await runTick(subs, {
+    send: (endpoint) => sendEmptyPush(endpoint, key, pub),
+    mark: markSent,
+    remove: removeSubscriptionService,
   });
-
-  const CONCURRENCY = 25;
-  for (let i = 0; i < queue.length; i += CONCURRENCY) {
-    const slice = queue.slice(i, i + CONCURRENCY);
-    await Promise.allSettled(
-      slice.map(async (s) => {
-        const due = dueKinds(s, now);
-        const local = localNow(s.tz, now);
-        if (!local) return;
-        // One push covers both kinds if they ever coincide; the worker shows the Sunday text then.
-        const result = await sendEmptyPush(s.endpoint, key, pub);
-        if (result === "gone") {
-          counts.gone++;
-          await removeSubscriptionService(s.endpoint).catch(() => {});
-          return;
-        }
-        if (result === "failed") {
-          counts.failed++;
-          return;
-        }
-        counts.sent++;
-        if (due.sunday) await markSent(s.endpoint, "sunday", local.date).catch(() => {});
-        if (due.nightly) await markSent(s.endpoint, "nightly", local.date).catch(() => {});
-      }),
-    );
-  }
 
   return NextResponse.json(counts);
 }
